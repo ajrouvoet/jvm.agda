@@ -1,0 +1,6 @@
+[submodule "lib/stdlib.agda"]
+	path = lib/stdlib.agda
+	url = git://github.com/agda/agda-stdlib.git
+[submodule "lib/mj.agda"]
+	path = lib/mj.agda
+	url = git@github.com:metaborg/mj.agda.git
