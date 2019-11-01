@@ -4,3 +4,6 @@
 [submodule "lib/mj.agda"]
 	path = lib/mj.agda
 	url = git@github.com:metaborg/mj.agda.git
+[submodule "lib/sessions.agda"]
+	path = lib/sessions.agda
+	url = git@github.com:ajrouvoet/sessions.agda.git
