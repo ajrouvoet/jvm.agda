@@ -3,7 +3,7 @@
 	url = git://github.com/agda/agda-stdlib.git
 [submodule "lib/mj.agda"]
 	path = lib/mj.agda
-	url = git@github.com:metaborg/mj.agda.git
+	url = git@github.com:ajrouvoet/mj.agda.git
 [submodule "lib/sessions.agda"]
 	path = lib/sessions.agda
 	url = git@github.com:ajrouvoet/sessions.agda.git
