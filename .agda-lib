@@ -3,5 +3,5 @@ include:
   - ./
   - src/
   - lib/stdlib.agda/src/
-  - lib/sessions.agda/src/
   - lib/mj.agda/src/
+  - lib/mj.agda/lib/sessions.agda/src/

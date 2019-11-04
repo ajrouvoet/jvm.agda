@@ -57,7 +57,7 @@ hoist-binder [] (λ⟨ [] ⟩ b) =
 
 -- If a binder only flows to the left, then it is not used
 -- in the block; we optimize it away.
-hoist-binder (a ∷ Γ) (λ⟨ to-left sep ⟩ b) =
+hoist-binder (a ∷ Γ) (λ⟨ consˡ sep ⟩ b) =
   -- The co-de-bruijn typing allows us to do just that:
   hoist-binder Γ (λ⟨ sep ⟩ b)
 
@@ -67,7 +67,7 @@ hoist-binder {P} (a ∷ Γ) (λ⟨ duplicate sep ⟩ b) = do
 
 -- It cannot be that a binder does not flow to the left.
 -- TODO custom dependent eliminator for _∣~_?
-hoist-binder (a ∷ Γ) (λ⟨ to-right sep ⟩ b)  = ⊥-elim (smallerˡ [] sep)
+hoist-binder (a ∷ Γ) (λ⟨ consʳ sep ⟩ b)  = ⊥-elim (smallerˡ [] sep)
 
 -- A typed hoisting transformation for statement blocks
 {-# TERMINATING #-}
@@ -152,5 +152,5 @@ module Example where
             -- return j
             Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
             Src.emp))
-          )) Src.⍮⟨ to-left ⊎-idˡ ⟩
+          )) Src.⍮⟨ consˡ ⊎-idˡ ⟩
       Src.emp)))) ⊎-idˡ
