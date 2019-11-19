@@ -23,6 +23,10 @@ open Classtable Ct
 open Monads.Monad ⤇-monad
 open Monads using (str; typed-str)
 
+open import Relation.Ternary.Separation.Construct.Duplicate
+open import Relation.Ternary.Separation.Construct.List.Interdivide
+  Ty _ {{dup-is-sep Ty}} public
+
 mutual
   Stmt  = Statements.Statement Block
 
@@ -77,8 +81,8 @@ mutual
   hoist Src.emp = do
     return emp
 
-  hoist (local a Γ⊢b)  = do
-    b ← hoist-binder [ a ] Γ⊢b
+  hoist (local Γ⊢b)  = do
+    b ← hoist-binder [ _ ] Γ⊢b
     hoist b
 
   hoist (st Src.⍮⟨ σ₁ ⟩ b) = do
@@ -126,31 +130,31 @@ mutual
 
 module Example where
 
-  ex₁ : ∃₂ λ Φₗ Φ → Φₗ ⊎ [] ≣ Φ × (Block int) Φₗ
-  ex₁ = update (hoist ( 
-    local int 
-    (λ⟨ duplicate ⊎-idˡ ⟩ ( 
-      Src.ifthenelse
-        (Src.num 42 ×⟨ ⊎-idˡ ⟩
-          -- then
-          Src.block (
-            -- Int i;
-            local int (λ⟨ duplicate ⊎-idˡ ⟩ (
-            -- i = j;
-            Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
-            -- return j
-            Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
-            Src.emp))
-          )
-          ×⟨ duplicate ⊎-idˡ ⟩
-          -- else
-          Src.block (
-            -- Int i;
-            local int (λ⟨ duplicate ⊎-idˡ ⟩ (
-            -- i = j;
-            Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
-            -- return j
-            Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
-            Src.emp))
-          )) Src.⍮⟨ consˡ ⊎-idˡ ⟩
-      Src.emp)))) ⊎-idˡ
+  -- ex₁ : ∃₂ λ Φₗ Φ → Φₗ ⊎ [] ≣ Φ × (Block int) Φₗ
+  -- ex₁ = update (hoist ( 
+  --   local int 
+  --   (λ⟨ duplicate ⊎-idˡ ⟩ ( 
+  --     Src.ifthenelse
+  --       (Src.num 42 ×⟨ ⊎-idˡ ⟩
+  --         -- then
+  --         Src.block (
+  --           -- Int i;
+  --           local int (λ⟨ duplicate ⊎-idˡ ⟩ (
+  --           -- i = j;
+  --           Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
+  --           -- return j
+  --           Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
+  --           Src.emp))
+  --         )
+  --         ×⟨ duplicate ⊎-idˡ ⟩
+  --         -- else
+  --         Src.block (
+  --           -- Int i;
+  --           local int (λ⟨ duplicate ⊎-idˡ ⟩ (
+  --           -- i = j;
+  --           Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
+  --           -- return j
+  --           Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
+  --           Src.emp))
+  --         )) Src.⍮⟨ consˡ ⊎-idˡ ⟩
+  --     Src.emp)))) ⊎-idˡ
