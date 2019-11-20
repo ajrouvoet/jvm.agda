@@ -49,9 +49,9 @@ module _ where
     if    : ∀[ Just ψ ⇒ ⟨ Γ ∣ int ∷ ψ ⇒ ψ ⟩ ]
 
 open import Relation.Ternary.Separation.Construct.Exchange {A = Labels} _↭_
-  public
-  renaming (Account to Intf)
-open import Relation.Ternary.Separation.Monad (record { isEquivalence = account-equiv })
+  as Exchange
+  public renaming (Account to Intf)
+open import Relation.Ternary.Separation.Monad Exchange._≈_
 open import Relation.Ternary.Separation.Monad.Quotient
 
 {- Instruction sequences -}
@@ -68,7 +68,7 @@ module _ where
   pattern _;⟨_⟩_ li σ b = cons (li ×⟨ σ ⟩ b)
 
   seq : ∀[ ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ ⇒ ⟪ Γ ∣ ψ₂ ⇒ ψ₃ ⟫ ~✴ ⟪ Γ ∣ ψ₁ ⇒ ψ₃ ⟫ ]
-  seq block    ⟨ σ₂ ⟩ b₂ = b₂ div (⊎-id⁻ˡ σ₂)
+  seq block ⟨ σ₂ ⟩ b₂ = b₂ div (⊎-id⁻ˡ σ₂)
   seq (li ;⟨ σ₁ ⟩ b₁) ⟨ σ₂ ⟩ b₂ = do
     let _ , τ₁ , τ₂ = ⊎-assoc σ₁ σ₂
     b₃ ×⟨ σ₃ ⟩ li ← seq b₁ ⟨ τ₂ ⟩ b₂ &⟨ ⊎-comm τ₁ ⟩ li
