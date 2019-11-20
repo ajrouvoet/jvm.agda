@@ -25,15 +25,23 @@ module _ where
   pattern init a  = _,_ a true 
   pattern uninit a = _,_ a false
 
+  StackTy  = List Ty
+  LocalsTy = List RegTy
+
+  -- the PRSA for LocalsTy
+  open import Relation.Ternary.Separation.Construct.Duplicate as Dup
+  open import Relation.Ternary.Separation.Construct.List.Interdivide RegTy
+    (Dup.dup-sep RegTy) {{Dup.dup-is-sep RegTy}} public
+
   variable
-    ψ₁ ψ₂ ψ : List Ty -- stack typings
-    τ₁ τ₂ τ : List RegTy -- register file typings
+    ψ₁ ψ₂ ψ : StackTy  -- stack typings
+    τ₁ τ₂ τ : LocalsTy -- register file typings
 
   infixl 1 _∣_
   record FrameTy : Set where
     constructor _∣_
     field
-      locals-ty : List (Ty × Bool)
+      locals-ty : List RegTy
       stack-ty  : List Ty
 
   record Frame (ft : FrameTy) (Σ : World) : Set where

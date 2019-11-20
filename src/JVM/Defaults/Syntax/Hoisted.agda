@@ -130,31 +130,31 @@ mutual
 
 module Example where
 
-  -- ex₁ : ∃₂ λ Φₗ Φ → Φₗ ⊎ [] ≣ Φ × (Block int) Φₗ
-  -- ex₁ = update (hoist ( 
-  --   local int 
-  --   (λ⟨ duplicate ⊎-idˡ ⟩ ( 
-  --     Src.ifthenelse
-  --       (Src.num 42 ×⟨ ⊎-idˡ ⟩
-  --         -- then
-  --         Src.block (
-  --           -- Int i;
-  --           local int (λ⟨ duplicate ⊎-idˡ ⟩ (
-  --           -- i = j;
-  --           Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
-  --           -- return j
-  --           Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
-  --           Src.emp))
-  --         )
-  --         ×⟨ duplicate ⊎-idˡ ⟩
-  --         -- else
-  --         Src.block (
-  --           -- Int i;
-  --           local int (λ⟨ duplicate ⊎-idˡ ⟩ (
-  --           -- i = j;
-  --           Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
-  --           -- return j
-  --           Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
-  --           Src.emp))
-  --         )) Src.⍮⟨ consˡ ⊎-idˡ ⟩
-  --     Src.emp)))) ⊎-idˡ
+  ex₁ : ∃₂ λ Φₗ Φ → Φₗ ⊎ [] ≣ Φ × (Block int) Φₗ
+  ex₁ = update (hoist ( 
+    local int 
+    (λ⟨ duplicate ⊎-idˡ ⟩ ( 
+      Src.ifthenelse
+        (Src.num 42 ×⟨ ⊎-idˡ ⟩
+          -- then
+          Src.block (
+            -- Int i;
+            local int (λ⟨ duplicate ⊎-idˡ ⟩ (
+            -- i = j;
+            Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
+            -- return j
+            Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
+            Src.emp))
+          )
+          ×⟨ duplicate ⊎-idˡ ⟩
+          -- else
+          Src.block (
+            -- Int i;
+            local int (λ⟨ duplicate ⊎-idˡ ⟩ (
+            -- i = j;
+            Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
+            -- return j
+            Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
+            Src.emp))
+          )) Src.⍮⟨ consˡ ⊎-idˡ ⟩
+      Src.emp)))) ⊎-idˡ
