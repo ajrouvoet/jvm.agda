@@ -9,6 +9,8 @@ open import Data.Product
 open import Data.List
 open import Data.List.Relation.Unary.All
 open import Data.List.Relation.Binary.Pointwise
+open import Relation.Ternary.Separation
+open import Relation.Ternary.Structures
 
 open import MJ.Types c
 open import MJ.LexicalScope c
@@ -23,9 +25,9 @@ module _ where
   LocalsTy = List RegTy
 
   -- the PRSA for LocalsTy
-  open import Relation.Ternary.Separation.Construct.Duplicate as Dup
-  open import Relation.Ternary.Separation.Construct.List.Interdivide RegTy
-    (Dup.dup-sep RegTy) {{Dup.dup-is-sep RegTy}} public
+  open import Relation.Ternary.Construct.Duplicate RegTy
+  open import Relation.Ternary.Construct.List.Interdivide RegTy
+    {division = dup-sep} isCommSemigroup public
 
   variable
     ψ₁ ψ₂ ψ₃ ψ : StackTy  -- stack typings
