@@ -7,3 +7,6 @@
 [submodule "lib/sessions.agda"]
 	path = lib/sessions.agda
 	url = git@github.com:ajrouvoet/sessions.agda.git
+[submodule "lib/ternary.agda"]
+	path = lib/ternary.agda
+	url = git@github.com:ajrouvoet/ternary.agda.git

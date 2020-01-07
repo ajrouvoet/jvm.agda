@@ -1,4 +1,3 @@
-{-# OPTIONS --postfix-projections #-}
 import MJ.Classtable.Core as Core
 
 module JVM.Defaults.Syntax.Frames {c}(Ct : Core.Classtable c) where
@@ -26,16 +25,14 @@ module _ where
 
   -- the PRSA for LocalsTy
   open import Relation.Ternary.Construct.Duplicate RegTy
-  open import Relation.Ternary.Construct.List.Interdivide RegTy
-    {division = dup-sep} isCommSemigroup public
+  open import Relation.Ternary.Construct.List.Interdivide dup-rel public
 
   variable
     ψ₁ ψ₂ ψ₃ ψ : StackTy  -- stack typings
     τ₁ τ₂ τ₃ τ : LocalsTy -- register file typings
 
-  infixl 1 _∣_
   record FrameTy : Set where
-    constructor _∣_
+    constructor ⟨_,_⟩
     field
       locals-ty : List RegTy
       stack-ty  : List Ty
