@@ -5,4 +5,4 @@ include:
   - lib/stdlib.agda/src/
   - lib/mj.agda/src/
   - lib/mj.agda/lib/stdlib++/src/
-  - lib/mj.agda/lib/sessions.agda/src/
+  - lib/sessions.agda/src/

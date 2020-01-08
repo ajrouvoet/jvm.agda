@@ -11,13 +11,17 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Data.Maybe using (just; nothing; Maybe)
 
 open import MJ.Types c
-open import JVM.Defaults.Syntax.Frames Ct
+open import JVM.Defaults.Syntax.Values Ct
+open import JVM.Defaults.Syntax.Frames Ct hiding (ctx-semigroup; ctx-monoid)
 
-open import Data.List.Membership.Propositional {A = RegTy}
+open import Data.List.Membership.Propositional
 
 module _ where
 
   Labels  = List StackTy
+
+  variable
+    ι₁ ι₂ ι₃ ι : Labels
 
   -- The PRSA for Labels
   open import Relation.Ternary.Construct.Duplicate StackTy as Dup
@@ -33,8 +37,9 @@ module _ where
     noop : ε[ ⟨ Γ ∣ ψ ⇒ ψ ⟩ ]
 
     -- stack manipulation
-    pop  : ε[ ⟨ Γ ∣ a ∷ ψ      ⇒  ψ         ⟩ ]
-    push : ε[ ⟨ Γ ∣ ψ          ⇒  a ∷ ψ     ⟩ ]
+    pop  :           ε[ ⟨ Γ ∣ a ∷ ψ      ⇒  ψ         ⟩ ]
+    push : Const a → ε[ ⟨ Γ ∣ ψ          ⇒  a ∷ ψ     ⟩ ]
+
     dup  : ε[ ⟨ Γ ∣ a ∷ ψ      ⇒  a ∷ a ∷ ψ ⟩ ]
     swap : ε[ ⟨ Γ ∣ a ∷ b ∷ ψ  ⇒  b ∷ a ∷ ψ ⟩ ]
 
@@ -52,7 +57,7 @@ open import Relation.Ternary.Construct.Exchange {A = Labels} _↭_ as Exchange
 {- Bytecode; i.e., instruction sequences -}
 module _ where
 
-  open import Relation.Ternary.Data.ReflexiveTransitive {C = Intf} isCommMonoid public
+  open import Relation.Ternary.Data.ReflexiveTransitive public
 
   data Code (Γ : LocalsTy) : StackTy → StackTy → Pred Intf 0ℓ where
     label : ∀[ ● (Just ψ)       ⇒ Code Γ ψ ψ ]
@@ -70,3 +75,19 @@ module _ where
 
   -- ⟪_∣_⇒_⟫ : LocalsTy → StackTy → StackTy → Pred Intf 0ℓ
   -- ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ = Star (Code Γ) ψ₁ ψ₂
+
+{- Bytecode zipper -}
+module _ where
+
+  record CodeHole (Γ : LocalsTy) (ψ : StackTy) (ψ′ : StackTy) (ι : Labels) : Set where
+    field
+      focused : (⟪ Γ ∣ [] ⇒ ψ ⟫ ✴ ○ (Exactly ι) ✴ ⟪ Γ ∣ ψ′ ⇒ [] ⟫) ε
+
+  record Zipper (Γ : LocalsTy) (ψ : StackTy) (ι : Labels) : Set where
+    field
+      {ψ′}   : StackTy
+      focus  : ⟨ Γ ∣ ψ ⇒ ψ′ ⟩ ι
+      hole   : CodeHole Γ ψ ψ′ ι
+
+    postulate move : ∀ {φ : StackTy} → φ ∈ ι → ∃ (Zipper Γ φ)
+    -- move = {!!}
