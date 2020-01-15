@@ -15,6 +15,11 @@ open import Relation.Ternary.Respect.Propositional
 open import JVM.Defaults.Syntax Ct
 open import JVM.Defaults.Syntax.Values Ct
 
+-- We define the 'view' of a client on the server (VM) state typing.
+-- This is analogue to the State monad (i.e., the server) internally operating on (Market A), where clients only see (A).
+-- The view consists of a set of labels that the clients uses, as well as a number of heap cells that it sees.
+--
+-- We manually repeat the relevant instances for this view here to speed up instance search.
 module _ where
   
   open import Relation.Binary.Structures
@@ -36,19 +41,25 @@ module _ where
   view-partialmonoid = Propositional.×-isPartialMonoid-≡
 
   instance view-commutative : IsCommutative view-rel
-  view-commutative = {!!}
+  view-commutative = ×-isCommutative
 
   -- exported type-formers
   open import Relation.Ternary.Construct.Product using (Π₂; Π₁; fst; snd) public
 
+-- The API of a virtual machine
 record VM (M : LocalsTy → StackTy → StackTy → Pt View 0ℓ) : Set₁ where
   field
     {{ monad }} : ∀ {τ} → Monad StackTy (λ where ψ₁ ψ₂ → M τ ψ₁ ψ₂)
 
+    -- register manipulation
     vmget    : a ∈ τ → ε[ M τ ψ ψ (Π₂ (Val a)) ]
     vmset    : a ∈ τ → ∀[ Π₂ (Val a) ⇒ M τ ψ ψ Emp ]
+
+    -- stack manipulation
     vmpush   : ∀[ Π₂ (Val a)         ⇒ M τ ψ (a ∷ ψ) Emp ]
     vmpop    : ε[ M τ (a ∷ ψ) ψ (Π₂ (Val a)) ]
+
+    -- program manipulation
     vmjmp    : ∀[ Π₁ (Just ψ) ⇒ M τ ψ ψ Emp ]
 
     drop     : ∀ {P : Pred View 0ℓ} → ∀[ P ⇒ M τ ψ ψ Emp ]
@@ -94,30 +105,3 @@ eval (fst (if lbl)) = do
     where
       lbl ×⟨ _ ⟩ snd (num (suc n)) → drop lbl
   vmjmp (coe (∙-id⁻ʳ σ) lbl)
-
-{- An implementation of the VM monad -}
-module _ where
-
---   -- server view
---   Server     = Intf × Market World
-
---   instance car-rel : Rel₃ Server
---   car-rel = exchange-rel ×-∙ market-rel
-
---   Server[_≈_] : Server → Server → Set _
---   Server[_≈_] = Pointwise Intf[_≈_] Market[_≈_]
-
---   instance car-≈-equiv : IsEquivalence Server[_≈_]
---   car-≈-equiv = ×-isEquivalence account-equiv market-equiv
-
---   instance car-semigroup : IsPartialSemigroup Server[_≈_] car-rel
---   car-semigroup = ×-isSemigroup
-
---   instance car-partialmonoid : IsPartialMonoid Server[_≈_] car-rel (ε , ε)
---   car-partialmonoid = ×-isPartialMonoid
-
---   data Client {ℓ} : PT View Server ℓ ℓ where
---     client : ∀ {P w} → P (ι , w) → Client P ([] ↕ ι , demand w)
-
-  -- M : (ι₁ ι₂ : Labels) → LocalsTy → (ψ₁ ψ₂ : StackTy) → Pt World 0ℓ
-  -- M ι₁ ι₂ τ ψ₁ ψ₂ P μ = ∀[ Frame ⟨ τ ∣ ψ₁ ⟩ ✴ Zipper τ ψ₁ ι ⇒ Frame ⟨ τ ∣ ψ₂ ⟩ ✴ Zipper τ ψ₂ ι ✴ P ]
