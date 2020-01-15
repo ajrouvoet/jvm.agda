@@ -3,7 +3,7 @@ import MJ.Classtable.Core as Core
 
 module JVM.Defaults.Syntax.Values {c}(Ct : Core.Classtable c) where
 
-open import Prelude hiding (Σ; _⊢_)
+open import JVM.Prelude hiding (Σ; _⊢_)
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 

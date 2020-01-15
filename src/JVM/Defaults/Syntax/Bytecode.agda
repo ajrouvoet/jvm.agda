@@ -2,31 +2,19 @@ import MJ.Classtable.Core as Core
 
 module JVM.Defaults.Syntax.Bytecode {c}(Ct : Core.Classtable c) where
 
-open import Prelude hiding (swap)
+open import JVM.Prelude hiding (swap)
 open import Data.Bool
 open import Data.Sum hiding (swap)
 open import Data.List.Relation.Unary.All
 open import Data.List.Relation.Binary.Permutation.Inductive hiding (swap)
+open import Data.List.Membership.Propositional
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Data.Maybe using (just; nothing; Maybe)
 
 open import MJ.Types c
 open import JVM.Defaults.Syntax.Values Ct
 open import JVM.Defaults.Syntax.Frames Ct hiding (ctx-semigroup; ctx-monoid)
-
-open import Data.List.Membership.Propositional
-
-module _ where
-
-  Labels  = List StackTy
-
-  variable
-    ι₁ ι₂ ι₃ ι : Labels
-
-  -- The PRSA for Labels
-  open import Relation.Ternary.Construct.Duplicate StackTy as Dup
-  open import Relation.Ternary.Construct.List.Intermuted StackTy
-    Dup.dup-rel isCommSemigroup public
+open import JVM.Defaults.Syntax.Labels Ct
 
 {- Instructions -}
 module _ where
@@ -37,8 +25,8 @@ module _ where
     noop : ε[ ⟨ Γ ∣ ψ ⇒ ψ ⟩ ]
 
     -- stack manipulation
-    pop  :           ε[ ⟨ Γ ∣ a ∷ ψ      ⇒  ψ         ⟩ ]
-    push : Const a → ε[ ⟨ Γ ∣ ψ          ⇒  a ∷ ψ     ⟩ ]
+    pop  :           ε[ ⟨ Γ ∣ a ∷ ψ      ⇒  ψ     ⟩ ]
+    push : Const a → ε[ ⟨ Γ ∣ ψ          ⇒  a ∷ ψ ⟩ ]
 
     dup  : ε[ ⟨ Γ ∣ a ∷ ψ      ⇒  a ∷ a ∷ ψ ⟩ ]
     swap : ε[ ⟨ Γ ∣ a ∷ b ∷ ψ  ⇒  b ∷ a ∷ ψ ⟩ ]
@@ -48,11 +36,11 @@ module _ where
     store : a ∈ Γ → ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
 
     -- jumps
-    goto  : ∀[ Just ψ ⇒ ⟨ Γ ∣ ψ ⇒ ψ       ⟩ ]
+    goto  : ∀[ Just ψ ⇒ ⟨ Γ ∣ ψ       ⇒ ψ ⟩ ]
     if    : ∀[ Just ψ ⇒ ⟨ Γ ∣ int ∷ ψ ⇒ ψ ⟩ ]
 
 open import Relation.Ternary.Construct.Exchange {A = Labels} _↭_ as Exchange
-  renaming (Account to Intf) public
+  renaming (Account to Intf; _≈_ to Intf[_≈_]) public
 
 {- Bytecode; i.e., instruction sequences -}
 module _ where
@@ -60,8 +48,8 @@ module _ where
   open import Relation.Ternary.Data.ReflexiveTransitive public
 
   data Code (Γ : LocalsTy) : StackTy → StackTy → Pred Intf 0ℓ where
-    label : ∀[ ● (Just ψ)       ⇒ Code Γ ψ ψ ]
-    instr : ∀[ ○ ⟨ Γ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ Code Γ ψ₁ ψ₂ ]
+    label : ∀[ Up (Just ψ)         ⇒ Code Γ ψ ψ ]
+    instr : ∀[ Down ⟨ Γ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ Code Γ ψ₁ ψ₂ ]
 
   ⟪_∣_⇒_⟫ : LocalsTy → StackTy → StackTy → Pred Intf 0ℓ
   ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ = Star (Code Γ) ψ₁ ψ₂
@@ -81,7 +69,7 @@ module _ where
 
   record CodeHole (Γ : LocalsTy) (ψ : StackTy) (ψ′ : StackTy) (ι : Labels) : Set where
     field
-      focused : (⟪ Γ ∣ [] ⇒ ψ ⟫ ✴ ○ (Exactly ι) ✴ ⟪ Γ ∣ ψ′ ⇒ [] ⟫) ε
+      focused : (⟪ Γ ∣ [] ⇒ ψ ⟫ ✴ Down (Exactly ι) ✴ ⟪ Γ ∣ ψ′ ⇒ [] ⟫) ε
 
   record Zipper (Γ : LocalsTy) (ψ : StackTy) (ι : Labels) : Set where
     field
