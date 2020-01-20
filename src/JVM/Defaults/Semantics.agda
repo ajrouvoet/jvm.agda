@@ -11,6 +11,7 @@ open import Data.List.Relation.Binary.Permutation.Inductive hiding (swap)
 open import Data.Product.Relation.Binary.Pointwise.NonDependent
 open import Relation.Ternary.Monad
 open import Relation.Ternary.Respect.Propositional
+open import Data.Empty
 
 open import JVM.Defaults.Syntax Ct
 open import JVM.Defaults.Syntax.Values Ct
@@ -46,6 +47,12 @@ module _ where
   -- exported type-formers
   open import Relation.Ternary.Construct.Product using (Π₂; Π₁; fst; snd) public
 
+-- Typing jump computations:
+-- Things that do not work
+--   - Indexing with 'current instruction typing':
+--     next/jump instruction type is partially existentially quantified.
+--   - Jump as an exception: this makes the post-stack typing index unreliable.
+
 -- The API of a virtual machine
 record VM (M : LocalsTy → StackTy → StackTy → Pt View 0ℓ) : Set₁ where
   field
@@ -59,49 +66,58 @@ record VM (M : LocalsTy → StackTy → StackTy → Pt View 0ℓ) : Set₁ where
     vmpush   : ∀[ Π₂ (Val a)         ⇒ M τ ψ (a ∷ ψ) Emp ]
     vmpop    : ε[ M τ (a ∷ ψ) ψ (Π₂ (Val a)) ]
 
-    -- program manipulation
-    vmjmp    : ∀[ Π₁ (Just ψ) ⇒ M τ ψ ψ Emp ]
-
     drop     : ∀ {P : Pred View 0ℓ} → ∀[ P ⇒ M τ ψ ψ Emp ]
 
 open VM {{...}}
 
-eval : ∀ {M} {{_ :  VM M}} → ∀[ Π₁ ⟨ τ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ M τ ψ₁ ψ₂ Emp ]
+data Res : Pred View 0ℓ where
+  ok  : ε[ Res ]
+  jmp : ∀[ Π₁ (Just ψ) ⇒ Res ]
 
-eval (fst noop)      = do
-  return refl
+eval : ∀ {M} {{_ :  VM M}} → ∀[ Π₁ ⟨ τ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ M τ ψ₁ ψ₂ Res ]
 
-eval (fst pop)       = do
+eval (fst noop) = do
+  return ok
+
+eval (fst pop) = do
   v ← vmpop 
-  drop {P = Π₂ (Val _)} v
+  refl ← drop {P = Π₂ (Val _)} v
+  return ok
 
-eval (fst (push c))  = do
-  vmpush (snd (constvalue c))
+eval (fst (push c)) = do
+  refl ← vmpush (snd (constvalue c))
+  return ok
 
-eval (fst dup)       = do
+eval (fst dup) = do
   v             ← vmpop
   v ×⟨ σ ⟩ refl ← vmpush v &⟨ Π₂ (Val _) # dupn , dupn ⟩ v
-  vmpush (coe (∙-id⁻ʳ σ) v)
+  refl ← vmpush (coe (∙-id⁻ʳ σ) v)
+  return ok
 
-eval (fst swap)      = do
+eval (fst swap) = do
   w              ← vmpop
   w ×⟨ σ₁ ⟩ v    ← vmpop    &⟨ Π₂ (Val _) # ∙-idʳ     ⟩ w
   v ×⟨ σ₂ ⟩ refl ← vmpush w &⟨ Π₂ (Val _) # ∙-comm σ₁ ⟩ v
-  vmpush (coe (∙-id⁻ʳ σ₂) v)
+  refl ← vmpush (coe (∙-id⁻ʳ σ₂) v)
+  return ok
 
 eval (fst (load x))  = do
   v ← vmget x
-  vmpush v
+  refl ← vmpush v
+  return ok
 
 eval (fst (store x)) = do
   v ← vmpop
-  vmset x v
+  refl ← vmset x v
+  return ok
 
 eval (fst (goto lbl)) = do
-  vmjmp (fst lbl)
+  return (jmp (fst lbl))
 
 eval (fst (if lbl)) = do
   lbl ×⟨ σ ⟩ snd (num zero) ← vmpop &⟨ Π₁ (Just _) # ∙-idʳ ⟩ fst lbl
     where
-      lbl ×⟨ _ ⟩ snd (num (suc n)) → drop lbl
-  vmjmp (coe (∙-id⁻ʳ σ) lbl)
+      lbl ×⟨ _ ⟩ snd (num (suc n)) → do
+        refl ← drop lbl
+        return ok
+  return (jmp (coe (∙-id⁻ʳ σ) lbl))
