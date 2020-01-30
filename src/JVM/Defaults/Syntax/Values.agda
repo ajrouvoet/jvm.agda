@@ -25,3 +25,15 @@ data Const : Ty → Set where
 constvalue : Const a → ε[ Val a ] 
 constvalue null    = null
 constvalue (num x) = num x
+
+-- record ObjEncoding : Set (lsuc lzero) where
+--   field
+--     Obj : World c → Cid c → Set
+--     weaken-obj : ∀ {W W'} cid → W' ⊒ W → Obj W cid → Obj W' cid
+--     getter : ∀ {W m a} c → Obj W c → IsMember c FIELD m a → Val W a
+--     setter : ∀ {W m a} c → Obj W c → IsMember c FIELD m a → Val W a → Obj W c
+--     defaultObject : ∀ {W} c → Obj W c
+
+data StoreVal : Ty⁺ → Pred World 0ℓ where
+  val : ∀[ Val a ⇒ StoreVal (vty a) ]
+  -- obj : ∀ cid → Obj W cid → StoreVal W (obj cid)

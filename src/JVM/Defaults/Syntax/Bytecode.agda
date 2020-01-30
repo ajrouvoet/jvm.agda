@@ -10,6 +10,7 @@ open import Data.List.Relation.Binary.Permutation.Inductive hiding (swap)
 open import Data.List.Membership.Propositional
 open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Data.Maybe using (just; nothing; Maybe)
+open import Relation.Ternary.Monad
 
 open import MJ.Types c
 open import JVM.Defaults.Syntax.Values Ct
@@ -67,15 +68,20 @@ module _ where
 {- Bytecode zipper -}
 module _ where
 
-  record CodeHole (Γ : LocalsTy) (ψ : StackTy) (ψ′ : StackTy) (ι : Labels) : Set where
-    field
-      focused : (⟪ Γ ∣ [] ⇒ ψ ⟫ ✴ Down (Exactly ι) ✴ ⟪ Γ ∣ ψ′ ⇒ [] ⟫) ε
+  postulate Zipper : LocalsTy → StackTy → Labels → Set
+  -- Zipper Γ ψ ψ′ = (⟪ Γ ∣ [] ⇒ ψ ⟫ ✴ ⟨ Γ ∣ ψ ⇒ ψ′ ⟩ ✴ ⟪ Γ ∣ ψ′ ⇒ [] ⟫) ε
 
-  record Zipper (Γ : LocalsTy) (ψ : StackTy) (ι : Labels) : Set where
-    field
-      {ψ′}   : StackTy
-      focus  : ⟨ Γ ∣ ψ ⇒ ψ′ ⟩ ι
-      hole   : CodeHole Γ ψ ψ′ ι
+  -- record CodeHole (Γ : LocalsTy) (ψ : StackTy) (ψ′ : StackTy) (ι : Labels) : Set where
+  --   field
+  --     focused : (⟪ Γ ∣ [] ⇒ ψ ⟫ ✴ Down (Exactly ι) ✴ ⟪ Γ ∣ ψ′ ⇒ [] ⟫) ε
 
-    postulate move : ∀ {φ : StackTy} → φ ∈ ι → ∃ (Zipper Γ φ)
-    -- move = {!!}
+  -- record Zipper (Γ : LocalsTy) (ψ : StackTy) (ι : Labels) : Set where
+  --   field
+  --     {ψ′}   : StackTy
+  --     focus  : ⟨ Γ ∣ ψ ⇒ ψ′ ⟩ ι
+  --     hole   : CodeHole Γ ψ ψ′ ι
+
+  --   postulate move : ∀[ Just ψ ⇒ ⤇ {{ ctx-rel }} (Zipper Γ ψ) ] 
+  --   -- move ptr = {!!}
+
+  

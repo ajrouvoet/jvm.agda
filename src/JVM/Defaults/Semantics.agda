@@ -35,6 +35,9 @@ module _ where
   instance view-rel : Rel₃ View
   view-rel = ctx-rel ×-∙ ctx-rel
 
+  instance view-emptiness : Emptiness {A = View} ([] , [])
+  view-emptiness = record {}
+
   instance view-semigroup : IsPartialSemigroup _≡_ view-rel
   view-semigroup = Propositional.×-isPartialSemigroup
 
@@ -46,12 +49,6 @@ module _ where
 
   -- exported type-formers
   open import Relation.Ternary.Construct.Product using (Π₂; Π₁; fst; snd) public
-
--- Typing jump computations:
--- Things that do not work
---   - Indexing with 'current instruction typing':
---     next/jump instruction type is partially existentially quantified.
---   - Jump as an exception: this makes the post-stack typing index unreliable.
 
 -- The API of a virtual machine
 record VM (M : LocalsTy → StackTy → StackTy → Pt View 0ℓ) : Set₁ where
@@ -74,50 +71,53 @@ data Res : Pred View 0ℓ where
   ok  : ε[ Res ]
   jmp : ∀[ Π₁ (Just ψ) ⇒ Res ]
 
-eval : ∀ {M} {{_ :  VM M}} → ∀[ Π₁ ⟨ τ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ M τ ψ₁ ψ₂ Res ]
+step : ∀ {M} {{_ :  VM M}} → ∀[ Π₁ ⟨ τ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ M τ ψ₁ ψ₂ Res ]
 
-eval (fst noop) = do
+step (fst noop) = do
   return ok
 
-eval (fst pop) = do
-  v ← vmpop 
+step (fst pop) = do
+  v    ← vmpop 
   refl ← drop {P = Π₂ (Val _)} v
   return ok
 
-eval (fst (push c)) = do
+step (fst (push c)) = do
   refl ← vmpush (snd (constvalue c))
   return ok
 
-eval (fst dup) = do
+step (fst dup) = do
   v             ← vmpop
   v ×⟨ σ ⟩ refl ← vmpush v &⟨ Π₂ (Val _) # dupn , dupn ⟩ v
-  refl ← vmpush (coe (∙-id⁻ʳ σ) v)
+  refl          ← vmpush (coe (∙-id⁻ʳ σ) v)
   return ok
 
-eval (fst swap) = do
+step (fst swap) = do
   w              ← vmpop
   w ×⟨ σ₁ ⟩ v    ← vmpop    &⟨ Π₂ (Val _) # ∙-idʳ     ⟩ w
   v ×⟨ σ₂ ⟩ refl ← vmpush w &⟨ Π₂ (Val _) # ∙-comm σ₁ ⟩ v
   refl ← vmpush (coe (∙-id⁻ʳ σ₂) v)
   return ok
 
-eval (fst (load x))  = do
-  v ← vmget x
+step (fst (load x))  = do
+  v    ← vmget x
   refl ← vmpush v
   return ok
 
-eval (fst (store x)) = do
-  v ← vmpop
+step (fst (store x)) = do
+  v    ← vmpop
   refl ← vmset x v
   return ok
 
-eval (fst (goto lbl)) = do
+step (fst (goto lbl)) = do
   return (jmp (fst lbl))
 
-eval (fst (if lbl)) = do
+step (fst (if lbl)) = do
   lbl ×⟨ σ ⟩ snd (num zero) ← vmpop &⟨ Π₁ (Just _) # ∙-idʳ ⟩ fst lbl
     where
       lbl ×⟨ _ ⟩ snd (num (suc n)) → do
         refl ← drop lbl
         return ok
   return (jmp (coe (∙-id⁻ʳ σ) lbl))
+
+-- eval : ∀ {M} {{_ :  VM M}} → ∀[ Zipper τ ψ₁ ⇒ M τ ψ₁ ψ₂ Res ]
+-- eval is = ?

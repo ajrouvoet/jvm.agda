@@ -20,6 +20,9 @@ module _ {a} {A : Set a} where
   instance ctx-rel : Rel₃ _
   ctx-rel = LSplit.splits
 
+  instance ctx-emptiness : Emptiness {A = List A} []
+  ctx-emptiness = record {}
+
   instance ctx-semigroup : IsPartialSemigroup _≡_ LSplit.splits
   ctx-semigroup = LSplit.split-isSemigroup
 
@@ -49,19 +52,3 @@ module _ where
     field
       locals-ty : List RegTy
       stack-ty  : List Ty
-
-  -- open import Relation.Ternary.Data.Allstar Ty
-
-  postulate Frame : (ft : FrameTy) (Σ : World) → Set
-  -- Frame ⟨ lty , sty ⟩ = {!Allstar Val lty ✴ Allstar Val sty!}
-    -- constructor frame
-    -- open FrameTy ft
-    -- field
-    --   locals : Allstar Val locals-ty
-    --   stack  : All (λ a → Val a Σ) stack-ty
-
-  -- variable
-  --   ft₁ ft₂ ft₃ ft₄ ft : FrameTy
-
-  -- open FrameTy public
-  -- open Frame public
