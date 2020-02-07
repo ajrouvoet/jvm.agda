@@ -1,87 +1,65 @@
-import MJ.Classtable.Core as Core
+-- Bytecode; i.e., instruction sequences; 
+-- agnostic about the exact instructions, but opiniated about labels
+open import Relation.Binary using (Rel)
+open import Data.List
 
-module JVM.Defaults.Syntax.Bytecode {c}(Ct : Core.Classtable c) where
+module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) (I : T → T → List T → Set ℓ) where
 
-open import JVM.Prelude hiding (swap)
-open import Data.Bool
-open import Data.Sum hiding (swap)
-open import Data.List.Relation.Unary.All
+open import Level
+open import Relation.Unary
+open import Relation.Ternary.Data.ReflexiveTransitive public
+open import Relation.Ternary.Core
+open import Relation.Ternary.Structures
+
+open import Data.Unit
+open import Data.Sum
+open import Data.Product
 open import Data.List.Relation.Binary.Permutation.Inductive hiding (swap)
-open import Data.List.Membership.Propositional
-open import Relation.Binary.PropositionalEquality using (refl; _≡_)
-open import Data.Maybe using (just; nothing; Maybe)
-open import Relation.Ternary.Monad
 
-open import MJ.Types c
-open import JVM.Defaults.Syntax.Values Ct
-open import JVM.Defaults.Syntax.Frames Ct hiding (ctx-semigroup; ctx-monoid)
-open import JVM.Defaults.Syntax.Labels Ct
+Labels  = List T
 
-{- Instructions -}
-module _ where
+variable
+  τ τ₁ τ₂ : T
 
-  -- True to bytecode, the collection of registers is fixed.
-  -- The stack typing varies.
-  data ⟨_∣_⇒_⟩ (Γ : LocalsTy) : StackTy → StackTy → Pred Labels 0ℓ where
-    noop : ε[ ⟨ Γ ∣ ψ ⇒ ψ ⟩ ]
+module _
+  {{labels : Rel₃ Labels}}
+  {e u} {_≈_ : Rel Labels e}
+  {{_ : IsPartialMonoid _≈_ labels u}}
+  {{_ : IsCrosssplittable _≈_ labels}}
+  {{_ : IsPositive _≈_ labels u}}
+  {{_ : IsCommutative labels}}
+  where
 
-    -- stack manipulation
-    pop  :           ε[ ⟨ Γ ∣ a ∷ ψ      ⇒  ψ     ⟩ ]
-    push : Const a → ε[ ⟨ Γ ∣ ψ          ⇒  a ∷ ψ ⟩ ]
+  open import Relation.Ternary.Construct.Exchange {A = Labels} _≈_ as Exchange
+    renaming (Account to Intf; _≈_ to Intf[_≈_]) public
 
-    dup  : ε[ ⟨ Γ ∣ a ∷ ψ      ⇒  a ∷ a ∷ ψ ⟩ ]
-    swap : ε[ ⟨ Γ ∣ a ∷ b ∷ ψ  ⇒  b ∷ a ∷ ψ ⟩ ]
+  data Code : T → T → Pred Intf ℓ where
+    label : ∀[ Up (Just τ)    ⇒ Code τ  τ  ]
+    instr : ∀[ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
 
-    -- register manipulation
-    load  : a ∈ Γ → ε[ ⟨ Γ ∣ ψ ⇒ a ∷ ψ ⟩ ]
-    store : a ∈ Γ → ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
+  ⟪_⇒_⟫ : T → T → Pred Intf ℓ
+  ⟪ τ₁ ⇒ τ₂ ⟫ = Star Code τ₁ τ₂
 
-    -- jumps
-    goto  : ∀[ Just ψ ⇒ ⟨ Γ ∣ ψ       ⇒ ψ ⟩ ]
-    if    : ∀[ Just ψ ⇒ ⟨ Γ ∣ int ∷ ψ ⇒ ψ ⟩ ]
+  ⟪_⇐_⟫ : T → T → Pred Intf ℓ
+  ⟪ τ₂ ⇐ τ₁ ⟫ = Star (flip Code) τ₁ τ₂
+    where open import Function using (flip)
 
-open import Relation.Ternary.Construct.Exchange {A = Labels} _↭_ as Exchange
-  renaming (Account to Intf; _≈_ to Intf[_≈_]) public
+  record Zipper (τ τ′ : T) (Φ : Intf) : Set ℓ where
+    constructor zipped 
+    field
+      {τₗ τᵣ} : T
+      code    : (⟪ τₗ ⇐ τ ⟫ ⊙ Down (I τ τ′) ⊙ ⟪ τ′ ⇒ τᵣ ⟫) Φ
 
-{- Bytecode; i.e., instruction sequences -}
-module _ where
+  {-# TERMINATING #-}
+  focus-next : ∀ {τₗ τᵣ} → ∀[ ⟪ τₗ ⇐ τ ⟫ ⇒ ⟪ τ ⇒ τᵣ ⟫ ─⊙ (U ∪ (⋃[ τ′ ∶ _ ] Zipper τ τ′)) ]
+  focus-next b ⟨ σ ⟩ nil    = inj₁ tt
+  focus-next b ⟨ σ ⟩ (cons f@(label _ ∙⟨ _ ⟩ _)) with ⊙-assocₗ (b ∙⟨ σ ⟩ f)
+  ... | (b' ∙⟨ σ₃ ⟩ f') = focus-next (cons (⊙-swap b')) ⟨ σ₃ ⟩ f'
+  focus-next b ⟨ σ ⟩ (instr i ▹⟨ σ₂ ⟩ f) =
+    inj₂ (-, zipped (b ∙⟨ σ ⟩ (i ∙⟨ σ₂ ⟩ f)))
 
-  open import Relation.Ternary.Data.ReflexiveTransitive public
-
-  data Code (Γ : LocalsTy) : StackTy → StackTy → Pred Intf 0ℓ where
-    label : ∀[ Up (Just ψ)         ⇒ Code Γ ψ ψ ]
-    instr : ∀[ Down ⟨ Γ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ Code Γ ψ₁ ψ₂ ]
-
-  ⟪_∣_⇒_⟫ : LocalsTy → StackTy → StackTy → Pred Intf 0ℓ
-  ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ = Star (Code Γ) ψ₁ ψ₂
-
-  -- another representation where every instruction can have at most one label:
-
-  -- Label? : StackTy → Pred Intf 0ℓ
-  -- Label? ψ = ● (Just ψ) ∪ Emp
-
-  -- Code = λ Γ ψ₁ ψ₂ → Label? ψ₁ ✴ ○ ⟨ Γ ∣ ψ₁ ⇒ ψ₂ ⟩
-
-  -- ⟪_∣_⇒_⟫ : LocalsTy → StackTy → StackTy → Pred Intf 0ℓ
-  -- ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ = Star (Code Γ) ψ₁ ψ₂
-
-{- Bytecode zipper -}
-module _ where
-
-  postulate Zipper : LocalsTy → StackTy → Labels → Set
-  -- Zipper Γ ψ ψ′ = (⟪ Γ ∣ [] ⇒ ψ ⟫ ✴ ⟨ Γ ∣ ψ ⇒ ψ′ ⟩ ✴ ⟪ Γ ∣ ψ′ ⇒ [] ⟫) ε
-
-  -- record CodeHole (Γ : LocalsTy) (ψ : StackTy) (ψ′ : StackTy) (ι : Labels) : Set where
-  --   field
-  --     focused : (⟪ Γ ∣ [] ⇒ ψ ⟫ ✴ Down (Exactly ι) ✴ ⟪ Γ ∣ ψ′ ⇒ [] ⟫) ε
-
-  -- record Zipper (Γ : LocalsTy) (ψ : StackTy) (ι : Labels) : Set where
-  --   field
-  --     {ψ′}   : StackTy
-  --     focus  : ⟨ Γ ∣ ψ ⇒ ψ′ ⟩ ι
-  --     hole   : CodeHole Γ ψ ψ′ ι
-
-  --   postulate move : ∀[ Just ψ ⇒ ⤇ {{ ctx-rel }} (Zipper Γ ψ) ] 
-  --   -- move ptr = {!!}
-
-  
+  moveᵣ : ∀[ Zipper τ₁ τ₂ ⇒ (Zipper τ₁ τ₂ ∪ (⋃[ τ₃ ∶ _ ] Zipper τ₂ τ₃)) ]
+  moveᵣ (zipped z) with ⊙-assocₗ z
+  ... | ((b ∙⟨ σ₁ ⟩ i) ∙⟨ σ₂ ⟩ n) with focus-next (instr i ▹⟨ ∙-comm σ₁ ⟩ b) ⟨ σ₂ ⟩ n
+  ... | inj₁ _  = inj₁ (zipped z)
+  ... | inj₂ z′ = inj₂ z′
