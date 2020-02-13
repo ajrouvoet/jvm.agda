@@ -119,23 +119,7 @@ module _ where
   ... | inj₁ l = left (is , l) ⟨ σ ⟩ cons js
   ... | inj₂ r = right (cons js , r) ⟨ ∙-comm σ ⟩ is
 
-  -- -- focus-next : ∀ {τₗ τᵣ} → ∀[ ⟪ τₗ ⇐ τ ⟫ ⇒ ⟪ τ ⇒ τᵣ ⟫ ─⊙ (U ∪ (⋃[ τ′ ∶ _ ] Zipper τ τ′)) ]
-  -- -- focus-next = ?
-
-  -- -- {-# TERMINATING #-}
-  -- -- focus-next : ∀ {τₗ τᵣ} → ∀[ ⟪ τₗ ⇐ τ ⟫ ⇒ ⟪ τ ⇒ τᵣ ⟫ ─⊙ (U ∪ (⋃[ τ′ ∶ _ ] Zipper τ τ′)) ]
-  -- -- focus-next b ⟨ σ ⟩ nil    = inj₁ tt
-  -- -- focus-next b ⟨ σ ⟩ (cons f@(label _ ∙⟨ _ ⟩ _)) with ⊙-assocₗ (b ∙⟨ σ ⟩ f)
-  -- -- ... | (b' ∙⟨ σ₃ ⟩ f') = focus-next (cons (⊙-swap b')) ⟨ σ₃ ⟩ f'
-  -- -- focus-next b ⟨ σ ⟩ (instr i ▹⟨ σ₂ ⟩ f) =
-  -- --   inj₂ (-, zipped (b ∙⟨ σ ⟩ (i ∙⟨ σ₂ ⟩ f)))
-
-  -- -- moveᵣ : ∀[ Zipper τ₁ τ₂ ⇒ (Zipper τ₁ τ₂ ∪ (⋃[ τ₃ ∶ _ ] Zipper τ₂ τ₃)) ]
-  -- -- moveᵣ (zipped z) with ⊙-assocₗ z
-  -- -- ... | ((b ∙⟨ σ₁ ⟩ i) ∙⟨ σ₂ ⟩ n) with focus-next (instr i ▹⟨ ∙-comm σ₁ ⟩ b) ⟨ σ₂ ⟩ n
-  -- -- ... | inj₁ _  = inj₁ (zipped z)
-  -- -- ... | inj₂ z′ = inj₂ z′
-
-  -- -- goto : ∀ {ν} → ∀[ Down (Just ν) ⇒ Zipper τ₁ τ₂ ─⊙ (⋃[ τ₃ ∶ _ ] Zipper ν τ₃) ]
-  -- -- goto (↓ refl) ⟨ exchange x₁ x₂ x₃ x₄ x₅ x₆ ⟩ (zipped (b ∙⟨ σ₁ ⟩ n)) with ε-split x₄
-  -- -- ... | refl , refl = {!!}
+  moveᵣ : ∀[ Zipper τ₁ τ₂ ⇒ (Zipper τ₁ τ₂ ∪ (⋃[ τ₃ ∶ _ ] Zipper τ₂ τ₃)) ]
+  moveᵣ (zipped z) with ⊙-assocₗ z
+  moveᵣ (zipped z) | bwd ∙⟨ σ ⟩ nil          = inj₁ (zipped z)
+  moveᵣ (zipped z) | bwd ∙⟨ σ ⟩ i ▹⟨ σ₂ ⟩ is = inj₂ (-, zipped (cons (⊙-swap bwd) ∙⟨ σ ⟩ i ∙⟨ σ₂ ⟩ is))
