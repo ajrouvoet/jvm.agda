@@ -14,7 +14,7 @@ open import Relation.Ternary.Monad.Update
 open import Relation.Ternary.Respect.Propositional
 
 open import MJ.Types c
-open import JVM.Defaults.Syntax.Exp Ct as Src using (_∣~_; Expr; module Statements; local; λ⟨_⟩_)
+open import JVM.Defaults.Syntax.Exp Ct as Src using (_∣~_; Expr; module Statements; local; λ⟨_⟩_; binder)
 open import JVM.Defaults.Syntax.Frames Ct
 open import MJ.Classtable.Membership Ct
 open Core c
@@ -49,26 +49,32 @@ module _ where
   extendˡ : ∀ {P : Pred Ctx 0ℓ} Γ → ∀[ (Γ ++_) ⊢ P ⇒ ⤇ P ] 
   extendˡ Γ px = local (λ fr → -, -, ∙-∙ᵣ fr , px)
 
--- optimizing hoisting of binders;
-hoist-binder : ∀ {P : Pred Ctx 0ℓ} Γ → ∀[ Γ ∣~ P ⇒ ⤇ P ]
+-- -- Optimizing hoisting of binders.
+-- -- Removes local variable declarations that are not used.
+-- hoist-binder : ∀ {P : Pred Ctx 0ℓ} Γ → ∀[ Γ ∣~ P ⇒ ⤇ (Exactly Γ ✴ P) ]
 
--- nullary binder is no binder
-hoist-binder [] (λ⟨ [] ⟩ b) =
-  return b
+-- -- nullary binder is no binder
+-- hoist-binder [] (λ⟨ [] ⟩ b) =
+--   return (refl ×⟨ ∙-idˡ ⟩ b)
 
--- If a binder only flows to the left, then it is not used
--- in the block; we optimize it away.
-hoist-binder (a ∷ Γ) (λ⟨ consˡ sep ⟩ b) =
-  -- The co-de-bruijn typing allows us to do just that:
-  hoist-binder Γ (λ⟨ sep ⟩ b)
+-- -- If a binder only flows to the left, then it is not used
+-- -- in the block; we optimize it away.
+-- hoist-binder {P} (a ∷ Γ) (binder (refl ×⟨ consˡ sep ⟩ p)) = do
+--   {!!}
+--   -- The co-de-bruijn typing allows us to do just that:
+--   -- v ×⟨ σ ⟩ p ← hoist-binder {P = (_++ _) ⊢ _} Γ (binder (refl ×⟨ sep ⟩ p))
+--   -- return ({!!} ×⟨ {!∙-∙!} ⟩ p)
+--   -- refl ×⟨ σ ⟩ b ← hoist-binder {P = (_++ _) ⊢ P} Γ (λ⟨ sep ⟩ {!b!})
+--   -- return (refl ×⟨ {!σ!} ⟩ b)
 
-hoist-binder {P} (a ∷ Γ) (λ⟨ dups sep ⟩ b) = do
-  z ← hoist-binder {P = (a ∷_) ⊢ P} Γ (λ⟨ sep ⟩ b)
-  extendˡ [ a ] z
+-- hoist-binder {P} (a ∷ Γ) (λ⟨ dups sep ⟩ b) = do
+--   {!!}
+--   -- refl ×⟨ σ ⟩ z ← hoist-binder Γ (λ⟨ sep ⟩ b)
+--   -- {!!} -- extendˡ [ a ] z
 
--- It cannot be that a binder does not flow to the left.
--- TODO custom dependent eliminator for _∣~_?
-hoist-binder (a ∷ Γ) (λ⟨ consʳ sep ⟩ b)  = ⊥-elim (smallerˡ [] sep)
+-- -- It cannot be that a binder does not flow to the left.
+-- -- TODO custom dependent eliminator for _∣~_?
+-- hoist-binder (a ∷ Γ) (λ⟨ consʳ sep ⟩ b)  = ⊥-elim (smallerˡ [] sep)
 
 -- -- A typed hoisting transformation for statement blocks
 -- {-# TERMINATING #-}
@@ -78,14 +84,16 @@ hoist-binder (a ∷ Γ) (λ⟨ consʳ sep ⟩ b)  = ⊥-elim (smallerˡ [] sep)
 --   hoist Src.emp = do
 --     return emp
 
---   hoist (local Γ⊢b)  = do
---     b ← hoist-binder [ _ ] Γ⊢b
---     hoist b
+--   hoist (local (e ×⟨ σ ⟩ Γ⊢b))  = do
+--     e×v×b ← hoist-binder [ _ ] Γ⊢b &⟨ Expr _ # σ ⟩ e
+--     let (e×v ×⟨ σ ⟩ b) = ⊙-assocₗ e×v×b
+--     (e ×⟨ σ₁ ⟩ v) ×⟨ σ₂ ⟩ b' ← hoist b &⟨ _ ✴ _ # σ ⟩ e×v
+--     return (asgn (v ×⟨ ∙-comm σ₁ ⟩ e) ⍮⟨ σ₂ ⟩ b')
 
 --   hoist (st Src.⍮⟨ σ₁ ⟩ b) = do
---     b'  ×⟨ σ₂ ⟩ st  ← hoist b      &⟨ ⊎-comm σ₁ ⟩ st
---     st' ×⟨ σ₃ ⟩ b'  ← translate st &⟨ ⊎-comm σ₂ ⟩ b'
---     return (st' ⍮⟨ σ₃ ⟩ b')
+--     st ×⟨ σ₂ ⟩ b'  ← hoist b      &⟨ σ₁ ⟩ st
+--     b' ×⟨ σ₃ ⟩ st' ← translate st &⟨ ∙-comm σ₂ ⟩ b'
+--     return (st' ⍮⟨ ∙-comm σ₃ ⟩ b')
 
 --   translate : ∀[ Src.Stmt r ⇒ ⤇ (Stmt r) ]
 
@@ -106,52 +114,53 @@ hoist-binder (a ∷ Γ) (λ⟨ consʳ sep ⟩ b)  = ⊥-elim (smallerˡ [] sep)
 --     return raise
 
 --   translate (Src.trycatch (t ×⟨ σ ⟩ c)) = do
---     t' ×⟨ σ ⟩ c  ← translate t &⟨ σ ⟩ c
---     c' ×⟨ σ ⟩ t' ← translate c &⟨ ⊎-comm σ ⟩ t'
---     return (trycatch (t' ×⟨ ⊎-comm σ ⟩ c'))
+--     c  ×⟨ σ ⟩ t' ← translate t &⟨ ∙-comm σ ⟩ c
+--     t' ×⟨ σ ⟩ c' ← translate c &⟨ {!!} ⟩ t'
+--     return (trycatch (t' ×⟨ {!!} ⟩ c'))
 
 --   translate (Src.while (e ×⟨ σ ⟩ body)) = do
---     body' ×⟨ σ ⟩ e ← translate body &⟨ ⊎-comm σ ⟩ e
---     return (while (e ×⟨ ⊎-comm σ ⟩ body'))
+--     e ×⟨ σ ⟩ body' ← translate body &⟨ σ ⟩ e
+--     return (while (e ×⟨ σ ⟩ body'))
 
 --   translate (Src.ifthenelse e×s₁×s₂) = do
---     let (s₁ ×⟨ σ ⟩ s₂×e) = ✴-rotateₗ e×s₁×s₂
---     s₁'×s₂×e ← translate s₁ &⟨ σ ⟩ s₂×e
---     let (s₂ ×⟨ σ ⟩ s₁'×e) = ✴-rotateₗ s₁'×s₂×e
---     s₂'×e×s₁' ← translate s₂ &⟨ σ ⟩ s₁'×e
---     return (ifthenelse (✴-rotateₗ s₂'×e×s₁'))
+--     {!!}
+--     -- let (s₁ ×⟨ σ ⟩ s₂×e) = ⊙-rotateₗ e×s₁×s₂
+--     -- s₁'×s₂×e ← translate s₁ &⟨ σ ⟩ s₂×e
+--     -- let (s₂ ×⟨ σ ⟩ s₁'×e) = ⊙-rotateₗ s₁'×s₂×e
+--     -- s₂'×e×s₁' ← translate s₂ &⟨ σ ⟩ s₁'×e
+--     -- return (ifthenelse (⊙-rotateₗ s₂'×e×s₁'))
 
 --   translate (Src.block bl) = do
 --     bl' ← hoist bl
 --     return (block bl')
 
--- module Example where
+-- -- module Example where
 
---   ex₁ : ∃₂ λ Φₗ Φ → Φₗ ⊎ [] ≣ Φ × (Block int) Φₗ
---   ex₁ = update (hoist ( 
---     local int 
---     (λ⟨ duplicate ⊎-idˡ ⟩ ( 
---       Src.ifthenelse
---         (Src.num 42 ×⟨ ⊎-idˡ ⟩
---           -- then
---           Src.block (
---             -- Int i;
---             local int (λ⟨ duplicate ⊎-idˡ ⟩ (
---             -- i = j;
---             Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
---             -- return j
---             Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
---             Src.emp))
---           )
---           ×⟨ duplicate ⊎-idˡ ⟩
---           -- else
---           Src.block (
---             -- Int i;
---             local int (λ⟨ duplicate ⊎-idˡ ⟩ (
---             -- i = j;
---             Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
---             -- return j
---             Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
---             Src.emp))
---           )) Src.⍮⟨ consˡ ⊎-idˡ ⟩
---       Src.emp)))) ⊎-idˡ
+-- --   ex₁ : ∃₂ λ Φₗ Φ → Φₗ ⊎ [] ≣ Φ × (Block int) Φₗ
+-- --   ex₁ = update (hoist ( 
+-- --     local int 
+-- --     (λ⟨ duplicate ⊎-idˡ ⟩ ( 
+-- --       Src.ifthenelse
+-- --         (Src.num 42 ×⟨ ⊎-idˡ ⟩
+-- --           -- then
+-- --           Src.block (
+-- --             -- Int i;
+-- --             local int (λ⟨ duplicate ⊎-idˡ ⟩ (
+-- --             -- i = j;
+-- --             Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
+-- --             -- return j
+-- --             Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
+-- --             Src.emp))
+-- --           )
+-- --           ×⟨ duplicate ⊎-idˡ ⟩
+-- --           -- else
+-- --           Src.block (
+-- --             -- Int i;
+-- --             local int (λ⟨ duplicate ⊎-idˡ ⟩ (
+-- --             -- i = j;
+-- --             Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
+-- --             -- return j
+-- --             Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
+-- --             Src.emp))
+-- --           )) Src.⍮⟨ consˡ ⊎-idˡ ⟩
+-- --       Src.emp)))) ⊎-idˡ

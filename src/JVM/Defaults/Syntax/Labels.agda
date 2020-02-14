@@ -1,9 +1,7 @@
-import MJ.Classtable.Core as Core
-
-module JVM.Defaults.Syntax.Labels {c}(Ct : Core.Classtable c) where
+module JVM.Defaults.Syntax.Labels where
 
 open import Data.List
-open import JVM.Defaults.Syntax.Frames Ct
+open import JVM.Defaults.Syntax.Frames
 
 Labels  = List StackTy
 

@@ -1,6 +1,4 @@
-import MJ.Classtable.Core as Core
-
-module JVM.Defaults.Syntax.Instructions {c}(Ct : Core.Classtable c) where
+module JVM.Defaults.Syntax.Instructions where
 
 open import JVM.Prelude hiding (swap)
 open import Data.Bool
@@ -12,10 +10,10 @@ open import Relation.Binary.PropositionalEquality using (refl; _≡_)
 open import Data.Maybe using (just; nothing; Maybe)
 open import Relation.Ternary.Monad
 
-open import MJ.Types c
-open import JVM.Defaults.Syntax.Values Ct
-open import JVM.Defaults.Syntax.Frames Ct hiding (ctx-semigroup; ctx-monoid)
-open import JVM.Defaults.Syntax.Labels Ct
+open import JVM.Types
+open import JVM.Defaults.Syntax.Values
+open import JVM.Defaults.Syntax.Frames hiding (ctx-semigroup; ctx-monoid)
+open import JVM.Defaults.Syntax.Labels
 
 {- Instructions -}
 module _ where

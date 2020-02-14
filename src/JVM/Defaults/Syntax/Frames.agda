@@ -1,6 +1,4 @@
-import MJ.Classtable.Core as Core
-
-module JVM.Defaults.Syntax.Frames {c}(Ct : Core.Classtable c) where
+module JVM.Defaults.Syntax.Frames where
 
 open import Data.List
 open import Data.List.Relation.Unary.All
@@ -9,8 +7,7 @@ open import Relation.Ternary.Separation
 open import Relation.Binary.PropositionalEquality
 open import Relation.Ternary.Structures
 
-open import MJ.Types c
-open Core.Classtable Ct
+open import JVM.Types
 open import JVM.Prelude
 
 -- the PRSA for lists of types in general
