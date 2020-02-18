@@ -7,8 +7,9 @@ module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) where
 
 open import Level
 open import Relation.Unary hiding (_∈_; Empty)
+open import Relation.Unary.PredicateTransformer using (Pt)
 open import Relation.Binary.PropositionalEquality hiding ([_])
-open import Relation.Ternary.Data.ReflexiveTransitive public
+open import Relation.Ternary.Data.ReflexiveTransitive
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 
@@ -16,6 +17,7 @@ open import Data.Unit
 open import Data.Sum
 open import Data.Product
 
+open import Relation.Ternary.Construct.Duplicate T
 open import Relation.Ternary.Construct.GlobalBinding T public
 
 Labels = List T
@@ -78,49 +80,51 @@ module Codes (I : T → T → List T → Set ℓ) where
   ⟪ τ₂ ⇐ τ₁ ⟫ = Star (flip Code) τ₁ τ₂
     where open import Function using (flip)
 
-  private
-    Zipper′ = λ a b c d → ⟪ a ⇐ b ⟫ ⊙ (Code b c) ⊙ ⟪ c ⇒ d ⟫
+  {- The zipper structure for walking over bytecode with focus -}
+  module _ where
+    private
+      Zipper′ = λ a b c d → ⟪ a ⇐ b ⟫ ⊙ (Code b c) ⊙ ⟪ c ⇒ d ⟫
 
-  data Zipper : (b c d : T) → Pred Labels ℓ where
-    zipped : ∀ {a b c d} → ∀[ (λ Φ → Zipper′ a b c d (Φ ↕ [])) ⇒ Zipper b c d ]
-    ended  : ∀ {a b}     → ∀[ (λ Φ → ⟪ a ⇐ b ⟫ (Φ ↕ [])) ⇒ Zipper b b b ]
+    data Zipper : (b c d : T) → Pred Labels ℓ where
+      zipped : ∀ {a b c d} → ∀[ (λ Φ → Zipper′ a b c d (Φ ↕ [])) ⇒ Zipper b c d ]
+      ended  : ∀ {a b}     → ∀[ (λ Φ → ⟪ a ⇐ b ⟫ (Φ ↕ [])) ⇒ Zipper b b b ]
 
-  {- rewind with an accumulator to a labeled instruction -}
-  {-# TERMINATING #-}
-  left : ∀ {a b c e} → ∀[ (⟪ a ⇐ b ⟫ ∩ Provides e) ⇒ ⟪ b ⇒ c ⟫ ─⊙ (⋃[ f ∶ _ ] Zipper′ a e f c) ]
-  left (i ▹⟨ σ₁ ⟩ is , snd) ⟨ σ₂ ⟩ acc with crumb snd σ₁
-  ... | inj₂ r with ∙-assocᵣ (∙-comm σ₁) σ₂
-  ... | _ , σ₃ , σ₄ = left (is , r) ⟨ σ₃ ⟩ (i ▹⟨ σ₄ ⟩ acc)
+    {- rewind with an accumulator to a labeled instruction -}
+    {-# TERMINATING #-}
+    left : ∀ {a b c e} → ∀[ (⟪ a ⇐ b ⟫ ∩ Provides e) ⇒ ⟪ b ⇒ c ⟫ ─⊙ (⋃[ f ∶ _ ] Zipper′ a e f c) ]
+    left (i ▹⟨ σ₁ ⟩ is , snd) ⟨ σ₂ ⟩ acc with crumb snd σ₁
+    ... | inj₂ r with ∙-assocᵣ (∙-comm σ₁) σ₂
+    ... | _ , σ₃ , σ₄ = left (is , r) ⟨ σ₃ ⟩ (i ▹⟨ σ₄ ⟩ acc)
 
-  -- points to a label;
-  -- we found the instruction we were looking for,
-  -- now we just forward again to the first code point that is not a label
-  left (labeled i ▹⟨ σ₁ ⟩ is , snd) ⟨ σ₂ ⟩ acc | inj₁ (here refl) with ∙-assocᵣ (∙-comm σ₁) σ₂
-  ... | _ , σ₃ , σ₄ = -, is ∙⟨ σ₃ ⟩ (labeled i ∙⟨ σ₄ ⟩ acc)
+    -- points to a label;
+    -- we found the instruction we were looking for,
+    -- now we just forward again to the first code point that is not a label
+    left (labeled i ▹⟨ σ₁ ⟩ is , snd) ⟨ σ₂ ⟩ acc | inj₁ (here refl) with ∙-assocᵣ (∙-comm σ₁) σ₂
+    ... | _ , σ₃ , σ₄ = -, is ∙⟨ σ₃ ⟩ (labeled i ∙⟨ σ₄ ⟩ acc)
 
-  {- wind fwd with an accumulator to a labeled instruction -}
-  {-# TERMINATING #-}
-  right : ∀ {a b c e} → ∀[ (⟪ b ⇒ c ⟫ ∩ Provides e) ⇒ ⟪ a ⇐ b ⟫ ─⊙ (⋃[ f ∶ _ ] Zipper′ a e f c) ]
-  right (i ▹⟨ σ₁ ⟩ is , snd) ⟨ σ₂ ⟩ acc with crumb snd σ₁
-  ... | inj₂ r with ∙-assocᵣ (∙-comm σ₁) σ₂
-  ... | _ , σ₃ , σ₄ = right (is , r) ⟨ σ₃ ⟩ i ▹⟨ σ₄ ⟩ acc
+    {- wind fwd with an accumulator to a labeled instruction -}
+    {-# TERMINATING #-}
+    right : ∀ {a b c e} → ∀[ (⟪ b ⇒ c ⟫ ∩ Provides e) ⇒ ⟪ a ⇐ b ⟫ ─⊙ (⋃[ f ∶ _ ] Zipper′ a e f c) ]
+    right (i ▹⟨ σ₁ ⟩ is , snd) ⟨ σ₂ ⟩ acc with crumb snd σ₁
+    ... | inj₂ r with ∙-assocᵣ (∙-comm σ₁) σ₂
+    ... | _ , σ₃ , σ₄ = right (is , r) ⟨ σ₃ ⟩ i ▹⟨ σ₄ ⟩ acc
 
-  right (labeled i ▹⟨ σ₁ ⟩ is , snd) ⟨ σ₂ ⟩ acc  | inj₁ (here refl) =
-    -, acc ∙⟨ ∙-comm σ₂ ⟩ (labeled i) Rel₃.∙⟨ σ₁ ⟩ is 
+    right (labeled i ▹⟨ σ₁ ⟩ is , snd) ⟨ σ₂ ⟩ acc  | inj₁ (here refl) =
+      -, acc ∙⟨ ∙-comm σ₂ ⟩ (labeled i) Rel₃.∙⟨ σ₁ ⟩ is 
 
-  {- Walk through a zipper using a label -}
-  jump : ∀ {a b c d e : T} → ∀[ (Zipper′ a b c d ∩ Provides e) ⇒ ⋃[ f ∶ _ ] Zipper′ a e f d ]
-  jump (is ∙⟨ σ ⟩ js , p) with crumb p σ
-  ... | inj₁ l = left (is , l) ⟨ σ ⟩ cons js
-  ... | inj₂ r = right (cons js , r) ⟨ ∙-comm σ ⟩ is
+    {- Walk through a zipper using a label -}
+    jump : ∀ {a b c d e : T} → ∀[ (Zipper′ a b c d ∩ Provides e) ⇒ ⋃[ f ∶ _ ] Zipper′ a e f d ]
+    jump (is ∙⟨ σ ⟩ js , p) with crumb p σ
+    ... | inj₁ l = left (is , l) ⟨ σ ⟩ cons js
+    ... | inj₂ r = right (cons js , r) ⟨ ∙-comm σ ⟩ is
 
-  moveᵣ : ∀[ Zipper τ₁ τ₂ τ ⇒ ⋃[ τ₃ ∶ _ ] Zipper τ₂ τ₃ τ ]
-  moveᵣ (ended z) = -, ended z
-  moveᵣ (zipped z) with ⊙-assocₗ z
-  moveᵣ (zipped z) | bwd ∙⟨ σ ⟩ nil rewrite ∙-id⁻ʳ σ = -, ended (cons (⊙-swap bwd))
-  moveᵣ (zipped z) | bwd ∙⟨ σ ⟩ i ▹⟨ σ₂ ⟩ is = -, zipped (cons (⊙-swap bwd) ∙⟨ σ ⟩ i ∙⟨ σ₂ ⟩ is)
+    moveᵣ : ∀[ Zipper τ₁ τ₂ τ ⇒ ⋃[ τ₃ ∶ _ ] Zipper τ₂ τ₃ τ ]
+    moveᵣ (ended z) = -, ended z
+    moveᵣ (zipped z) with ⊙-assocₗ z
+    moveᵣ (zipped z) | bwd ∙⟨ σ ⟩ nil rewrite ∙-id⁻ʳ σ = -, ended (cons (⊙-swap bwd))
+    moveᵣ (zipped z) | bwd ∙⟨ σ ⟩ i ▹⟨ σ₂ ⟩ is = -, zipped (cons (⊙-swap bwd) ∙⟨ σ ⟩ i ∙⟨ σ₂ ⟩ is)
 
-  postulate focus : ∀[ Zipper τ₁ τ₂ τ ⇒ (Zipper τ₁ τ₂ τ ⊙ (Empty (τ₁ ≡ τ₂ × τ₂ ≡ τ) ∪ (I τ₁ τ₂))) ]
-  -- focus z@(zipped (bwd ∙⟨ σ₁ ⟩ ↑ f ∙⟨ σ₂ ⟩ fwd)) =
-  --   let y = ⊙-assocᵣ (copy f ∙⟨ σ₂ ⟩ fwd) in ?
-  -- focus z@(ended x)  = z ∙⟨ ∙-idʳ ⟩ inj₁ refl
+    postulate focus : ∀[ Zipper τ₁ τ₂ τ ⇒ (Zipper τ₁ τ₂ τ ⊙ (Empty (τ₁ ≡ τ₂ × τ₂ ≡ τ) ∪ (I τ₁ τ₂))) ]
+    -- focus z@(zipped (bwd ∙⟨ σ₁ ⟩ ↑ f ∙⟨ σ₂ ⟩ fwd)) =
+    --   let y = ⊙-assocᵣ (copy f ∙⟨ σ₂ ⟩ fwd) in ?
+    -- focus z@(ended x)  = z ∙⟨ ∙-idʳ ⟩ inj₁ refl

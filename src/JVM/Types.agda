@@ -11,6 +11,9 @@ data Ty : Set where
   int  : Ty
   ref  : Ty → Ty
 
+open import Data.Nat using (ℕ)
+NativeBinOp = ℕ → ℕ → ℕ
+
 Ctx : Set
 Ctx = List Ty
 

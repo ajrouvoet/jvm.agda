@@ -7,5 +7,3 @@ Labels  = List StackTy
 
 variable
   ι₁ ι₂ ι₃ ι : Labels
-
-open import Relation.Ternary.Construct.GlobalBinding StackTy public

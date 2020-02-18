@@ -15,9 +15,11 @@ data Val : Ty → Pred World 0ℓ where
 
 data Const : Ty → Set where
   null : ∀ {c} → Const (ref c)
+  unit :         Const void
   num  : ℕ     → Const int
 
 constvalue : Const a → ε[ Val a ] 
+constvalue unit    = unit
 constvalue null    = null
 constvalue (num x) = num x
 

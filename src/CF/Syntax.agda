@@ -16,8 +16,6 @@ open import JVM.Types
 open import JVM.Defaults.Syntax.Frames
 open import Relation.Ternary.Data.Allstar Ty
 
-NativeBinOp = ℕ → ℕ → ℕ
-
 -- context extension relation
 _⊢_⟨∙⟩_ : Ctx → Ctx → Ctx → Set
 Δ ⊢ Γ₁ ⟨∙⟩ Γ₂ = ∃ λ (Δ′ : Ctx) → Δ′ ⊆ Δ × Γ₁ ⊎ Δ ≣ Γ₂
@@ -42,7 +40,7 @@ data Exp : Ty → Pred Ctx 0ℓ where
   iop      : NativeBinOp → ∀[ Exp int ✴ Exp int ⇒ Exp int ]
 
   -- storeful
-  ref   : ∀[ Exp (ref a) ]
+  ref   : ∀[ Exp a ⇒ Exp (ref a) ]
   deref : ∀[ Exp (ref a) ⇒ Exp a ]
 
 module Statements (Block : Ty → Pred Ctx 0ℓ) where
