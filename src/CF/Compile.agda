@@ -115,18 +115,17 @@ mutual
     let then = (e∙s₁∙s₂ ⇈ wk) >>= π₂ >>= π₂
 
     -- condition
-    refl                          ← compileₑ e₁⇑ 
-    +t ∙⟨ σ ⟩ ↓ -t                ← mklabel ψ
-    +t ∙⟨ σ ⟩ refl                ← tell (↓ (if ne -t))           &⟨ σ ⟩ +t
+    refl                ← compileₑ e₁⇑ 
+    +t ∙⟨ σ ⟩ ↓ -t      ← mklabel ψ
+    +t ∙⟨ σ ⟩ refl      ← tell (↓ (if ne -t))             &⟨ σ ⟩ +t
 
     -- else
-    +t ∙⟨ σ ⟩ refl                ← compile else                    &⟨ Up _ # σ ⟩ +t
-    +t ∙⟨ σ₁ ⟩ (+e  ∙⟨ σ₂ ⟩ ↓ -e) ← mklabel ψ                       &⟨ σ ⟩ +t
+    +t   ∙⟨ σ ⟩ refl    ← compile else                    &⟨ Up _ # σ ⟩ +t
+    ↓ -e ∙⟨ σ ⟩ +t∙+e   ← mapM ⊙-rotateᵣ (mklabel ψ       &⟨ σ ⟩ +t)
 
     -- then
-    let _ , σ₃ , σ₄ = ∙-assocₗ σ₁ σ₂
-    (+t ∙⟨ σ ⟩ +e) ∙⟨ σ₂ ⟩ refl   ← tell (↓ (goto -e))              &⟨ (Up _) ⊙ (Up _) # σ₄ ⟩ +t ∙⟨ σ₃ ⟩ +e 
-    +e ∙⟨ σ ⟩ refl                ← label +t ⟨ ∙-idʳ ⟩ compile then &⟨ Up _ # coe {{∙-respects-≈}} (∙-id⁻ʳ σ₂) (∙-comm σ)  ⟩ +e
+    +t ∙⟨ σ ⟩ +e        ← mapM ⊙-id⁻ʳ (tell (↓ (goto -e)) &⟨ (Up _) ⊙ (Up _) # ∙-comm σ ⟩ +t∙+e) 
+    +e ∙⟨ σ ⟩ refl      ← label +t ⟨ ∙-idʳ ⟩ compile then &⟨ Up _ # ∙-comm σ  ⟩ +e
 
     -- labeled end node
     label +e ⟨ σ ⟩ tell (↓ noop)
