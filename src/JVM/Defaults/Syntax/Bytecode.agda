@@ -18,7 +18,7 @@ open import Data.Sum
 open import Data.Product
 
 open import Relation.Ternary.Construct.Duplicate T
-open import Relation.Ternary.Construct.GlobalBinding T public
+open import Relation.Ternary.Construct.GlobalBinding T
 
 Labels = List T
 private

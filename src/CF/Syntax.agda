@@ -53,6 +53,7 @@ module Statements (Block : Ty → Pred Ctx 0ℓ) where
     run           : ∀[ Exp a ⇒ Statement r ]
     ret           : ∀[ Exp r ⇒ Statement r ]
 
+    -- ints as bools (false => eq 0, true => ne 0)
     ifthenelse    : ∀[ Exp int ✴ Statement r ✴ Statement r ⇒ Statement r ]
     while         : ∀[ Exp int ✴ Statement r ⇒ Statement r ]
     block         : ∀[ Block r ⇒ Statement r ]
