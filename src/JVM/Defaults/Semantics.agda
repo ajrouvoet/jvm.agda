@@ -16,13 +16,6 @@ open import Relation.Ternary.Respect.Propositional
 open import JVM.Defaults.Syntax
 open import JVM.Defaults.Syntax.Values
 
-module _ τ where
-  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩
-  ⟪_∣_⇒_⇒_⟫ = Zipper
-
-module _ {τ} where
-  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩ hiding (⟪_⇒_⟫) public hiding (Labels)
-
 -- We define the 'view' of a client on the server (VM) state typing.
 -- This is analogue to the State monad (i.e., the server) internally operating on (Market A), where clients only see (A).
 -- The view consists of a set of labels that the clients uses, as well as a number of heap cells that it sees.

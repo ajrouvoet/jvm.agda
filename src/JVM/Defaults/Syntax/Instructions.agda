@@ -12,7 +12,7 @@ open import Relation.Ternary.Monad
 
 open import JVM.Types
 open import JVM.Defaults.Syntax.Values
-open import JVM.Defaults.Syntax.Frames hiding (ctx-semigroup; ctx-monoid)
+open import JVM.Defaults.Syntax.Frames
 open import JVM.Defaults.Syntax.Labels
 
 {- Instructions -}
@@ -38,6 +38,15 @@ module _ where
     goto  : ∀[ Just ψ ⇒ ⟨ Γ ∣ ψ       ⇒ ψ ⟩ ]
     if    : ∀[ Just ψ ⇒ ⟨ Γ ∣ int ∷ ψ ⇒ ψ ⟩ ]
 
-open import Relation.Ternary.Construct.Exchange {A = Labels} _↭_ as Exchange
-  renaming (Account to Intf; _≈_ to Intf[_≈_]) public
+open import JVM.Defaults.Syntax.Bytecode StackTy public
 
+module _ τ where
+  open Codes ⟨ τ ∣_⇒_⟩
+
+  ⟪_∣_⇒_⟫   = ⟪_⇒_⟫
+  ⟪_∣_⇒_⟫+  = ⟪_⇒_⟫+
+  ⟪_∣_⇒_⇒_⟫ = Zipper
+
+module _ {τ} where
+  open Codes ⟨ τ ∣_⇒_⟩
+    hiding (⟪_⇒_⟫; ⟪_⇒_⟫+; Zipper; Code) public

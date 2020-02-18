@@ -20,3 +20,8 @@ data Const : Ty → Set where
 constvalue : Const a → ε[ Val a ] 
 constvalue null    = null
 constvalue (num x) = num x
+
+open import Relation.Ternary.Data.Allstar Ty
+
+Env : Ctx → Pred World 0ℓ
+Env Γ = Allstar Val Γ
