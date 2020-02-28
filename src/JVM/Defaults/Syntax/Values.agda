@@ -5,7 +5,6 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 
 open import JVM.Types
-open import JVM.Defaults.Syntax.Frames
 
 data Val : Ty → Pred World 0ℓ where
   null : ε[ Val (ref a) ]

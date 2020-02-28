@@ -5,9 +5,8 @@ open import Data.List.Membership.Propositional
 open import Relation.Ternary.Monad.Weakening
 
 open import JVM.Types
+open import JVM.Model
 open import JVM.Defaults.Syntax.Values
-open import JVM.Defaults.Syntax.Frames
-open import JVM.Defaults.Syntax.Labels
 
 {- Instructions -}
 module _ where

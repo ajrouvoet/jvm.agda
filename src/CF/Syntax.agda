@@ -5,7 +5,6 @@ open import JVM.Prelude hiding (Σ; _⊢_; _⊆_)
 
 open import Data.List hiding (null)
 open import Data.List.Relation.Unary.All
-open import Data.List.Relation.Binary.Sublist.Propositional
 open import Relation.Unary.PredicateTransformer using (Pt)
 open import Relation.Binary.Structures using (IsPreorder)
 open import Relation.Binary.PropositionalEquality using (isEquivalence)
@@ -13,21 +12,8 @@ open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad.Possibly
 
 open import JVM.Types
-open import JVM.Defaults.Syntax.Frames
+open import Relation.Ternary.Monad.Intros Ty public
 open import Relation.Ternary.Data.Allstar Ty
-
--- context extension relation
-_⊢_⟨∙⟩_ : Ctx → Ctx → Ctx → Set
-Δ ⊢ Γ₁ ⟨∙⟩ Γ₂ = ∃ λ (Δ′ : Ctx) → Δ′ ⊆ Δ × Γ₁ ⊎ Δ ≣ Γ₂
-
-_⊢_ : Ctx → Pt Ctx 0ℓ
-Δ ⊢ P = Possibly.◇ (Δ ⊢_⟨∙⟩_) P
-
--- ⟨∙⟩-preorder : ∀ {Δ} → IsPreorder _≡_ (Δ ⊢_⟨∙⟩_)
--- IsPreorder.isEquivalence ⟨∙⟩-preorder = isEquivalence
--- IsPreorder.reflexive ⟨∙⟩-preorder refl = -, ⊆-refl , {!!}
--- IsPreorder.trans ⟨∙⟩-preorder = {!!}
--- open Possibly.◇-Monad {!!} {!!}
 
 data Exp : Ty → Pred Ctx 0ℓ where
   -- irreducible expressions
@@ -62,12 +48,14 @@ mutual
   Stmt = Statements.Statement Block
 
   data Block (r : Ty) : Pred Ctx 0ℓ where
-    local : ∀[ [ a ] ⊢ (Block r) ⇒ Block r ]
+    local : ∀[ Exp a ✴ [ a ] ⊢ (Block r) ⇒ Block r ]
     cons  : ∀[ Stmt r ✴ Block r ⇒ Block r ]
     emp   : ε[ Block r ]
+
 
 -- make constructors visible
 open Statements Block public hiding (Statement)
 
 infixr 5 _⍮⟨_⟩_
 pattern _⍮⟨_⟩_ s σ b = cons (s ×⟨ σ ⟩ b)
+pattern _≔⟨_⟩_ e σ b = local (e ×⟨ σ ⟩ b)
