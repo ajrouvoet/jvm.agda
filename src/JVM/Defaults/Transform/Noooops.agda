@@ -8,10 +8,10 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Data.ReflexiveTransitive
 
 open import JVM.Types
+open import JVM.Model StackTy
 open import JVM.Defaults.Syntax.Instructions
 open import JVM.Defaults.Syntax.Bytecode
 
-open import Relation.Ternary.Construct.GlobalBinding StackTy
 open import Data.Maybe using (just; nothing; Maybe)
 
 is-noop : (i : ⟨ τ ∣ ψ₁ ⇒ ψ₂ ⟩ Φ) → Maybe (ψ₁ ≡ ψ₂ × Φ ≡ ε)

@@ -1,7 +1,5 @@
-{-# OPTIONS --termination-depth=3 #-}
 {- MJ where variable declarations have been hoisted to the top of a block -}
 module CF.Transform.Hoist where
-
 
 open import Level
 open import Function using (_∘_)
@@ -40,19 +38,25 @@ hoist-binder px = pack (⊢-zip ∙-copy (binders ×⟨ ∙-idˡ ⟩ px))
 -- A typed hoisting transformation for statement blocks
 {-# TERMINATING #-}
 mutual
+
+
+
+  {- Hoist local variables from blocks -}
   hoist : ∀[ Src.Block r ⇒ ◇ (Block r) ]
   hoist Src.emp = do
     return nil
 
   hoist (ss Src.⍮⟨ σ ⟩ b) = do
-    b ×⟨ σ ⟩ s ← translate ss &⟨ Src.Block _ # ∙-comm σ ⟩ b
-    s ×⟨ σ ⟩ b ← hoist b &⟨ Tgt.Stmt _ # ∙-comm σ ⟩ s
+    b ×⟨ σ ⟩ s               ← translate ss                   &⟨ Src.Block _ # ∙-comm σ ⟩ b
+    s ×⟨ σ ⟩ b               ← hoist b                        &⟨ Tgt.Stmt _ # ∙-comm σ ⟩ s
     return (s ⍮⟨ σ ⟩ b)
 
   hoist (e Src.≔⟨ σ ⟩ Γ⊢b) = do
-    e×v ×⟨ σ ⟩ b ← ⊙-assocₗ ⟨$⟩ (hoist-binder Γ⊢b &⟨ Src.Exp _ # σ ⟩ e)
-    (e ×⟨ σ₁ ⟩ v) ×⟨ σ₂ ⟩ b' ← hoist b &⟨ _ ✴ _ # σ ⟩ e×v
+    e×v ×⟨ σ ⟩ b             ← ⊙-assocₗ ⟨$⟩ (hoist-binder Γ⊢b &⟨ Src.Exp _ # σ ⟩ e)
+    (e ×⟨ σ₁ ⟩ v) ×⟨ σ₂ ⟩ b' ← hoist b                        &⟨ _ ✴ _ # σ ⟩ e×v
     return (Tgt.asgn (v ×⟨ ∙-comm σ₁ ⟩ e) ⍮⟨ σ₂ ⟩ b')
+
+
 
   {- Hoist local variables from statements -}
   translate : ∀[ Src.Stmt r ⇒ ◇ (Stmt r) ]
@@ -70,18 +74,21 @@ mutual
     return (Tgt.ret e)
 
   translate (Src.while (e ×⟨ σ ⟩ body)) = do
-    e ×⟨ σ ⟩ body' ← translate body &⟨ Src.Exp _ # σ ⟩ e
+    e ×⟨ σ ⟩ body'           ← translate body                 &⟨ Src.Exp _ # σ ⟩ e
     return (Tgt.while (e ×⟨ σ ⟩ body'))
 
   translate (Src.ifthenelse e×s₁×s₂) = do
     let (s₁ ×⟨ σ ⟩ s₂×e) = ⊙-rotateₗ e×s₁×s₂
-    s₂ ×⟨ σ ⟩ e×s₁ ← ⊙-assocᵣ ⟨$⟩ (translate s₁ &⟨ _ ✴ _ # ∙-comm σ ⟩ s₂×e)
-    e×s₁×s₂ ← ⊙-assocᵣ ⟨$⟩ (translate s₂ &⟨ _ ✴ _ # ∙-comm σ ⟩ e×s₁)
+    s₂ ×⟨ σ ⟩ e×s₁           ← ⊙-assocᵣ ⟨$⟩ (translate s₁     &⟨ _ ✴ _ # ∙-comm σ ⟩ s₂×e)
+    e×s₁×s₂                  ← ⊙-assocᵣ ⟨$⟩ (translate s₂     &⟨ _ ✴ _ # ∙-comm σ ⟩ e×s₁)
     return (Tgt.ifthenelse e×s₁×s₂)
 
   translate (Src.block bl) = do
-    bl' ← hoist bl
+    bl'                      ← hoist bl
     return (Tgt.block bl')
+
+
+
 
 module Example where
 
@@ -133,30 +140,3 @@ module Example where
           )
         Src.⍮⟨ ∙-idʳ ⟩ emp
     ))
-
-    -- local int 
-    -- (λ⟨ duplicate ⊎-idˡ ⟩ ( 
-    --   Src.ifthenelse
-    --     (Src.num 42 ×⟨ ⊎-idˡ ⟩
-    --       -- then
-    --       Src.block (
-    --         -- Int i;
-    --         local int (λ⟨ duplicate ⊎-idˡ ⟩ (
-    --         -- i = j;
-    --         Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
-    --         -- return j
-    --         Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
-    --         Src.emp))
-    --       )
-    --       ×⟨ duplicate ⊎-idˡ ⟩
-    --       -- else
-    --       Src.block (
-    --         -- Int i;
-    --         local int (λ⟨ duplicate ⊎-idˡ ⟩ (
-    --         -- i = j;
-    --         Src.asgn (refl ×⟨ ⊎-comm ⊎-∙ ⟩ Expr.var refl) Src.⍮⟨ duplicate ⊎-idʳ ⟩
-    --         -- return j
-    --         Src.ret (Expr.var refl) Src.⍮⟨ ⊎-idʳ ⟩
-    --         Src.emp))
-    --       )) Src.⍮⟨ consˡ ⊎-idˡ ⟩
-    --   Src.emp)))

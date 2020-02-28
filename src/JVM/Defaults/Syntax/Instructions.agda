@@ -2,11 +2,13 @@ module JVM.Defaults.Syntax.Instructions where
 
 open import JVM.Prelude hiding (swap)
 open import Data.List.Membership.Propositional
-open import Relation.Ternary.Monad.Weakening
 
 open import JVM.Types
 open import JVM.Model
 open import JVM.Defaults.Syntax.Values
+
+open import Relation.Ternary.Construct.List.Overlapping StackTy hiding (duplicate)
+open import Relation.Ternary.Monad.Weakening
 
 {- Instructions -}
 module _ where
