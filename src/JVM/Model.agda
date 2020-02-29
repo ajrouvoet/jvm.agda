@@ -24,16 +24,7 @@ open import Relation.Ternary.Construct.List.Overlapping T public
 open import Data.Unit
 
 open import Relation.Ternary.Construct.Empty T
-open import Relation.Ternary.Construct.List.Interdivide empty-rel as Disjoint
-open Disjoint public using () renaming
-  (split-positive to disjoint-positive
-  ;split-isSemigroup to disjoint-semigroup
-  ;split-isMonoid to disjoint-monoid)
-
-open Rel₃ Disjoint.splits using ()
-  renaming (_∙_≣_ to _⊕_≣_; _⊙_ to _⊕_) public
-
-_/_≣_ = λ xs ys zs → ys ⊕ zs ≣ xs
+open import Relation.Ternary.Construct.List.Disjoint T public hiding (threeway; _∈_)
 
 module _ where
 
@@ -168,6 +159,16 @@ module _ where
     zipDown : ∀[ (Down P) ⊙ (Down Q) ⇒ Down (P ⊗ Q) ]
     zipDown (↓ p ∙⟨ σ ⟩ ↓ q) with downs σ
     ... | _ , PEq.refl , σ↓ = ↓ (p ∙⟨ σ↓ ⟩ q)
+
+  module _ {P Q : Pred (List T) ℓ} where
+
+    upMap : ∀[ Up (P ─⊕ Q) ⇒ (Up P ─⊙ Up Q) ]
+    upMap (↑ f) ⟨ σ ⟩ ↑ px with ups σ
+    ... | _ , PEq.refl , σ↑ = ↑ (f ⟨ σ↑ ⟩ px)
+
+    downMap : ∀[ Down (P ─⊗ Q) ⇒ (Down P ─⊙ Down Q) ]
+    downMap (↓ f) ⟨ σ ⟩ ↓ px with downs σ
+    ... | _ , PEq.refl , σ↓ = ↓ (f ⟨ σ↓ ⟩ px)
 
   binder : ∀ τ → ε[ Up (Just τ) ⊙ Down (Just τ) ]
   binder τ = (↑ PEq.refl ∙⟨ ex []-sub xs-xs≡ε ∙-idˡ ∙-idˡ ⟩ ↓ PEq.refl)

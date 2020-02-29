@@ -68,20 +68,23 @@ module Codes (I : T → T → List T → Set ℓ) where
   open import Data.Unit.Polymorphic
   open import Data.List.Relation.Unary.All
 
-  Labeling = λ τ → Up (All (_≡ τ)) 
+  Labeling : T → Pred (List T) _
+  Labeling = λ τ → All (_≡ τ) 
 
-  -- merge-labels : ∀[ Labeling ⊙ Labeling ⇒ Labeling ]
-  -- merge-labels = ?
+  merge-labels : ∀[ Labeling τ ⇒ Labeling τ ─⊕ Labeling τ ]
+  merge-labels _         ⟨ []      ⟩ _         = []
+  merge-labels (px ∷ l₁) ⟨ consˡ σ ⟩ l₂        = px ∷ merge-labels l₁ ⟨ σ ⟩ l₂
+  merge-labels l₁        ⟨ consʳ σ ⟩ (px ∷ l₂) = px ∷ merge-labels l₁ ⟨ σ ⟩ l₂
 
   data Code : T → T → Pred Binding ℓ where
-    labeled : ∀[ Labeling τ₁ ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
+    labeled : ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
     instr   : ∀[ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
 
-  postulate label : ∀[ Labeling τ₁ ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
-  -- label ls ⟨ σ ⟩ instr i = labeled (ls ∙⟨ σ ⟩ i)
-  -- label l₁ ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l₁ ∙⟨ σ ⟩ l₂∙i)
-  -- ... | l₁∙l₂ ∙⟨ σ′ ⟩ i with zipUp l₁∙l₂
-  -- ... | ↑ ls = labeled (↑ {!ls!} ∙⟨ σ′ ⟩ i)
+  label : ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
+  label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
+  label l ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙i)
+  ... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (⊙-curry (arrow merge-labels))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
+  ... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
 
   ⟪_⇒_⟫ : T → T → Pred Binding ℓ
   ⟪ τ₁ ⇒ τ₂ ⟫ = Star Code τ₁ τ₂
