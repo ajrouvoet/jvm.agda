@@ -14,7 +14,7 @@ open import Relation.Ternary.Respect.Propositional
 open import Relation.Ternary.Monad.Possibly
 
 open import JVM.Types
-open import CF.Syntax as Src hiding (Stmt; Block)
+open import CF.Syntax as Src hiding (Stmt; Block) public
 
 module Tgt where
   mutual
@@ -28,7 +28,7 @@ module Tgt where
   -- make constructors visible
   open Src.Statements Block public
 
-open Tgt
+open Tgt public
 
 pattern _⍮⟨_⟩_ s σ b = cons (s ×⟨ σ ⟩ b)
 

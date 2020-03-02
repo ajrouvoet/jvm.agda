@@ -20,11 +20,11 @@ private
   variable
     u₁ u₂ u₃ d₁ d₂ d₃ u d : Labels
 
-open import Relation.Ternary.Construct.List.Overlapping T public
+open import Relation.Ternary.Construct.List.Overlapping T as O public
 open import Data.Unit
 
 open import Relation.Ternary.Construct.Empty T
-open import Relation.Ternary.Construct.List.Disjoint T public hiding (threeway; _∈_)
+open import Relation.Ternary.Construct.List.Disjoint T as D public hiding (threeway; _∈_)
 
 module _ where
 
@@ -110,13 +110,36 @@ module _ where
   instance binding-comm : IsCommutative binding-rel
   IsCommutative.∙-comm binding-comm (ex x₁ x₂ x₃ x₄) = ex x₂ x₁ (∙-comm x₃) (∙-comm x₄)
 
-  postulate binding-semigroupˡ : IsPartialSemigroupˡ _≡_ binding-rel
-  -- IsPartialSemigroupˡ.≈-equivalence binding-semigroupˡ = PEq.isEquivalence
-  -- -- IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ σ₁ σ₂ = ?
+  xsplit : ∀ {a b c d z} →
+        a ⊗ b ≣ z → c ⊕ d ≣ z →
+        Σ[ frags ∈ (Labels × Labels × Labels × Labels) ] 
+        let ac , ad , bc , bd = frags
+        in ac ⊕ ad ≣ a × bc ⊕ bd ≣ b × ac ⊗ bc ≣ c × ad ⊗ bd ≣ d
 
-  -- IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ
-  --   {a = a↑ ↕ a↓} {b = b↑ ↕ b↓} {ab = ab↑ ↕ ab↓} {c = c↑ ↕ c↓} {abc = abc↑ ↕ abc↓}
-  --   (ex (sub {e = e₁} {e' = e₁'} x₈ x₉ x₁₂) (sub {e = e₂} {e₂'} x₁₃ x₁₄ x₁₅) x₁₀ x₁₁) (ex (sub {e = e₃} x x₁ x₄) (sub {e = e₄} x₅ x₆ x₇) x₂ x₃) = {!!}
+  xsplit (overlaps σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consˡ σ₃ , D.consˡ σ₄ , overlaps σ₅ , σ₆
+
+  xsplit (overlaps σ₁) (consʳ σ₂)  with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consʳ σ₃ , D.consʳ σ₄ , σ₅ , overlaps σ₆
+
+  xsplit (consˡ σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consˡ σ₃ , σ₄ , O.consˡ σ₅ , σ₆
+
+  xsplit (consˡ σ₁) (consʳ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consʳ σ₃ , σ₄ , σ₅ , O.consˡ σ₆
+
+  xsplit (consʳ σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, σ₃ , D.consˡ σ₄ , O.consʳ σ₅ , σ₆
+  xsplit (consʳ σ₁) (consʳ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, σ₃ , D.consʳ σ₄ , σ₅ , O.consʳ σ₆
+
+  xsplit [] [] = -, ∙-idˡ , ∙-idˡ , ∙-idˡ , ∙-idˡ
+
+  binding-semigroupˡ : IsPartialSemigroupˡ _≡_ binding-rel
+  IsPartialSemigroupˡ.≈-equivalence binding-semigroupˡ = PEq.isEquivalence
+  IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ
+    {a = a↑ ↕ a↓} {b = b↑ ↕ b↓} {ab = ab↑ ↕ ab↓} {c = c↑ ↕ c↓} {abc = abc↑ ↕ abc↓}
+    (ex (sub {e = e₁} {e' = e₁'} x₈ x₉ x₁₂) (sub {e = e₂} {e₂'} x₁₃ x₁₄ x₁₅) x₁₀ x₁₁) (ex (sub {e = e₃} x x₁ x₄) (sub {e = e₄} x₅ x₆ x₇) x₂ x₃) = {!!}
 
   -- IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ {abc = [] ↕ imp₁} σ₁ (ex x x₁ x₂ x₃) with ε-split x₂
   -- IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ {b = _} {_} {_} {[] ↕ imp₁} (ex y₁ y₂ y₃ y₄) (ex (sub x x₁ x₄) (sub x₅ x₆ x₇) x₂ x₃) | PEq.refl , PEq.refl

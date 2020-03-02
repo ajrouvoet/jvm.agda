@@ -1,7 +1,7 @@
 -- Bytecode; i.e., instruction sequences; 
 -- agnostic about the exact instructions, but opiniated about labels
 open import Relation.Binary using (Rel)
-open import Data.List
+open import Data.List hiding (concat)
 
 module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) where
 
@@ -12,6 +12,7 @@ open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Ternary.Data.ReflexiveTransitive
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
+open import Relation.Ternary.Data.Bigstar
 
 open import Data.Sum
 open import Data.Product
@@ -45,11 +46,11 @@ lemma : ∀ {xs ys zs} {z} → xs - ys ≣ zs → z ∈ exp zs → z ∈ ys
 lemma (sub x x₁ x₂) e = wk x₁ e
   where
     wk : ∀ {xs ys zs} {z} → xs ⊗ ys ≣ zs → z ∈ xs → z ∈ zs
-    wk (divide dup σ) (here refl) = here refl
+    wk (overlaps σ) (here refl) = here refl
     wk (consˡ σ) (here refl)      = here refl
     wk (consʳ σ) (here refl)      = there (wk σ (here refl))
 
-    wk (divide dup σ) (there e)   = there (wk σ e)
+    wk (overlaps σ) (there e)   = there (wk σ e)
     wk (consˡ σ) (there e)        = there (wk σ e)
     wk (consʳ σ) (there e)        = there (wk σ (there e))
 
@@ -63,18 +64,12 @@ crumb e (ex x₁ x₂ x₃ x₄) with lorr x₃ e
 Labeled : T → Pred Binding ℓ
 Labeled τ = Emp ∪ Up (Just τ)
 
+Labeling : T → Pred (List T) _
+Labeling = λ τ → Bigstar {{r = disjoint-split}} (Just τ) 
+
 module Codes (I : T → T → List T → Set ℓ) where
 
   open import Data.Unit.Polymorphic
-  open import Data.List.Relation.Unary.All
-
-  Labeling : T → Pred (List T) _
-  Labeling = λ τ → All (_≡ τ) 
-
-  merge-labels : ∀[ Labeling τ ⇒ Labeling τ ─⊕ Labeling τ ]
-  merge-labels _         ⟨ []      ⟩ _         = []
-  merge-labels (px ∷ l₁) ⟨ consˡ σ ⟩ l₂        = px ∷ merge-labels l₁ ⟨ σ ⟩ l₂
-  merge-labels l₁        ⟨ consʳ σ ⟩ (px ∷ l₂) = px ∷ merge-labels l₁ ⟨ σ ⟩ l₂
 
   data Code : T → T → Pred Binding ℓ where
     labeled : ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
@@ -83,7 +78,7 @@ module Codes (I : T → T → List T → Set ℓ) where
   label : ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
   label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
   label l ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙i)
-  ... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (⊙-curry (arrow merge-labels))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
+  ... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (⊙-curry (arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
   ... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
 
   ⟪_⇒_⟫ : T → T → Pred Binding ℓ
