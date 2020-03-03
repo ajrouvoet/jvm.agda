@@ -58,6 +58,76 @@ private
 
 module _ where
 
+  {- cross-split between two notions of separation -}
+  xsplit : ∀ {a b c d z} →
+        a ⊗ b ≣ z → c ⊕ d ≣ z →
+        Σ[ frags ∈ (Labels × Labels × Labels × Labels) ] 
+        let ac , ad , bc , bd = frags
+        in ac ⊕ ad ≣ a × bc ⊕ bd ≣ b × ac ⊗ bc ≣ c × ad ⊗ bd ≣ d
+
+  xsplit [] [] = -, ∙-idˡ , ∙-idˡ , ∙-idˡ , ∙-idˡ
+
+  xsplit (overlaps σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consˡ σ₃ , D.consˡ σ₄ , overlaps σ₅ , σ₆
+
+  xsplit (overlaps σ₁) (consʳ σ₂)  with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consʳ σ₃ , D.consʳ σ₄ , σ₅ , overlaps σ₆
+
+  xsplit (consˡ σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consˡ σ₃ , σ₄ , O.consˡ σ₅ , σ₆
+
+  xsplit (consˡ σ₁) (consʳ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consʳ σ₃ , σ₄ , σ₅ , O.consˡ σ₆
+
+  xsplit (consʳ σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, σ₃ , D.consˡ σ₄ , O.consʳ σ₅ , σ₆
+  xsplit (consʳ σ₁) (consʳ σ₂) with xsplit σ₁ σ₂
+  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, σ₃ , D.consʳ σ₄ , σ₅ , O.consʳ σ₆
+
+  {- One side of the reverse -}
+  xup : ∀ {a b ab c bc} → a ⊕ b ≣ ab → b ⊗ c ≣ bc → ∃ λ abc → a ⊕ bc ≣ abc × ab ⊗ c ≣ abc
+  xup σ₁ []            = -, σ₁ , ∙-idʳ
+  xup σ₁ (consʳ σ₂) with xup σ₁ σ₂
+  ... | _ , σ₃ , σ₄ = -, D.consʳ σ₃ , O.consʳ σ₄
+  xup (consˡ σ₁) σ₂@(overlaps _) with xup σ₁ σ₂
+  ... | _ , σ₃ , σ₄ = -, D.consˡ σ₃ , O.consˡ σ₄
+  xup (consˡ σ₁) σ₂@(consˡ _) with xup σ₁ σ₂
+  ... | _ , σ₃ , σ₄ = -, D.consˡ σ₃ , O.consˡ σ₄
+  xup (consʳ σ₁) (overlaps σ₂) with xup σ₁ σ₂
+  ... | _ , σ₃ , σ₄ = -, D.consʳ σ₃ , overlaps σ₄
+  xup (consʳ σ₁) (consˡ σ₂) with xup σ₁ σ₂
+  ... | _ , σ₃ , σ₄ = -, D.consʳ σ₃ , O.consˡ σ₄ 
+
+  xup² : ∀ {a b a' b' e₁ e₂ ab} →
+         e₁ ⊗ a' ≣ a → e₂ ⊗ b' ≣ b → a' ⊕ b' ≣ ab →
+         ∃₂ λ ab' e₁₂ → a ⊕ b ≣ ab' × ab ⊗ e₁₂ ≣ ab' × e₁ ⊗ e₂ ≣ e₁₂
+  xup² σ₁ σ₂ σ₃ with xup σ₃ (∙-comm σ₂)
+  ... | _ , σ₄ , σ₅ with xup (∙-comm σ₄) (∙-comm σ₁)
+  ... | _ , σ₆ , σ₇ with ∙-assocᵣ σ₅ σ₇
+  ... | _ , σ₈ , σ₉ = -, -, ∙-comm σ₆ , σ₈ , ∙-comm σ₉
+
+  {- Another side of the reverse -}
+  xdown : ∀ {a b ab c bc} → a ⊗ b ≣ ab → b ⊕ c ≣ bc → ∃ λ abc → a ⊗ bc ≣ abc × ab ⊕ c ≣ abc
+  xdown σ₁ [] = -, σ₁ , ∙-idʳ
+  xdown σ₁ (consʳ σ₂) with xdown σ₁ σ₂
+  ... | _ , σ₃ , σ₄  = -, O.consʳ σ₃ , D.consʳ σ₄
+  xdown (overlaps σ₁) (consˡ σ₂) with xdown σ₁ σ₂
+  ... | _ , σ₃ , σ₄ = -, overlaps σ₃ , D.consˡ σ₄
+  xdown (consˡ σ₁) σ₂@(consˡ _) with xdown σ₁ σ₂
+  ... | _ , σ₃ , σ₄ = -, O.consˡ σ₃ , D.consˡ σ₄
+  xdown (consʳ σ₁) (consˡ σ₂) with xdown σ₁ σ₂
+  ... | _ , σ₃ , σ₄ = -, O.consʳ σ₃ , D.consˡ σ₄
+
+  xdown² : ∀ {a b a' b' e₁ e₂ ab} →
+           e₁ ⊕ a' ≣ a → e₂ ⊕ b' ≣ b → a' ⊗ b' ≣ ab →
+           ∃₂ λ ab' e₁₂ → a ⊗ b ≣ ab' × ab ⊕ e₁₂ ≣ ab' × e₁ ⊕ e₂ ≣ e₁₂
+  xdown² σ₁ σ₂ σ₃ with xdown σ₃ (∙-comm σ₂) 
+  ... | _ , σ₄ , σ₅ with xdown (∙-comm σ₄) (∙-comm σ₁)
+  ... | _ , σ₆ , σ₇ with ∙-assocᵣ σ₅ σ₇
+  ... | _ , σ₈ , σ₉ = -, -, ∙-comm σ₆ , σ₈ , ∙-comm σ₉
+
+module _ where
+
   open import Data.List.Relation.Binary.Permutation.Propositional
 
   {- Subtraction with duplication -}
@@ -110,42 +180,19 @@ module _ where
   instance binding-comm : IsCommutative binding-rel
   IsCommutative.∙-comm binding-comm (ex x₁ x₂ x₃ x₄) = ex x₂ x₁ (∙-comm x₃) (∙-comm x₄)
 
-  xsplit : ∀ {a b c d z} →
-        a ⊗ b ≣ z → c ⊕ d ≣ z →
-        Σ[ frags ∈ (Labels × Labels × Labels × Labels) ] 
-        let ac , ad , bc , bd = frags
-        in ac ⊕ ad ≣ a × bc ⊕ bd ≣ b × ac ⊗ bc ≣ c × ad ⊗ bd ≣ d
-
-  xsplit (overlaps σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
-  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consˡ σ₃ , D.consˡ σ₄ , overlaps σ₅ , σ₆
-
-  xsplit (overlaps σ₁) (consʳ σ₂)  with xsplit σ₁ σ₂
-  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consʳ σ₃ , D.consʳ σ₄ , σ₅ , overlaps σ₆
-
-  xsplit (consˡ σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
-  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consˡ σ₃ , σ₄ , O.consˡ σ₅ , σ₆
-
-  xsplit (consˡ σ₁) (consʳ σ₂) with xsplit σ₁ σ₂
-  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, D.consʳ σ₃ , σ₄ , σ₅ , O.consˡ σ₆
-
-  xsplit (consʳ σ₁) (consˡ σ₂) with xsplit σ₁ σ₂
-  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, σ₃ , D.consˡ σ₄ , O.consʳ σ₅ , σ₆
-  xsplit (consʳ σ₁) (consʳ σ₂) with xsplit σ₁ σ₂
-  ... | _ , σ₃ , σ₄ , σ₅ , σ₆ = -, σ₃ , D.consʳ σ₄ , σ₅ , O.consʳ σ₆
-
-  xsplit [] [] = -, ∙-idˡ , ∙-idˡ , ∙-idˡ , ∙-idˡ
-
   binding-semigroupˡ : IsPartialSemigroupˡ _≡_ binding-rel
   IsPartialSemigroupˡ.≈-equivalence binding-semigroupˡ = PEq.isEquivalence
   IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ
     {a = a↑ ↕ a↓} {b = b↑ ↕ b↓} {ab = ab↑ ↕ ab↓} {c = c↑ ↕ c↓} {abc = abc↑ ↕ abc↓}
-    (ex (sub {e = e₁} {e' = e₁'} x₈ x₉ x₁₂) (sub {e = e₂} {e₂'} x₁₃ x₁₄ x₁₅) x₁₀ x₁₁) (ex (sub {e = e₃} x x₁ x₄) (sub {e = e₄} x₅ x₆ x₇) x₂ x₃) = {!!}
-
-  -- IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ {abc = [] ↕ imp₁} σ₁ (ex x x₁ x₂ x₃) with ε-split x₂
-  -- IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ {b = _} {_} {_} {[] ↕ imp₁} (ex y₁ y₂ y₃ y₄) (ex (sub x x₁ x₄) (sub x₅ x₆ x₇) x₂ x₃) | PEq.refl , PEq.refl
-  --   with ∙-id⁻ˡ x₁ | ∙-id⁻ˡ x₆
-  -- ... | PEq.refl | PEq.refl = -, ex {!y₁!} {!!} ∙-idˡ {!!} , ex {!!} {!!} {!!} {!!}
-  -- IsPartialSemigroupˡ.assocᵣ binding-semigroupˡ {abc = x₄ ∷ exp₁ ↕ imp₁} σ₁ (ex x x₁ x₂ x₃) = {!!}
+    (ex (sub {e = eb>a} {e' = eb>a'} {d' = a↓'} {u' = b↑'} τ-a↓ τ-b↑ ρ₁)
+        (sub {e = ea>b} {e' = ea>b'} {d' = b↓'} {u' = a↑'} τ-b↓ τ-a↑ ρ₂) σ-ab↑ σ-ab↓)
+    (ex (sub {e = ec>ab} {e' = ec>ab'} {d' = ab↓'} {u' = c↑'} τ-ab↓ τ-c↑ ρ₃)
+        (sub {e = eab>c} {e' = eab>c'} {d' = c↓'} {u' = ab↑'} τ-c↓ τ-ab↑ ρ₄) σ-abc↑ σ-abc↓)
+      with xsplit τ-ab↑ σ-ab↑ | xsplit σ-ab↓ τ-ab↓
+  ... | (a↑'' , b↑'' , ea>c , eb>c) , ν₁ , ν₂ , ν₃ , ν₄ | (b↓'' , ec>b , a↓'' , ec>a) , μ₁ , μ₂ , μ₃ , μ₄ with ∙-assocᵣ ν₁ σ-abc↑ | ∙-assocᵣ μ₃ (∙-comm σ-abc↓)
+  ... | bc↑ , ι₁ , ι₂ | bc↓ , κ₁ , κ₂ with ∙-rotateᵣ (∙-comm τ-b↑) ν₄ | ∙-rotateᵣ (∙-comm τ-b↓) μ₁
+  ... | b↑''' , α-b↑ , ν₅ | b↓''' , α-b↓ , μ₅ with xup² ν₅ (∙-comm τ-c↑) ι₂ | xdown² (∙-comm μ₂) (∙-comm τ-c↓) κ₂
+  ... | bc↑' , ebc>a , σ-bc↑ , τ-bc↑ , ζ-ebc>a | bc↓' , ea>bc , σ-bc↓ , τ-bc↓ , ζ-ea>bc = {!!}
 
   instance binding-semigroup : IsPartialSemigroup _≡_ binding-rel
   binding-semigroup = IsPartialSemigroupˡ.semigroupˡ binding-semigroupˡ
