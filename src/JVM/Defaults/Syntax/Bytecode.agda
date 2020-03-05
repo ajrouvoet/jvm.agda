@@ -1,9 +1,8 @@
 -- Bytecode; i.e., instruction sequences; 
 -- agnostic about the exact instructions, but opiniated about labels
-open import Relation.Binary using (Rel)
 open import Data.List hiding (concat)
 
-module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) where
+module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) (I : T → T → List T → Set ℓ) where
 
 open import Level
 open import Relation.Unary hiding (_∈_; Empty)
@@ -28,77 +27,74 @@ private
 open import Data.List.Relation.Unary.Any
 open import Data.List.Membership.Propositional
 
-Provides : T → Pred Binding ℓ
-Provides τ (u ↕ d) = τ ∈ u
-
--- Decide whether an element is left or right of a disjoint split
-lorr : ∀ {u₁ u₂ t u} → u₁ ⊕ u₂ ≣ u → t ∈ u → t ∈ u₁ ⊎ t ∈ u₂
-lorr (consˡ σ) (here refl) = inj₁ (here refl)
-lorr (consʳ σ) (here refl) = inj₂ (here refl)
-lorr (consˡ σ) (there e) with lorr σ e
-... | inj₁ e' = inj₁ (there e')
-... | inj₂ e' = inj₂ e'
-lorr (consʳ σ) (there e) with lorr σ e
-... | inj₁ e' = inj₁ e'
-... | inj₂ e' = inj₂ (there e')
-
-lemma : ∀ {xs ys zs} {z} → xs - ys ≣ zs → z ∈ exp zs → z ∈ ys
-lemma (sub x x₁ x₂) e = wk x₁ e
-  where
-    wk : ∀ {xs ys zs} {z} → xs ⊗ ys ≣ zs → z ∈ xs → z ∈ zs
-    wk (overlaps σ) (here refl) = here refl
-    wk (consˡ σ) (here refl)      = here refl
-    wk (consʳ σ) (here refl)      = there (wk σ (here refl))
-
-    wk (overlaps σ) (there e)   = there (wk σ e)
-    wk (consˡ σ) (there e)        = there (wk σ e)
-    wk (consʳ σ) (there e)        = there (wk σ (there e))
-
--- Things provided must be on the left or right of a split
-crumb : ∀ {c} {as bs cs : Binding} → Provides c cs → as ∙ bs ≣ cs → (Provides c as) ⊎ (Provides c bs)
-crumb e (ex x₁ x₂ x₃ x₄) with lorr x₃ e
-... | inj₁ l = inj₁ (lemma x₂ l)
-... | inj₂ r = inj₂ (lemma x₁ r)
+Provides : T → Pred Intf ℓ
+Provides τ (u ⇅ d) = τ ∈ u
 
 {- The internals of a zipper: we account binding with the "Global binding" (/Exchange) PRSA -}
-Labeled : T → Pred Binding ℓ
+Labeled : T → Pred Intf ℓ
 Labeled τ = Emp ∪ Up (Just τ)
 
 Labeling : T → Pred (List T) _
-Labeling = λ τ → Bigstar {{r = disjoint-split}} (Just τ) 
+Labeling = λ τ → Bigstar {{r = disjoint-bags}} (Just τ) 
 
-module Codes (I : T → T → List T → Set ℓ) where
+data Code : T → T → Pred Intf ℓ where
+  labeled : ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
+  instr   : ∀[ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
 
-  open import Data.Unit.Polymorphic
+label : ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
+label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
+label l ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙i)
+... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (⊙-curry (arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
+... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
 
-  data Code : T → T → Pred Binding ℓ where
-    labeled : ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
-    instr   : ∀[ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
+⟪_⇒_⟫ : T → T → Pred Intf ℓ
+⟪ τ₁ ⇒ τ₂ ⟫ = Star Code τ₁ τ₂
 
-  label : ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
-  label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
-  label l ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙i)
-  ... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (⊙-curry (arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
-  ... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
+⟪_⇒_⟫+ : T → T → Pred Intf ℓ
+⟪ τ₁ ⇒ τ₂ ⟫+ = Plus Code τ₁ τ₂
 
-  ⟪_⇒_⟫ : T → T → Pred Binding ℓ
-  ⟪ τ₁ ⇒ τ₂ ⟫ = Star Code τ₁ τ₂
+⟪_⇐_⟫ : T → T → Pred Intf ℓ
+⟪ τ₂ ⇐ τ₁ ⟫ = Star (flip Code) τ₁ τ₂
+  where open import Function using (flip)
 
-  ⟪_⇒_⟫+ : T → T → Pred Binding ℓ
-  ⟪ τ₁ ⇒ τ₂ ⟫+ = Plus Code τ₁ τ₂
+  -- {- The zipper structure for walking over bytecode with focus -}
+  -- module _ where
+  --   private
+  --     Zipper′ = λ a b c d → ⟪ a ⇐ b ⟫ ⊙ (Code b c) ⊙ ⟪ c ⇒ d ⟫
 
-  ⟪_⇐_⟫ : T → T → Pred Binding ℓ
-  ⟪ τ₂ ⇐ τ₁ ⟫ = Star (flip Code) τ₁ τ₂
-    where open import Function using (flip)
+  --   data Zipper : (b c d : T) → Pred Labels ℓ where
+  --     zipped : ∀ {a b c d} → ∀[ (λ Φ → Zipper′ a b c d (Φ ⇅ [])) ⇒ Zipper b c d ]
+  --     ended  : ∀ {a b}     → ∀[ (λ Φ → ⟪ a ⇐ b ⟫ (Φ ⇅ [])) ⇒ Zipper b b b ]
 
-  {- The zipper structure for walking over bytecode with focus -}
-  module _ where
-    private
-      Zipper′ = λ a b c d → ⟪ a ⇐ b ⟫ ⊙ (Code b c) ⊙ ⟪ c ⇒ d ⟫
+    -- Decide whether an element is left or right of a disjoint split
+    -- postulate lorr : ∀ {u₁ u₂ t u} → u₁ ⊕ u₂ ≣ u → t ∈ u → t ∈ u₁ ⊎ t ∈ u₂
+    -- lorr (consˡ σ) (here refl) = inj₁ (here refl)
+    -- lorr (consʳ σ) (here refl) = inj₂ (here refl)
+    -- lorr (consˡ σ) (there e) with lorr σ e
+    -- ... | inj₁ e' = inj₁ (there e')
+    -- ... | inj₂ e' = inj₂ e'
+    -- lorr (consʳ σ) (there e) with lorr σ e
+    -- ... | inj₁ e' = inj₁ e'
+    -- ... | inj₂ e' = inj₂ (there e')
 
-    data Zipper : (b c d : T) → Pred Labels ℓ where
-      zipped : ∀ {a b c d} → ∀[ (λ Φ → Zipper′ a b c d (Φ ↕ [])) ⇒ Zipper b c d ]
-      ended  : ∀ {a b}     → ∀[ (λ Φ → ⟪ a ⇐ b ⟫ (Φ ↕ [])) ⇒ Zipper b b b ]
+    -- postulate lemma : ∀ {xs ys zs} {z} → xs - ys ≣ zs → z ∈ up zs → z ∈ ys
+    -- lemma (sub x x₁ x₂) e = wk x₁ e
+    --   where
+    --     wk : ∀ {xs ys zs} {z} → xs ⊗ ys ≣ zs → z ∈ xs → z ∈ zs
+    --     wk (overlaps σ) (here refl) = here refl
+    --     wk (consˡ σ) (here refl)      = here refl
+    --     wk (consʳ σ) (here refl)      = there (wk σ (here refl))
+
+    --     wk (overlaps σ) (there e)   = there (wk σ e)
+    --     wk (consˡ σ) (there e)        = there (wk σ e)
+    --     wk (consʳ σ) (there e)        = there (wk σ (there e))
+
+    -- Things provided must be on the left or right of a split
+    -- crumb : ∀ {c} {as bs cs : Intf} → Provides c cs → as ∙ bs ≣ cs → (Provides c as) ⊎ (Provides c bs)
+    -- crumb e (ex x₁ x₂ x₃ x₄) with lorr x₃ e
+    -- ... | inj₁ l = inj₁ (lemma x₂ l)
+    -- ... | inj₂ r = inj₂ (lemma x₁ r)
+
 
     -- rewind with an accumulator to a labeled instruction
     -- {-# TERMINATING #-}
@@ -136,6 +132,6 @@ module Codes (I : T → T → List T → Set ℓ) where
     -- moveᵣ (zipped z) | bwd ∙⟨ σ ⟩ i ▹⟨ σ₂ ⟩ is = -, zipped (cons (⊙-swap bwd) ∙⟨ σ ⟩ i ∙⟨ σ₂ ⟩ is)
 
     -- postulate focus : ∀[ Zipper τ₁ τ₂ τ ⇒ (Zipper τ₁ τ₂ τ ⊙ (Empty (τ₁ ≡ τ₂ × τ₂ ≡ τ) ∪ (I τ₁ τ₂))) ]
-    -- -- focus z@(zipped (bwd ∙⟨ σ₁ ⟩ ↑ f ∙⟨ σ₂ ⟩ fwd)) =
+    -- -- focus z@(zipped (bwd ∙⟨ σ₁ ⟩ ⇅ f ∙⟨ σ₂ ⟩ fwd)) =
     -- --   let y = ⊙-assocᵣ (copy f ∙⟨ σ₂ ⟩ fwd) in ?
     -- -- focus z@(ended x)  = z ∙⟨ ∙-idʳ ⟩ inj₁ refl

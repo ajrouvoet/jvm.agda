@@ -44,16 +44,14 @@ module _ where
     -- exceptions/abrupt termination/etc
     ret   : ∀[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
 
-open import JVM.Defaults.Syntax.Bytecode StackTy public
 
 module _ τ where
-  open Codes ⟨ τ ∣_⇒_⟩
+  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩
 
   ⟪_∣_⇐_⟫   = ⟪_⇐_⟫
   ⟪_∣_⇒_⟫   = ⟪_⇒_⟫
   ⟪_∣_⇒_⟫+  = ⟪_⇒_⟫+
-  ⟪_∣_⇒_⇒_⟫ = Zipper
 
 module _ {τ} where
-  open Codes ⟨ τ ∣_⇒_⟩
-    hiding (⟪_⇐_⟫; ⟪_⇒_⟫; ⟪_⇒_⟫+; Zipper; Code) public
+  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩
+    hiding (⟪_⇐_⟫; ⟪_⇒_⟫; ⟪_⇒_⟫+; Code) public
