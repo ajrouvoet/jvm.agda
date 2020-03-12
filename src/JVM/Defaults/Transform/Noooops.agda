@@ -30,10 +30,10 @@ noooop nil = nil
 noooop (cons (instr (↓ i) ∙⟨ σ ⟩ is)) =
   case (is-noop i) of λ where
     nothing              → cons (instr (↓ i) ∙⟨ σ ⟩ noooop is)
-    (just (refl , refl)) → coe {{star-respects}} (∙-id⁻ˡ σ) is
+    (just (refl , refl)) → (coe {{star-respects}} (∙-id⁻ˡ σ) (noooop is))
 
 -- (2) is labeled
 noooop (cons (li@(labeled (l ∙⟨ σ₀ ⟩ ↓ i)) ∙⟨ σ ⟩ is)) =
   case (is-noop i) of λ where
     nothing              → cons (li ∙⟨ σ ⟩ noooop is)
-    (just (refl , refl)) → label-start l ⟨ coe {{∙-respects-≈ˡ}} (sym (∙-id⁻ʳ σ₀)) σ ⟩ is
+    (just (refl , refl)) → label-start l ⟨ coe {{∙-respects-≈ˡ}} (sym (∙-id⁻ʳ σ₀)) σ ⟩ (noooop is)

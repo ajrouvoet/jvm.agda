@@ -17,7 +17,7 @@ open import Relation.Ternary.Structures.Syntax
 open import JVM.Types
 open import JVM.Contexts
 
-open import CF.Syntax as Src hiding (Stmt; Block) public
+open import CF.Syntax as Src hiding (Stmt; Block; Statement) public
 
 module Tgt where
   mutual

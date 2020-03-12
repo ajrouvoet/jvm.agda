@@ -57,7 +57,7 @@ mutual
 
 
 -- make constructors visible
-open Statements Block public hiding (Statement)
+open Statements Block public
 
 infixr 5 _⍮⟨_⟩_
 pattern _⍮⟨_⟩_ s σ b = cons (s ×⟨ σ ⟩ b)
