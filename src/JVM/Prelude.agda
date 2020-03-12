@@ -1,7 +1,7 @@
+{-# OPTIONS --safe --without-K #-}
 module JVM.Prelude where
 
 open import Level public hiding (zero) renaming (suc to sucℓ)
-open import Size public
 open import Function public using (case_of_; _∘_; id; const)
 
 open import Data.List using (List; _∷_; []; [_]) public

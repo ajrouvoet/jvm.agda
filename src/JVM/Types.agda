@@ -1,3 +1,4 @@
+{-# OPTIONS --safe --without-K #-}
 module JVM.Types where
 
 open import Data.List

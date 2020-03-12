@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module CF.Syntax where
 
 open import Level

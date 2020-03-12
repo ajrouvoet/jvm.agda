@@ -44,7 +44,6 @@ module _ where
     -- exceptions/abrupt termination/etc
     ret   : ∀[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
 
-
 module _ τ where
   open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩
 

@@ -23,26 +23,26 @@ module _ where
   open Bind {{ctx-monoid}} {{⇑-monad {0ℓ} }} {{IsPartialSemigroup.⊙-respect-≈ ctx-semigroup}} using () renaming (_>>=_ to _⇑->>=_) public
 
 module _ Γ where
-  open import CF.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ using (Compiler) public
+  open import CF.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop using (Compiler) public
 
 module _ {Γ} where
-  open import CF.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ hiding (Compiler) public
+  open import CF.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop hiding (Compiler) public
 
 
   {-# TERMINATING #-}
   compileₑ : ∀ {ψ : StackTy} → (Exp a ⇑) Γ → ε[ Compiler Γ ψ (a ∷ ψ) Emp ]
 
   compileₑ (unit ⇈ wk) = do
-    tell (↓ (push unit))
+    code (push unit)
 
   compileₑ (null ⇈ wk) = do
-    tell (↓ (push null))
+    code (push null)
 
   compileₑ (num x ⇈ wk) = do
-    tell (↓ (push (num x)))
+    code (push (num x))
 
   compileₑ (var x ⇈ wk) = do
-    tell (↓ (load (x ⇈ wk)))
+    code (load (x ⇈ wk))
 
   compileₑ (iop f e₁∙e₂ ⇈ wk) = do
     let e₁ = (e₁∙e₂  ⇈ wk) ⇑->>= π₁
@@ -50,12 +50,12 @@ module _ {Γ} where
 
     refl ← compileₑ e₁
     refl ← compileₑ e₂
-    tell (↓ (bop f))
+    code (bop f)
 
   compileₑ (ref e ⇈ wk) = do
     refl ← compileₑ (e  ⇈ wk)
-    tell (↓ new)
+    code new
 
   compileₑ (deref e ⇈ wk) = do
     refl ← compileₑ (e ⇈ wk)
-    tell (↓ read)
+    code read

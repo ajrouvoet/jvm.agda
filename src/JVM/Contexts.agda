@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module JVM.Contexts where
 
 open import JVM.Types

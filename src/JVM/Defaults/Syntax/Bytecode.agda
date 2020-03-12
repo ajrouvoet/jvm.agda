@@ -16,7 +16,7 @@ open import Data.Sum
 open import Data.Product
  
 open import JVM.Model T; open Syntax
-open import Relation.Ternary.Data.Bigstar
+open import Relation.Ternary.Data.Bigstar {{Disjoint.bags}} {{Disjoint.bags-isMonoid}}
 
 Labels = List T
 
@@ -25,7 +25,7 @@ Labeled : T → Pred Intf ℓ
 Labeled τ = Emp ∪ Up (Just τ)
 
 Labeling : T → Pred (List T) _
-Labeling = λ τ → Bigstar {{Disjoint.bags}} (Just τ) 
+Labeling = λ τ → Bigstar (Just τ) 
 
 data Code : T → T → Pred Intf ℓ where
   labeled : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
