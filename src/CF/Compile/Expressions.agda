@@ -30,7 +30,7 @@ module _ {Γ} where
 
 
   {-# TERMINATING #-}
-  compileₑ : ∀ {ψ : StackTy} → (Exp a ⇑) Γ → Compiler Γ ψ (a ∷ ψ) Emp ([] ⇅ [])
+  compileₑ : ∀ {ψ : StackTy} → (Exp a ⇑) Γ → ε[ Compiler Γ ψ (a ∷ ψ) Emp ]
 
   compileₑ (unit ⇈ wk) = do
     tell (↓ (push unit))

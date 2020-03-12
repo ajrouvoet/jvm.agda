@@ -1,14 +1,12 @@
 module CF.Compile where
 
-open import Level
-open import Data.Unit
 open import Data.Product
 open import Data.List hiding (null; [_])
 open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Unary
 open import Relation.Unary.PredicateTransformer using (Pt)
-open import Relation.Ternary.Core as Core using (Rel₃; Respect)
-open import Relation.Ternary.Structures using (IsPartialSemigroup; IsPartialMonoid; Emptiness; IsCommutative)
+open import Relation.Ternary.Core
+open import Relation.Ternary.Structures
 
 open import CF.Transform.Hoist
 open import CF.Compile.Expressions
@@ -21,7 +19,8 @@ open import JVM.Defaults.Syntax.Instructions
 
 {-# TERMINATING #-}
 mutual
-  compile : ∀ {ψ : StackTy} → (Stmt r ⇑) Γ → Compiler Γ ψ ψ Emp ([] ⇅ []) 
+  {- Compiling statements -}
+  compile : ∀ {ψ : StackTy} → (Stmt r ⇑) Γ → ε[ Compiler Γ ψ ψ Emp  ]
 
   compile (asgn x∙e ⇈ wk) = do
     let x = (x∙e  ⇈ wk) ⇑->>= π₁
@@ -87,5 +86,15 @@ mutual
     -- labeled end node
     label-start +e ⟨ σ ⟩ tell (↓ noop)
 
+  {- Compiling blocks -}
   compiler : ∀ {ψ : StackTy} → (Block r ⇑) Γ → ε[ Compiler Γ ψ ψ Emp ]  
-  compiler = {!!}
+
+  compiler (nil ⇈ wk) = do
+    return refl
+
+  compiler ((cons s∙b) ⇈ wk) = do
+    let s = (s∙b ⇈ wk) ⇑->>= π₁
+    let b = (s∙b ⇈ wk) ⇑->>= π₂
+
+    refl ← compile s
+    compiler b 
