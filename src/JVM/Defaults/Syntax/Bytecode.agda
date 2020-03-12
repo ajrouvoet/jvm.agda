@@ -3,7 +3,7 @@
 -- agnostic about the exact instructions, but opiniated about labels
 open import Data.List hiding (concat)
 
-module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) (I : T → T → List T → Set ℓ) where
+module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) (I : T → T → List T → Set ℓ) (nop : ∀ {τ} → I τ τ [])where
 
 open import Level
 open import Data.Unit
@@ -31,7 +31,6 @@ data Code : T → T → Pred Intf ℓ where
   labeled : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
   instr   : ∀ {τ₁ τ₂} → ∀[ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
 
-{- This is a type-checking time sync! -}
 label : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
 label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
 label l ⟨ σ ⟩ labeled (l₂∙i) =
@@ -49,6 +48,12 @@ label l ⟨ σ ⟩ labeled (l₂∙i) =
 ⟪_⇐_⟫ : T → T → Pred Intf ℓ
 ⟪ τ₂ ⇐ τ₁ ⟫ = Star (flip Code) τ₁ τ₂
   where open import Function using (flip)
+
+label-start : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ ⟪ τ₁ ⇒ τ₂ ⟫ ─⊙ ⟪ τ₁ ⇒ τ₂ ⟫ ]
+label-start l ⟨ σ ⟩ nil            = (labeled (l ∙⟨ σ ⟩ ↓ nop)) ▹⟨ ∙-idʳ ⟩ nil 
+label-start l ⟨ σ ⟩ (i ▹⟨ σ₂ ⟩ is) =
+  let _ , σ₃ , σ₄ = ∙-assocₗ σ σ₂ in
+  (label l ⟨ σ₃ ⟩ i) ▹⟨ σ₄ ⟩ is
 
   -- {- The zipper structure for walking over bytecode with focus -}
   -- module _ where

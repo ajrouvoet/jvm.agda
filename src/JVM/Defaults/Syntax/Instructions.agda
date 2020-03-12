@@ -45,12 +45,13 @@ module _ where
     ret   : ∀[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
 
 module _ τ where
-  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩
+  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩ noop as BC
+  open BC using (Code) public
 
   ⟪_∣_⇐_⟫   = ⟪_⇐_⟫
   ⟪_∣_⇒_⟫   = ⟪_⇒_⟫
   ⟪_∣_⇒_⟫+  = ⟪_⇒_⟫+
 
 module _ {τ} where
-  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩
+  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩ noop
     hiding (⟪_⇐_⟫; ⟪_⇒_⟫; ⟪_⇒_⟫+; Code) public

@@ -19,7 +19,7 @@ private
     τ₁ τ₂ τ : T
 
 open import JVM.Model T; open Syntax
-open import JVM.Defaults.Syntax.Bytecode T ⟨_⇒_⟩
+open import JVM.Defaults.Syntax.Bytecode T ⟨_⇒_⟩ nop
 
 Compiler : T → T → Pt Intf 0ℓ
 Compiler ψ₁ ψ₂ P = ⟪ ψ₁ ⇒ ψ₂ ⟫ ⊙ P
@@ -47,8 +47,8 @@ attach : ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
 attach l = tell (labeled (⦇ [_] l ⦈ ∙⟨ ∙-idʳ ⟩ ↓ nop))
 
 -- We can label the start of a compiler computation
-label-start : ∀ {P} → ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₂ P ─⊙ Compiler τ₁ τ₂ P ]
-label-start l ⟨ σ ⟩ c = do
+attachTo : ∀ {P} → ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₂ P ─⊙ Compiler τ₁ τ₂ P ]
+attachTo l ⟨ σ ⟩ c = do
   c ∙⟨ σ ⟩ refl ← attach l &⟨ Compiler _ _ _ # ∙-comm σ ⟩ c
   coe (∙-id⁻ʳ σ) c
 

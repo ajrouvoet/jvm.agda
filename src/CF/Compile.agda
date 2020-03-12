@@ -55,8 +55,7 @@ mutual
 
     -- condition
     +c ∙⟨ σ ⟩ -c        ← mklabel {τ = ψ}
-    -c ∙⟨ σ ⟩ refl      ← attach +c               &⟨ Down _ # ∙-comm σ ⟩ -c
-    -c ∙⟨ σ ⟩ refl      ← compileₑ e              &⟨ Down _ # σ ⟩ -c
+    -c ∙⟨ σ ⟩ refl      ← attachTo +c ⟨ ∙-idʳ ⟩ compileₑ e &⟨ Down _ # ∙-comm σ ⟩ -c
     (↓ -e) ∙⟨ σ ⟩ -c∙+e ← mapM ⊙-rotateᵣ (mklabel &⟨ Down _ # σ ⟩ -c)
     -c∙+e  ∙⟨ σ ⟩ refl  ← code (if eq -e)         &⟨ (Down _) ⊙ (Up _) # ∙-comm σ ⟩ -c∙+e
 
@@ -83,7 +82,7 @@ mutual
 
     -- then
     +t ∙⟨ σ ⟩ +e        ← ⊙-id⁻ʳ {{ ⊙-respect-≈ }} ⟨$⟩ (code (goto -e) &⟨ _ ⊙ _ # ∙-comm σ ⟩ +t∙+e)
-    +e ∙⟨ σ ⟩ refl      ← label-start +t ⟨ ∙-idʳ ⟩ compile then &⟨ Up _ # ∙-comm σ  ⟩ +e
+    +e ∙⟨ σ ⟩ refl      ← attachTo +t ⟨ ∙-idʳ ⟩ compile then &⟨ Up _ # ∙-comm σ  ⟩ +e
 
     -- label the end
     coe (∙-id⁻ʳ σ) (attach +e)

@@ -42,12 +42,9 @@ show-instr (if c x₁) = "if" ++ show-comp c
     show-comp le = "le"
 show-instr ret       = "ret"
 
-module _ {Γ} where
-  open import JVM.Defaults.Syntax.Bytecode _ ⟨ Γ ∣_⇒_⟩
-
-  show-code : ∀ {Φ} → Code ψ₁ ψ₂ Φ → String
-  show-code (labeled (_ ∙⟨ _ ⟩ ↓ i))   = "<>: " ++ show-instr i
-  show-code (instr (↓ i))              = "    " ++ show-instr i
+show-code : ∀ {Γ Φ} → Code Γ ψ₁ ψ₂ Φ → String
+show-code (labeled (_ ∙⟨ _ ⟩ ↓ i))   = "<>: " ++ show-instr i
+show-code (instr (↓ i))              = "    " ++ show-instr i
 
 show : ∀ {Φ} → ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → String
 show nil      = ""

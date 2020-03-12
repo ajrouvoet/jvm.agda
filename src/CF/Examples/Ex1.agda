@@ -13,6 +13,7 @@ open import Relation.Ternary.Monad.Weakening
 
 open import JVM.Contexts
 open import JVM.Types
+open import JVM.Defaults.Transform.Noooops
 
 open import CF.Syntax as Src
 open import CF.Transform.Hoist
@@ -52,3 +53,5 @@ ex₁-bytecode =
     (_ , Possibly.possibly _ ex) = ex₁-hoisted
     (bc ∙⟨ _ ⟩ _) = compiler [] (return ex)
   in bc
+
+ex₁-optimized = noooop ex₁-bytecode
