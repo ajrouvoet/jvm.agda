@@ -41,10 +41,6 @@ ref x ≟ ref y with x ≟ y
 ref x ≟ ref y | yes p = yes (cong ref p)
 ref x ≟ ref y | no ¬p = no λ{ refl → ¬p refl }
 
--- the PRSA for lists of types in general
-open import Relation.Ternary.Construct.List.Overlapping Ty public
-  renaming (overlap-rel to ctx-rel)
-
 {- Frames and their typings -}
 module _ where
 

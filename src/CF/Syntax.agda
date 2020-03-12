@@ -12,6 +12,8 @@ open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad.Possibly
 
 open import JVM.Types
+open import JVM.Contexts
+
 open import Relation.Ternary.Monad.Intros Ty public
 open import Relation.Ternary.Data.Allstar Ty
 

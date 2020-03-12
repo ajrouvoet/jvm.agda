@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 -- Bytecode; i.e., instruction sequences; 
 -- agnostic about the exact instructions, but opiniated about labels
 open import Data.List hiding (concat)
@@ -5,47 +6,39 @@ open import Data.List hiding (concat)
 module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) (I : T → T → List T → Set ℓ) where
 
 open import Level
+open import Data.Unit
 open import Relation.Unary hiding (_∈_; Empty)
-open import Relation.Unary.PredicateTransformer using (Pt)
-open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Ternary.Data.ReflexiveTransitive
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
-open import Relation.Ternary.Data.Bigstar
 
 open import Data.Sum
 open import Data.Product
-
-open import Relation.Ternary.Construct.Duplicate T
-open import JVM.Model T
+ 
+open import JVM.Model T; open Syntax
+open import Relation.Ternary.Data.Bigstar
 
 Labels = List T
-private
-  variable
-    τ τ₁ τ₂ : T
-
-open import Data.List.Relation.Unary.Any
-open import Data.List.Membership.Propositional
-
-Provides : T → Pred Intf ℓ
-Provides τ (u ⇅ d) = τ ∈ u
 
 {- The internals of a zipper: we account binding with the "Global binding" (/Exchange) PRSA -}
 Labeled : T → Pred Intf ℓ
 Labeled τ = Emp ∪ Up (Just τ)
 
 Labeling : T → Pred (List T) _
-Labeling = λ τ → Bigstar {{r = disjoint-bags}} (Just τ) 
+Labeling = λ τ → Bigstar {{Disjoint.bags}} (Just τ) 
 
 data Code : T → T → Pred Intf ℓ where
-  labeled : ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
-  instr   : ∀[ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
+  labeled : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
+  instr   : ∀ {τ₁ τ₂} → ∀[ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
 
-label : ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
+{- This is a type-checking time sync! -}
+label : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
 label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
-label l ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙i)
-... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (⊙-curry (arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
-... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
+label l ⟨ σ ⟩ labeled (l₂∙i) =
+  let
+    l₁∙l₂ ∙⟨ σ′ ⟩ i = ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙i) 
+    ls = upMap (↑ (Disjoint.⊙-curry (Disjoint.arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
+  in labeled (ls ∙⟨ σ′ ⟩ i)
 
 ⟪_⇒_⟫ : T → T → Pred Intf ℓ
 ⟪ τ₁ ⇒ τ₂ ⟫ = Star Code τ₁ τ₂
@@ -88,6 +81,9 @@ label l ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙
     --     wk (overlaps σ) (there e)   = there (wk σ e)
     --     wk (consˡ σ) (there e)        = there (wk σ e)
     --     wk (consʳ σ) (there e)        = there (wk σ (there e))
+
+    -- Provides : T → Pred Intf ℓ
+    -- Provides τ (u ⇅ d) = τ ∈ u
 
     -- Things provided must be on the left or right of a split
     -- crumb : ∀ {c} {as bs cs : Intf} → Provides c cs → as ∙ bs ≣ cs → (Provides c as) ⊎ (Provides c bs)

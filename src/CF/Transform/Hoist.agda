@@ -12,8 +12,11 @@ open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad
 open import Relation.Ternary.Respect.Propositional
 open import Relation.Ternary.Monad.Possibly
+open import Relation.Ternary.Structures.Syntax
 
 open import JVM.Types
+open import JVM.Contexts
+
 open import CF.Syntax as Src hiding (Stmt; Block) public
 
 module Tgt where

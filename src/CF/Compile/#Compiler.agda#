@@ -1,0 +1,38 @@
+module CF.Compile.Compiler where
+
+{- The writer structure, for incrementaly output bytecode -}
+module _ where
+  open import Relation.Ternary.Monad using (Monad; module Bind; module Strength)
+
+  -- The writer monad
+  Compiler : Ctx → StackTy → StackTy → Pt Intf 0ℓ
+  Compiler Γ τ₁ τ₂ P = ⟪ Γ ∣ τ₁ ⇐ τ₂ ⟫ ⊙ P
+
+  -- Output a single, unlabeled instruction
+  tell  : ∀[ Down ⟨ Γ ∣ τ₁ ⇒ τ₂ ⟩ ⇒ Compiler Γ τ₁ τ₂ Emp ] 
+  tell i = (instr i ▹⟨ ∙-idʳ ⟩ nil) ∙⟨ ∙-idʳ ⟩ refl
+
+  -- -- Label the output of a compiler.
+  -- label-start : ∀ {P} → ∀[ Up (Labeling τ₁) ⇒ Compiler Γ τ₁ τ₂ P ─⊙ Compiler Γ τ₁ τ₂ P ]
+  -- label-start l ⟨ σ₁ ⟩ (ix ∙⟨ σ₂ ⟩ px) = {!!}
+
+  -- -- oh no, there is no start
+  -- label-start l ⟨ σ₁ ⟩ (nil ∙⟨ σ₂ ⟩ px) rewrite ∙-id⁻ˡ σ₂ =
+  --   (labeled (l ∙⟨ ∙-idʳ ⟩ ↓ noop) ▹⟨ ∙-idʳ ⟩ nil) ∙⟨ σ₁ ⟩ px
+
+  -- -- attach the label to the start
+  -- label-start l ⟨ σ₁ ⟩ (i ▹⟨ σ₂ ⟩ ix ∙⟨ σ₃ ⟩ px) with ∙-assocₗ σ₁ σ₃
+  -- ... | _ , σ₄ , σ₅ with ∙-assocₗ σ₄ σ₂
+  -- ... | _ , σ₆ , σ₇ =
+  --   (label {!l!} ⟨ {!σ₂!} ⟩ i) ▹⟨ σ₇ ⟩ ix ∙⟨ σ₅ ⟩ px
+
+  module _ {Γ : Ctx} where
+    postulate instance compiler-monad : Monad StackTy (Compiler Γ)
+    open Monad compiler-monad public
+    open Bind {{monad = compiler-monad}} public
+    open Strength {{monad = compiler-monad}} public
+
+  -- Magically, we can create labels in pairs of positive and negative occurences,
+--   -- in a pure manner.
+--   mklabel : ∀ {τ} → ε[ Compiler Γ τ₁ τ₁ (Up (Just τ) ⊙ Down (Just τ)) ]
+--   mklabel {τ = τ} = return (binder τ)
