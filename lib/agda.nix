@@ -15,8 +15,8 @@ mkDerivation {
   src = fetchFromGitHub {
     owner  = "agda";
     repo   = "agda";
-    rev    = "cf761094d13267dc87f13527ca6af2b545136033";
-    sha256 = "1qdk4sxkr763942jsvlclv4z8lzsgsp3xwgd447dskinpjl86bch";
+    rev    = "99b858c75cbd73ae3a60491f4dcabadb5cf9cc6f";
+    sha256 = "09sk96877vws9hs4849bgrgrngw4a30c62a9vji43yhc8dfad31y";
   };
 
   isLibrary = true;
@@ -39,6 +39,7 @@ mkDerivation {
     process process-extras QuickCheck regex-tdfa tasty tasty-hunit
     tasty-quickcheck tasty-silver temporary text unix-compat uri-encode
   ];
+  doCheck = false;
   postInstall = ''
     files=("$data/share/ghc-"*"/"*"-ghc-"*"/Agda-"*"/lib/prim/Agda/"{Primitive.agda,Builtin"/"*.agda})
     for f in "''${files[@]}" ; do
