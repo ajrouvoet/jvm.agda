@@ -50,6 +50,9 @@ open import Relation.Ternary.Construct.Exchange
     ; exchange-isCommutative to intf-isCommutative
     ; exchange-isMonoid to intf-isMonoid)
 
+open DownIntuitive {{Overlap.bags-isIntuitionistic}} public
+  renaming (exchange-intuitive-down to intf-isIntuitive)
+
 module Syntax where
   open Rel₃ intf-rel public
   open Emptiness          intf-emptiness     public
@@ -57,6 +60,7 @@ module Syntax where
   open IsPartialMonoid    intf-isMonoid      public
   open IsCommutative      intf-isCommutative public
   open CommutativeSemigroupOps {{intf-isSemigroup}} {{intf-isCommutative}} public
+  open IsIntuitionistic   intf-isIntuitive   public
 
 open Syntax
 

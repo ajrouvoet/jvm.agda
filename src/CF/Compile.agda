@@ -55,13 +55,13 @@ mutual
 
     -- condition
     +c ∙⟨ σ ⟩ -c        ← mklabel {τ = ψ}
-    -c ∙⟨ σ ⟩ refl      ← attachTo +c ⟨ ∙-idʳ ⟩ compileₑ e &⟨ Down _ # ∙-comm σ ⟩ -c
-    (↓ -e) ∙⟨ σ ⟩ -c∙+e ← mapM ⊙-rotateᵣ (mklabel &⟨ Down _ # σ ⟩ -c)
-    -c∙+e  ∙⟨ σ ⟩ refl  ← code (if eq -e)         &⟨ (Down _) ⊙ (Up _) # ∙-comm σ ⟩ -c∙+e
+    -c ∙⟨ σ ⟩ refl      ← attachTo +c ⟨ ∙-idʳ ⟩ compileₑ e         &⟨ Down _ # ∙-comm σ ⟩ -c
+    (↓ -e) ∙⟨ σ ⟩ -c∙+e ← mapM ⊙-rotateᵣ (mklabel                  &⟨ Down _ # σ        ⟩ -c)
+    -c∙+e  ∙⟨ σ ⟩ refl  ← code (if eq -e)                          &⟨ _ ⊙ _  # ∙-comm σ ⟩ -c∙+e
 
     -- body
-    ↓ -c ∙⟨ σ ⟩ +e      ← ⊙-id⁻ʳ {{⊙-respect-≈}} ⟨$⟩ (compile body &⟨ (Down _) ⊙ (Up _) # σ ⟩ -c∙+e)
-    +e   ∙⟨ σ ⟩ refl    ← code (goto -c)               &⟨ Up _ # ∙-comm σ ⟩ +e
+    ↓ -c ∙⟨ σ ⟩ +e      ← ⊙-id⁻ʳ {{⊙-respect-≈}} ⟨$⟩ (compile body &⟨ _ ⊙ _  # σ        ⟩ -c∙+e)
+    +e   ∙⟨ σ ⟩ refl    ← code (goto -c)                           &⟨ Up _   # ∙-comm σ ⟩ +e
 
     -- label the end
     coe (∙-id⁻ʳ σ) (attach +e)
@@ -74,15 +74,15 @@ mutual
     -- condition
     refl                ← compileₑ e₁
     +t ∙⟨ σ ⟩ ↓ -t      ← mklabel {τ = ψ}
-    +t ∙⟨ σ ⟩ refl      ← code (if ne -t)                  &⟨ Up _ # σ ⟩ +t
+    +t ∙⟨ σ ⟩ refl      ← code (if ne -t)                              &⟨ Up _  # σ        ⟩ +t
 
     -- else
-    +t   ∙⟨ σ ⟩ refl    ← compile else                     &⟨ Up _ # σ ⟩ +t
-    ↓ -e ∙⟨ σ ⟩ +t∙+e   ← ⊙-rotateᵣ ⟨$⟩ (mklabel { τ = ψ } &⟨ Up _ # σ ⟩ +t)
+    +t   ∙⟨ σ ⟩ refl    ← compile else                                 &⟨ Up _  # σ        ⟩ +t
+    ↓ -e ∙⟨ σ ⟩ +t∙+e   ← ⊙-rotateᵣ ⟨$⟩ (mklabel { τ = ψ }             &⟨ Up _  # σ        ⟩ +t)
 
     -- then
     +t ∙⟨ σ ⟩ +e        ← ⊙-id⁻ʳ {{ ⊙-respect-≈ }} ⟨$⟩ (code (goto -e) &⟨ _ ⊙ _ # ∙-comm σ ⟩ +t∙+e)
-    +e ∙⟨ σ ⟩ refl      ← attachTo +t ⟨ ∙-idʳ ⟩ compile then &⟨ Up _ # ∙-comm σ  ⟩ +e
+    +e ∙⟨ σ ⟩ refl      ← attachTo +t ⟨ ∙-idʳ ⟩ compile then           &⟨ Up _  # ∙-comm σ ⟩ +e
 
     -- label the end
     coe (∙-id⁻ʳ σ) (attach +e)
