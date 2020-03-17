@@ -1,3 +1,4 @@
+{-# OPTIONS --no-qualified-instances #-}
 module CF.Compile where
 
 open import Data.Product
@@ -7,13 +8,14 @@ open import Relation.Unary
 open import Relation.Unary.PredicateTransformer using (Pt)
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
+open import Relation.Ternary.Structures.Syntax
 
 open import CF.Transform.Hoist
 open import CF.Compile.Expressions
 
 open import JVM.Types
 open import JVM.Contexts
-open import JVM.Model StackTy; open Syntax
+open import JVM.Model StackTy
 open import JVM.Defaults.Syntax.Values
 open import JVM.Defaults.Syntax.Instructions
 
@@ -60,7 +62,7 @@ mutual
     -c∙+e  ∙⟨ σ ⟩ refl  ← code (if eq -e)                          &⟨ _ ⊙ _  # ∙-comm σ ⟩ -c∙+e
 
     -- body
-    ↓ -c ∙⟨ σ ⟩ +e      ← ⊙-id⁻ʳ {{⊙-respect-≈}} ⟨$⟩ (compile body &⟨ _ ⊙ _  # σ        ⟩ -c∙+e)
+    ↓ -c ∙⟨ σ ⟩ +e      ← ⊙-id⁻ʳ ⟨$⟩ (compile body &⟨ _ ⊙ _  # σ        ⟩ -c∙+e)
     +e   ∙⟨ σ ⟩ refl    ← code (goto -c)                           &⟨ Up _   # ∙-comm σ ⟩ +e
 
     -- label the end
@@ -81,7 +83,7 @@ mutual
     ↓ -e ∙⟨ σ ⟩ +t∙+e   ← ⊙-rotateᵣ ⟨$⟩ (mklabel { τ = ψ }             &⟨ Up _  # σ        ⟩ +t)
 
     -- then
-    +t ∙⟨ σ ⟩ +e        ← ⊙-id⁻ʳ {{ ⊙-respect-≈ }} ⟨$⟩ (code (goto -e) &⟨ _ ⊙ _ # ∙-comm σ ⟩ +t∙+e)
+    +t ∙⟨ σ ⟩ +e        ← ⊙-id⁻ʳ ⟨$⟩ (code (goto -e) &⟨ _ ⊙ _ # ∙-comm σ ⟩ +t∙+e)
     +e ∙⟨ σ ⟩ refl      ← attachTo +t ⟨ ∙-idʳ ⟩ compile then           &⟨ Up _  # ∙-comm σ ⟩ +e
 
     -- label the end

@@ -1,4 +1,4 @@
-{-# OPTIONS --safe #-}
+{-# OPTIONS --safe --no-qualified-instances #-}
 -- Bytecode; i.e., instruction sequences; 
 -- agnostic about the exact instructions, but opiniated about labels
 open import Data.List hiding (concat)
@@ -14,12 +14,14 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Ternary.Data.ReflexiveTransitive
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
+open import Relation.Ternary.Structures.Syntax
+open import Relation.Ternary.Data.Bigstar
 
 open import Data.Sum
 open import Data.Product
  
-open import JVM.Model T; open Syntax
-open import Relation.Ternary.Data.Bigstar {{Disjoint.bags}} {{Disjoint.bags-isMonoid}}
+open import JVM.Model T
+open Disjoint using (bags; bags-isMonoid; bags-isSemigroup; bags-isCommutative)
 
 Labels = List T
 
@@ -42,11 +44,9 @@ getInstr (instr i@(↓ _))   = i ∙⟨ ∙-copy ⟩ (instr i)
 
 label : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─⊙ Code τ₁ τ₂ ]
 label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
-label l ⟨ σ ⟩ labeled (l₂∙i) =
-  let
-    l₁∙l₂ ∙⟨ σ′ ⟩ i = ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙i) 
-    ls = upMap (↑ (Disjoint.⊙-curry (Disjoint.arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
-  in labeled (ls ∙⟨ σ′ ⟩ i)
+label l ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙i)
+... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (⊙-curry (arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
+... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
 
 ⟪_⇒_⟫ : T → T → Pred Intf ℓ
 ⟪ τ₁ ⇒ τ₂ ⟫ = Star Code τ₁ τ₂
