@@ -12,7 +12,7 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 
 open import Relation.Ternary.Construct.Empty T public
-open import Relation.Ternary.Construct.Duplicate T
+open import Relation.Ternary.Construct.Duplicate T public
 
 module Disjoint where
   open import Relation.Ternary.Construct.Bag empty-rel tt public
@@ -78,6 +78,7 @@ abstract
   open import Relation.Ternary.Construct.Exchange param public
     renaming
       (Account to Intf
+      ; _≈_ to _≈intf≈_
       ; exchange-rel to intf-rel
       ; exchange-emptiness to intf-emptiness
       ; exchange-isSemigroup to intf-isSemigroup

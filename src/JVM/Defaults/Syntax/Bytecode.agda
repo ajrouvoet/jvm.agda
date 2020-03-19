@@ -3,8 +3,7 @@
 -- agnostic about the exact instructions, but opiniated about labels
 open import Data.List hiding (concat)
 
-module JVM.Defaults.Syntax.Bytecode {ℓ}
-  (T : Set ℓ) (I : T → T → List T → Set ℓ) (nop : ∀ {τ} → I τ τ []) where
+module JVM.Defaults.Syntax.Bytecode {ℓ} (T : Set ℓ) (I : T → T → List T → Set ℓ) where
 
 open import Level
 open import Function using (_∘_)
@@ -23,14 +22,7 @@ open import Data.Product
 open import JVM.Model T
 open Disjoint using (bags; bags-isMonoid; bags-isSemigroup; bags-isCommutative)
 
-Labels = List T
-
-{- The internals of a zipper: we account binding with the "Global binding" (/Exchange) PRSA -}
-Labeled : T → Pred Intf ℓ
-Labeled τ = Emp ∪ Up (Just τ)
-
-Labeling : T → Pred (List T) _
-Labeling = λ τ → Bigstar (Just τ) 
+open import JVM.Defaults.Syntax.Labeling T public
 
 data Code : T → T → Pred Intf ℓ where
   labeled : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⊙ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]
@@ -58,8 +50,10 @@ label l ⟨ σ ⟩ labeled (l₂∙i) with ⊙-assocₗ (l ∙⟨ σ ⟩ l₂∙
 ⟪ τ₂ ⇐ τ₁ ⟫ = Star (flip Code) τ₁ τ₂
   where open import Function using (flip)
 
-label-start : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ ⟪ τ₁ ⇒ τ₂ ⟫ ─⊙ ⟪ τ₁ ⇒ τ₂ ⟫ ]
-label-start l ⟨ σ ⟩ nil            = (labeled (l ∙⟨ σ ⟩ ↓ nop)) ▹⟨ ∙-idʳ ⟩ nil 
-label-start l ⟨ σ ⟩ (i ▹⟨ σ₂ ⟩ is) =
-  let _ , σ₃ , σ₄ = ∙-assocₗ σ σ₂ in
-  (label l ⟨ σ₃ ⟩ i) ▹⟨ σ₄ ⟩ is
+module _ (nop : ∀ {τ} → I τ τ []) where
+
+  label-start : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ ⟪ τ₁ ⇒ τ₂ ⟫ ─⊙ ⟪ τ₁ ⇒ τ₂ ⟫ ]
+  label-start l ⟨ σ ⟩ nil            = (labeled (l ∙⟨ σ ⟩ ↓ nop)) ▹⟨ ∙-idʳ ⟩ nil 
+  label-start l ⟨ σ ⟩ (i ▹⟨ σ₂ ⟩ is) =
+    let _ , σ₃ , σ₄ = ∙-assocₗ σ σ₂ in
+    (label l ⟨ σ₃ ⟩ i) ▹⟨ σ₄ ⟩ is

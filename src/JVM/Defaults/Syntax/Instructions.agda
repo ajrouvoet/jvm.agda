@@ -13,8 +13,15 @@ open import Relation.Ternary.Monad.Weakening
 {- Instructions -}
 module _ where
 
+
+  data NativeBinOp : Set where
+    add sub mul div xor : NativeBinOp
+
   data Comparator : Set where
     eq ne lt ge gt le : Comparator
+
+  Reg : Ty → Pred LocalsTy 0ℓ
+  Reg a = (Just a) ⇑
 
   -- True to bytecode, the collection of registers is fixed.
   -- The stack typing varies.
@@ -34,18 +41,18 @@ module _ where
     write : ε[ ⟨ Γ ∣ a ∷ ref a ∷ ψ ⇒ ψ ⟩ ]
 
     -- register manipulation
-    load  : (Just a ⇑) Γ → ε[ ⟨ Γ ∣ ψ ⇒ a ∷ ψ ⟩ ]
-    store : (Just a ⇑) Γ → ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
+    load  : Reg a Γ → ε[ ⟨ Γ ∣ ψ ⇒ a ∷ ψ ⟩ ]
+    store : Reg a Γ → ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
 
     -- jumps
     goto  : ∀[ Just ψ ⇒ ⟨ Γ ∣ ψ       ⇒ ψ ⟩ ]
     if    : Comparator → ∀[ Just ψ ⇒ ⟨ Γ ∣ int ∷ ψ ⇒ ψ ⟩ ]
 
     -- exceptions/abrupt termination/etc
-    ret   : ∀[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
+    ret   : ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
 
 module _ τ where
-  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩ noop as BC
+  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩ as BC
   open BC using (Code) public
 
   ⟪_∣_⇐_⟫   = ⟪_⇐_⟫
@@ -53,5 +60,5 @@ module _ τ where
   ⟪_∣_⇒_⟫+  = ⟪_⇒_⟫+
 
 module _ {τ} where
-  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩ noop
+  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩
     hiding (⟪_⇐_⟫; ⟪_⇒_⟫; ⟪_⇒_⟫+; Code) public
