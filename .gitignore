@@ -1,1 +1,5 @@
 *.agdai
+_build/
+build/
+
+result
