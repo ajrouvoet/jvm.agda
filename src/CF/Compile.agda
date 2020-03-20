@@ -56,6 +56,12 @@ mutual
     let e    = (e∙s ⇈ wk) ⇑->>= π₁
     let body = (e∙s ⇈ wk) ⇑->>= π₂
 
+    -- +c: [[ e ]]
+    -- iffalse -e
+    -- [[ body ]]
+    -- goto -c
+    -- +e: nop
+
     -- condition
     +c ∙⟨ σ ⟩ -c        ← mklabel {τ = ψ}
     -c ∙⟨ σ ⟩ refl      ← attachTo +c ⟨ ∙-idʳ ⟩ compileₑ e         &⟨ Down _ # ∙-comm σ ⟩ -c
@@ -63,7 +69,7 @@ mutual
     -c∙+e  ∙⟨ σ ⟩ refl  ← code (if eq -e)                          &⟨ _ ⊙ _  # ∙-comm σ ⟩ -c∙+e
 
     -- body
-    ↓ -c ∙⟨ σ ⟩ +e      ← ⊙-id⁻ʳ ⟨$⟩ (compile body &⟨ _ ⊙ _  # σ        ⟩ -c∙+e)
+    ↓ -c ∙⟨ σ ⟩ +e      ← ⊙-id⁻ʳ ⟨$⟩ (compile body                 &⟨ _ ⊙ _  # σ        ⟩ -c∙+e)
     +e   ∙⟨ σ ⟩ refl    ← code (goto -c)                           &⟨ Up _   # ∙-comm σ ⟩ +e
 
     -- label the end
