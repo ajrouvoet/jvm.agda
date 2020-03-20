@@ -4,6 +4,7 @@ module CF.Syntax where
 open import Level
 open import JVM.Prelude hiding (Σ; _⊢_; _⊆_)
 
+open import Data.Bool
 open import Data.List hiding (null)
 open import Data.List.Relation.Unary.All
 open import Relation.Unary.PredicateTransformer using (Pt)
@@ -24,10 +25,11 @@ data Exp : Ty → Pred Ctx 0ℓ where
   unit     : ε[ Exp void ]
   null     : ε[ Exp (ref a) ]
   num      : ℕ → ε[ Exp int ]
+  bool     : Bool → ε[ Exp bool ]
 
   -- storeless expressions
   var      : ∀[ Just a ⇒ Exp a ]
-  iop      : NativeBinOp → ∀[ Exp int ✴ Exp int ⇒ Exp int ]
+  bop      : NativeBinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
 
   -- storeful
   ref   : ∀[ Exp a ⇒ Exp (ref a) ]
@@ -43,9 +45,8 @@ module Statements (Block : Ty → Pred Ctx 0ℓ) where
     run           : ∀[ Exp a ⇒ Statement r ]
     ret           : ∀[ Exp r ⇒ Statement r ]
 
-    -- ints as bools (false => eq 0, true => ne 0)
-    ifthenelse    : ∀[ Exp int ✴ Statement r ✴ Statement r ⇒ Statement r ]
-    while         : ∀[ Exp int ✴ Statement r ⇒ Statement r ]
+    ifthenelse    : ∀[ Exp bool ✴ Statement r ✴ Statement r ⇒ Statement r ]
+    while         : ∀[ Exp bool ✴ Statement r ⇒ Statement r ]
     block         : ∀[ Block r ⇒ Statement r ]
 
 mutual

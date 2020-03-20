@@ -2,7 +2,7 @@
 module JVM.Defaults.Printer where
 
 open import Function
-open import Data.Fin
+open import Data.Bool
 open import Data.List as List
 open import Data.List.Relation.Unary.Any
 open import Data.Nat
@@ -26,21 +26,25 @@ open import JVM.Defaults.Printer.Printer StackTy
 open import JVM.Defaults.Printer.Jasmin as J hiding (procedure)
 
 const-instr : Const a → Instr
-const-instr Const.null = aconst_null
-const-instr unit       = aconst_null
-const-instr (num x)    = sipush x
+const-instr Const.null   = aconst_null
+const-instr unit         = aconst_null
+const-instr (num x)      = sipush x
+const-instr (bool false) = iconst0
+const-instr (bool true)  = iconst1
 
 load-instr : Ty → ℕ → Instr
 load-instr void    = aload
 load-instr (ref _) = aload
 load-instr int     = iload
+load-instr bool    = iload
 
 store-instr : Ty → ℕ → Instr
 store-instr void    = astore
 store-instr (ref _) = astore
 store-instr int     = istore
+store-instr bool    = istore
 
-bop-instr : NativeBinOp → Instr
+bop-instr : NativeBinOp a b c → Instr
 bop-instr add = iadd
 bop-instr sub = isub
 bop-instr mul = imul

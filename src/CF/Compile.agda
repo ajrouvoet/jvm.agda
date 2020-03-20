@@ -71,8 +71,8 @@ mutual
 
   compile {ψ = ψ} (ifthenelse e∙s₁∙s₂ ⇈ wk) = do
     let e₁   = (e∙s₁∙s₂ ⇈ wk) ⇑->>= π₁ 
-    let else = (e∙s₁∙s₂ ⇈ wk) ⇑->>= π₂ ⇑->>= π₁
-    let then = (e∙s₁∙s₂ ⇈ wk) ⇑->>= π₂ ⇑->>= π₂
+    let then = (e∙s₁∙s₂ ⇈ wk) ⇑->>= π₂ ⇑->>= π₁
+    let else = (e∙s₁∙s₂ ⇈ wk) ⇑->>= π₂ ⇑->>= π₂
 
     -- condition
     refl                ← compileₑ e₁

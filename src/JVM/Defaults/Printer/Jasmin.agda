@@ -92,6 +92,7 @@ data Instr : Set where
 
   aconst_null   : Instr
   bipush sipush : ℕ → Instr
+  iconstm1 iconst0 iconst1 iconst2 : Instr
 
   aload iload   : ℕ → Instr
   astore istore : ℕ → Instr
@@ -123,6 +124,11 @@ module Instruction where
   out (iload n)   = unwords $ "iload"  ∷ NatShow.show n ∷ []
   out (astore n)  = unwords $ "astore" ∷ NatShow.show n ∷ []
   out (istore n)  = unwords $ "istore" ∷ NatShow.show n ∷ []
+
+  out iconstm1    = line "iconstm1"
+  out iconst0     = line "iconst_0"
+  out iconst1     = line "iconst_1"
+  out iconst2     = line "iconst_2"
 
   out (goto l)    = unwords $ "goto" ∷ lbl l ∷ []
   out (ifeq l)    = unwords $ "ifeq" ∷ lbl l ∷ []

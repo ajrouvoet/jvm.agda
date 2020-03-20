@@ -15,8 +15,8 @@ open import Relation.Ternary.Monad.Weakening
 module _ where
 
 
-  data NativeBinOp : Set where
-    add sub mul div xor : NativeBinOp
+  data NativeBinOp : Ty → Ty → Ty → Set where
+    add sub mul div xor : NativeBinOp int int int
 
   data Comparator : Set where
     eq ne lt ge gt le : Comparator
@@ -36,7 +36,7 @@ module _ where
     swap : ε[ ⟨ Γ ∣ a ∷ b ∷ ψ  ⇒  b ∷ a ∷ ψ ⟩ ]
 
     -- primitive operations
-    bop   : NativeBinOp → ε[ ⟨ Γ ∣ int ∷ int ∷ ψ  ⇒  int ∷ ψ ⟩ ]
+    bop   : NativeBinOp a b c → ε[ ⟨ Γ ∣ a ∷ b ∷ ψ  ⇒  c ∷ ψ ⟩ ]
     new   : ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ref a ∷ ψ ⟩ ]
     read  : ε[ ⟨ Γ ∣ ref a ∷ ψ ⇒ a ∷ ψ ⟩ ]
     write : ε[ ⟨ Γ ∣ a ∷ ref a ∷ ψ ⇒ ψ ⟩ ]
@@ -47,7 +47,7 @@ module _ where
 
     -- jumps
     goto  : ∀[ Just ψ ⇒ ⟨ Γ ∣ ψ       ⇒ ψ ⟩ ]
-    if    : Comparator → ∀[ Just ψ ⇒ ⟨ Γ ∣ int ∷ ψ ⇒ ψ ⟩ ]
+    if    : Comparator → {{Booly a}} → ∀[ Just ψ ⇒ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
 
     -- exceptions/abrupt termination/etc
     ret   : ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]

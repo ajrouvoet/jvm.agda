@@ -4,24 +4,22 @@
 	.limit locals 3
 	.limit stack 10
 	label_0:
-	bipush 21
-	bipush 21
-	iadd
+	iconst_1
 	ifeq label_1
-	bipush 42
+	iconst_1
 	istore 0
 	iload 0
 	ifne label_2
 	iload 0
-	istore 1
-	iload 1
+	istore 2
+	iload 2
 	return
 	goto label_3
 	label_2:
 	iload 0
-	istore 2
-	iload 2
-	return
+	istore 1
+	iload 1
+	istore 1
 	label_3:
 	goto label_0
 	label_1:

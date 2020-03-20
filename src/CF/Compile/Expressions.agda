@@ -41,15 +41,18 @@ module _ {Γ} where
   compileₑ (num x ⇈ wk) = do
     code (push (num x))
 
+  compileₑ (bool b ⇈ wk) = do
+    code (push (bool b))
+
   compileₑ (var x ⇈ wk) = do
     code (load (x ⇈ wk))
 
-  compileₑ (iop f e₁∙e₂ ⇈ wk) = do
+  compileₑ (bop f e₁∙e₂ ⇈ wk) = do
     let e₁ = (e₁∙e₂  ⇈ wk) ⇑->>= π₁
     let e₂ = (e₁∙e₂  ⇈ wk) ⇑->>= (π₂)
 
-    refl ← compileₑ e₁
     refl ← compileₑ e₂
+    refl ← compileₑ e₁
     code (bop f)
 
   compileₑ (ref e ⇈ wk) = do

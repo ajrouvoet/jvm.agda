@@ -1,6 +1,7 @@
 module CF.Examples.Ex1 where
 
 open import Function
+open import Data.Bool
 open import Data.Product
 open import Data.List
 open import Data.Nat
@@ -23,13 +24,14 @@ open import CF.Syntax as Src
 open import CF.Transform.Hoist
 open import CF.Compile
 
-ex₁ : Src.Statement int ε
+ex₁ : Src.Statement bool ε
 ex₁ = ( 
   Src.while (
-    iop add (num 21 ∙⟨ ∙-idˡ ⟩ num 21) ∙⟨ ∙-idˡ ⟩ Src.block 
+    Src.bool true ∙⟨ ∙-idˡ ⟩ Src.block 
     -- int j = 42
-    (Src.num 42 ≔⟨ ∙-idˡ ⟩ Possibly.possibly ∼-all (
+    (Src.bool true ≔⟨ ∙-idˡ ⟩ Possibly.possibly ∼-all (
       Src.ifthenelse
+        -- if j != 0
         (var refl
           ×⟨ overlaps ∙-idˡ ⟩
           -- then
@@ -37,7 +39,8 @@ ex₁ = (
             -- int i = j
             var refl ≔⟨ consˡ ∙-idˡ ⟩
             Possibly.possibly ∼-all (
-              Src.ret (var refl) Src.⍮⟨ ∙-idʳ ⟩
+              -- j := j
+              Src.asgn (refl ∙⟨ overlaps ∙-idˡ ⟩ var refl) Src.⍮⟨ ∙-idʳ ⟩
               emp))
           -- else
           ×⟨ overlaps [] ⟩
