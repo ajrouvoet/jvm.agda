@@ -13,6 +13,7 @@ open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad.Possibly
 
 open import JVM.Types
+open import JVM.Defaults.Syntax.Instructions
 open import JVM.Contexts
 
 open import Relation.Ternary.Monad.Intros Ty public

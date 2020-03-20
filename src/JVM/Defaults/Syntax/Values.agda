@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module JVM.Defaults.Syntax.Values where
 
 open import JVM.Prelude hiding (Σ; _⊢_)

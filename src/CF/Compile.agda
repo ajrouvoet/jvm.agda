@@ -51,6 +51,7 @@ mutual
   compile (block x ⇈ wk) = do
     compiler _ (x  ⇈ wk)
 
+  -- do while? abstraction -- for loops
   compile {ψ = ψ} (while e∙s ⇈ wk) = do
     let e    = (e∙s ⇈ wk) ⇑->>= π₁
     let body = (e∙s ⇈ wk) ⇑->>= π₂

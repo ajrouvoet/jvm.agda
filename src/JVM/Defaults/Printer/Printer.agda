@@ -51,13 +51,21 @@ module Envs where
   Fresh : Set t → Set _
   Fresh = S.State (Lift t ℕ)
  
-  open RawMonad (StateMonad (Lift t ℕ))
+  open RawMonadState (StateMonadState (Lift t ℕ)) public
+
   open import Relation.Ternary.Construct.List duplicate as L
   open import Data.List.Relation.Binary.Permutation.Propositional
   open import Data.List.Relation.Binary.Permutation.Propositional.Properties
 
   fresh : Fresh (Lift _ ℕ)
   fresh (lift n) = let n' = ℕ.suc n in lift n , lift n'
+
+  freshNames : ∀ xs → Fresh (Names xs)
+  freshNames [] = return []
+  freshNames (x ∷ xs) = do
+    lift n ← fresh
+    ns     ← freshNames xs
+    return (n ∷ ns)
 
   env-split-list : ∀ {xs ys zs} → Names xs → L.Split xs ys zs → Fresh (Names ys × Names zs)
   env-split-list nxs []        = return ([] , [])
@@ -88,28 +96,44 @@ module Envs where
       let nd₂     = joinAll (λ ()) x₄ nd₁' ne'
       return ((nu₁ , nd₁) , (nu₂ , nd₂))
 
-open import Relation.Ternary.Monad
+module _ where
+  open import Relation.Ternary.Monad
 
-lookUp : ∀ {τ} → ∀[ Up (Just τ) ⇒ Printer (Empty ℕ) ]
-lookUp (↑ u) ⟨ offerᵣ σ ⟩ lift ((n , st) , env) with Envs.splitEnv σ env (lift n)
-... | ((lab ∷ [] , []) , env₂) , lift n' = lift (emp lab) ∙⟨ ∙-idˡ ⟩ lift ((n' , st) , env₂)
+  lookUp : ∀ {τ} → ∀[ Up (Just τ) ⇒ Printer (Empty ℕ) ]
+  lookUp (↑ u) ⟨ offerᵣ σ ⟩ lift ((n , st) , env) with Envs.splitEnv σ env (lift n)
+  ... | ((lab ∷ [] , []) , env₂) , lift n' = lift (emp lab) ∙⟨ ∙-idˡ ⟩ lift ((n' , st) , env₂)
 
-lookDown : ∀ {τ} → ∀[ Down (Just τ) ⇒ Printer (Empty ℕ) ]
-lookDown (↓ u) ⟨ offerᵣ σ ⟩ lift ((n , st) , env) with Envs.splitEnv σ env (lift n)
-... | (([] , lab ∷ []) , env₂) , lift n' = lift (emp lab) ∙⟨ ∙-idˡ ⟩ lift ((n' , st) , env₂)
+  lookDown : ∀ {τ} → ∀[ Down (Just τ) ⇒ Printer (Empty ℕ) ]
+  lookDown (↓ u) ⟨ offerᵣ σ ⟩ lift ((n , st) , env) with Envs.splitEnv σ env (lift n)
+  ... | (([] , lab ∷ []) , env₂) , lift n' = lift (emp lab) ∙⟨ ∙-idˡ ⟩ lift ((n' , st) , env₂)
 
-print : Stat → ε[ Printer Emp ]
-print s ⟨ σ ⟩ lift ((n , st) , env) = lift refl ∙⟨ σ ⟩ lift ((n , s ∷ st) , env)
+  print : Stat → ε[ Printer Emp ]
+  print s ⟨ σ ⟩ lift ((n , st) , env) = lift refl ∙⟨ σ ⟩ lift ((n , s ∷ st) , env)
 
-print-label : ∀ {τ}  → ∀[ Up (Just τ) ⇒ Printer Emp ]
-print-label l = do
-  emp n  ← lookUp l
-  print (label (Nat.show n))
+  print-label : ∀ {τ}  → ∀[ Up (Just τ) ⇒ Printer Emp ]
+  print-label l = do
+    emp n  ← lookUp l
+    print (label (Nat.show n))
 
-{-# TERMINATING #-}
-print-labels : ∀ {τ} → ∀[ Up (Labeling τ) ⇒ Printer Emp ]
-print-labels (↑ emp)                  = return refl
-print-labels (↑ (cons (x ∙⟨ σ ⟩ xs))) = do
-  xs ← ⊙-id⁻ʳ ⟨$⟩ (print-label (↑ x) &⟨ Up (Labeling _) # ∙-comm $ liftUp σ ⟩ ↑ xs)
-  print-labels xs
-  where open Disjoint using (bags; bags-isMonoid)
+  {-# TERMINATING #-}
+  print-labels : ∀ {τ} → ∀[ Up (Labeling τ) ⇒ Printer Emp ]
+  print-labels (↑ emp)                  = return refl
+  print-labels (↑ (cons (x ∙⟨ σ ⟩ xs))) = do
+    xs ← ⊙-id⁻ʳ ⟨$⟩ (print-label (↑ x) &⟨ Up (Labeling _) # ∙-comm $ liftUp σ ⟩ ↑ xs)
+    print-labels xs
+    where open Disjoint using (bags; bags-isMonoid)
+
+execPrinter : ∀ {P Φ} → Printer P Φ → List Stat
+execPrinter pr with pr ⟨ offerᵣ ∙-idʳ ⟩ proj₁ (initState (lift 0))
+  where
+    open Envs
+
+    initState : ∀ {Φ} → Envs.Fresh (● PState (offer Φ))
+    initState {Φ↑ ⇅ Φ↓} = do
+      ns↑ ← freshNames Φ↑
+      ns↓ ← freshNames Φ↓
+      lift n ← get
+      return (lift ((n , []) , (ns↑ , ns↓)))
+
+... | (lift px ∙⟨ σ ⟩ lift ((_ , st) , _)) = st
+    

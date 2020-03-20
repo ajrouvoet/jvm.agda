@@ -19,7 +19,7 @@ private
     τ₁ τ₂ τ : T
 
 open import JVM.Model T; open Syntax
-open import JVM.Defaults.Syntax.Bytecode T ⟨_⇒_⟩ nop
+open import JVM.Defaults.Syntax.Bytecode T ⟨_⇒_⟩
 
 Compiler : T → T → Pt Intf 0ℓ
 Compiler ψ₁ ψ₂ P = ⟪ ψ₁ ⇒ ψ₂ ⟫ ⊙ P

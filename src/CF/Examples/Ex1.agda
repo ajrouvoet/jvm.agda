@@ -1,8 +1,10 @@
 module CF.Examples.Ex1 where
 
+open import Function
 open import Data.Product
 open import Data.List
 open import Data.Nat
+open import Data.String
 
 open import Relation.Binary.PropositionalEquality using (refl)
 open import Relation.Ternary.Core
@@ -14,6 +16,7 @@ open import Relation.Ternary.Monad.Weakening
 
 open import JVM.Contexts
 open import JVM.Types
+open import JVM.Defaults.Syntax.Instructions
 open import JVM.Defaults.Transform.Noooops
 
 open import CF.Syntax as Src
@@ -23,7 +26,7 @@ open import CF.Compile
 ex₁ : Src.Statement int ε
 ex₁ = ( 
   Src.while (
-    iop _+_ (num 21 ∙⟨ ∙-idˡ ⟩ num 21) ∙⟨ ∙-idˡ ⟩ Src.block 
+    iop add (num 21 ∙⟨ ∙-idˡ ⟩ num 21) ∙⟨ ∙-idˡ ⟩ Src.block 
     -- int j = 42
     (Src.num 42 ≔⟨ ∙-idˡ ⟩ Possibly.possibly ∼-all (
       Src.ifthenelse
@@ -48,7 +51,7 @@ ex₁ = (
         Src.⍮⟨ ∙-idʳ ⟩ emp
     ))))
 
-open import JVM.Defaults.Syntax.Instructions.Show
+open import JVM.Defaults.Printer
 
 ex₁-hoisted  = translate ex₁
 ex₁-bytecode =
@@ -65,7 +68,8 @@ open import Codata.Musical.Notation
 open import Data.Sum
 
 main = IO.run (♯ (putStrLn "Hello, World!")
-    >> ♯ (♯ putStrLn result
+    >> ♯ (♯ putStrLn (unwords $ J.Jasmin.out proc)
     >> ♯ putStrLn "done"))
   where
-  result = show ex₁-optimized
+  import JVM.Defaults.Printer.Jasmin as J
+  proc = procedure "ex" ex₁-optimized

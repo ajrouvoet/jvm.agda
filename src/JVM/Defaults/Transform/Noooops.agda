@@ -36,4 +36,4 @@ noooop (cons (instr (↓ i) ∙⟨ σ ⟩ is)) =
 noooop (cons (li@(labeled (l ∙⟨ σ₀ ⟩ ↓ i)) ∙⟨ σ ⟩ is)) =
   case (is-noop i) of λ where
     nothing              → cons (li ∙⟨ σ ⟩ noooop is)
-    (just (refl , refl)) → label-start l ⟨ coe {{∙-respects-≈ˡ}} (sym (∙-id⁻ʳ σ₀)) σ ⟩ (noooop is)
+    (just (refl , refl)) → label-start noop l ⟨ coe {{∙-respects-≈ˡ}} (sym (∙-id⁻ʳ σ₀)) σ ⟩ (noooop is)

@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module JVM.Defaults.Syntax.Instructions where
 
 open import JVM.Prelude hiding (swap)
