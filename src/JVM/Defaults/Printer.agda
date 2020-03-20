@@ -3,7 +3,7 @@ module JVM.Defaults.Printer where
 
 open import Function
 open import Data.Fin
-open import Data.List
+open import Data.List as List
 open import Data.List.Relation.Unary.Any
 open import Data.Nat
 open import Data.Nat.Show as Nat
@@ -28,7 +28,7 @@ open import JVM.Defaults.Printer.Jasmin as J hiding (procedure)
 const-instr : Const a → Instr
 const-instr Const.null = aconst_null
 const-instr unit       = aconst_null
-const-instr (num x)    = iconst x
+const-instr (num x)    = sipush x
 
 load-instr : Ty → ℕ → Instr
 load-instr void    = aload
@@ -89,4 +89,4 @@ module _ {Γ} where
   pretty bc = execPrinter (Printer.pretty bc)
 
   procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
-  procedure name bc = J.procedure name (pretty bc)
+  procedure name bc = J.procedure name (List.length Γ) 10 (pretty bc)

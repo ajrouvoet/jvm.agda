@@ -135,5 +135,5 @@ execPrinter pr with pr ⟨ offerᵣ ∙-idʳ ⟩ proj₁ (initState (lift 0))
       lift n ← get
       return (lift ((n , []) , (ns↑ , ns↓)))
 
-... | (lift px ∙⟨ σ ⟩ lift ((_ , st) , _)) = st
+... | (lift px ∙⟨ σ ⟩ lift ((_ , st) , _)) = reverse st
     

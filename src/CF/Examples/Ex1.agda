@@ -67,9 +67,7 @@ open import Data.String.Base using (_++_)
 open import Codata.Musical.Notation
 open import Data.Sum
 
-main = IO.run (♯ (putStrLn "Hello, World!")
-    >> ♯ (♯ putStrLn (unwords $ J.Jasmin.out proc)
-    >> ♯ putStrLn "done"))
+main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
   where
   import JVM.Defaults.Printer.Jasmin as J
-  proc = procedure "ex" ex₁-optimized
+  proc = procedure "ex1" ex₁-optimized

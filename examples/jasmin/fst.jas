@@ -1,0 +1,43 @@
+.class public ex1
+.super java/lang/Object
+.method public static apply()V
+	.limit locals 3
+	.limit stack 10
+	label_0:
+	bipush 21
+	bipush 21
+	iadd
+	ifeq label_1
+	bipush 42
+	istore 0
+	iload 0
+	ifne label_2
+	iload 0
+	istore 1
+	iload 1
+	return
+	goto label_3
+	label_2:
+	iload 0
+	istore 2
+	iload 2
+	return
+	label_3:
+	goto label_0
+	label_1:
+	nop
+	return
+.end method
+.method public <init>()V
+	.limit locals 1
+	.limit stack 1
+	aload 0
+	invokespecial java/lang/Object/<init>()V
+	return
+.end method
+.method public static main([Ljava/lang/String;)V
+	.limit locals 1
+	.limit stack 0
+	invokestatic ex1/apply()V
+	return
+.end method
