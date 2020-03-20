@@ -20,6 +20,10 @@ open import JVM.Contexts
 open import Relation.Ternary.Monad.Intros Ty public
 open import Relation.Ternary.Data.Allstar Ty
 
+data BinOp : Ty → Ty → Ty → Set where
+  add sub mul div xor : BinOp int int int
+  eq ne lt ge gt le   : BinOp int int bool
+
 data Exp : Ty → Pred Ctx 0ℓ where
   -- irreducible expressions
   unit     : ε[ Exp void ]
@@ -29,7 +33,7 @@ data Exp : Ty → Pred Ctx 0ℓ where
 
   -- storeless expressions
   var      : ∀[ Just a ⇒ Exp a ]
-  bop      : NativeBinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
+  bop      : BinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
 
   -- storeful
   ref   : ∀[ Exp a ⇒ Exp (ref a) ]

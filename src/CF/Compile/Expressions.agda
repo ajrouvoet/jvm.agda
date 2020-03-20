@@ -2,6 +2,7 @@ module CF.Compile.Expressions where
 
 open import Level
 open import Data.Unit
+open import Data.Bool
 open import Data.Product
 open import Data.List hiding (null; [_])
 open import Relation.Binary.PropositionalEquality hiding ([_])
@@ -53,7 +54,42 @@ module _ {Γ} where
 
     refl ← compileₑ e₂
     refl ← compileₑ e₁
-    code (bop f)
+    compile-bop f
+
+    where
+
+      -- a < b compiles to (assume a and b on stack):
+      --
+      --     if_icmplt -l
+      --     iconst_1
+      --     goto -e
+      -- +l: iconst_0
+      -- +e: nop
+      --
+      -- Other comparisons go similar
+      compile-comp : ∀ {as} → Comparator as → ε[ Compiler Γ (as ++ ψ) (bool ∷ ψ) Emp ]
+      compile-comp cmp = do
+        +l ∙⟨ σ ⟩ ↓ -l    ← mklabel
+        +l ∙⟨ σ ⟩ refl    ← code (if cmp -l)                               &⟨ Up _  # σ ⟩ +l
+        +l ∙⟨ σ ⟩ refl    ← code (push (bool true))                        &⟨ Up _  # σ ⟩ +l
+        ↓ -e ∙⟨ σ ⟩ +l∙+e ← ⊙-rotateᵣ ⟨$⟩ (mklabel                         &⟨ Up _  # σ ⟩ +l)
+        +l ∙⟨ σ ⟩ +e      ← ⊙-id⁻ʳ ⟨$⟩ (code (goto -e)                     &⟨ _ ⊙ _ # ∙-comm σ ⟩ +l∙+e)
+        +e ∙⟨ σ ⟩ refl    ← attachTo +l ⟨ ∙-idʳ ⟩ code (push (bool false)) &⟨ Up _  # ∙-comm σ ⟩ +e
+        coe (∙-id⁻ʳ σ) (attach +e)
+
+      -- Compile comparisons and other binary operations
+      compile-bop : BinOp a b c → ε[ Compiler Γ (a ∷ b ∷ ψ) (c ∷ ψ) Emp ]
+      compile-bop add = code (bop add)
+      compile-bop sub = code (bop sub)
+      compile-bop mul = code (bop mul)
+      compile-bop div = code (bop div)
+      compile-bop xor = code (bop xor)
+      compile-bop eq  = compile-comp icmpeq
+      compile-bop ne  = compile-comp icmpne
+      compile-bop lt  = compile-comp icmplt
+      compile-bop ge  = compile-comp icmpge
+      compile-bop gt  = compile-comp icmpgt
+      compile-bop le  = compile-comp icmplt
 
   compileₑ (ref e ⇈ wk) = do
     refl ← compileₑ (e  ⇈ wk)

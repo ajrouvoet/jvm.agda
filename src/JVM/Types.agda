@@ -16,17 +16,17 @@ data Ty : Set where
   ref  : Ty → Ty
 
 abstract
-  Booly : Ty → Set
-  Booly void    = ⊥
-  Booly (ref a) = ⊥
-  Booly int     = ⊤
-  Booly bool    = ⊤
+  Inty : Ty → Set
+  Inty void    = ⊥
+  Inty (ref a) = ⊥
+  Inty int     = ⊤
+  Inty bool    = ⊤
 
-  instance booly-bool : Booly bool
-  booly-bool = tt
+  instance inty-bool : Inty bool
+  inty-bool = tt
 
-  instance booly-int : Booly int
-  booly-int = tt
+  instance inty-int : Inty int
+  inty-int = tt
 
 Ctx : Set
 Ctx = List Ty

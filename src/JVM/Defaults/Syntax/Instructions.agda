@@ -2,6 +2,7 @@
 module JVM.Defaults.Syntax.Instructions where
 
 open import JVM.Prelude hiding (swap)
+open import Data.List
 
 open import JVM.Types
 open import JVM.Contexts
@@ -18,8 +19,9 @@ module _ where
   data NativeBinOp : Ty → Ty → Ty → Set where
     add sub mul div xor : NativeBinOp int int int
 
-  data Comparator : Set where
-    eq ne lt ge gt le : Comparator
+  data Comparator : List Ty → Set where
+    eq ne lt ge gt le : {{Inty a}} → Comparator [ a ]
+    icmpge icmpgt icmpeq icmpne icmplt icmple : Comparator (int ∷ int ∷ [])
 
   Reg : Ty → Pred LocalsTy 0ℓ
   Reg a = (Just a) ⇑
@@ -46,11 +48,29 @@ module _ where
     store : Reg a Γ → ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
 
     -- jumps
-    goto  : ∀[ Just ψ ⇒ ⟨ Γ ∣ ψ       ⇒ ψ ⟩ ]
-    if    : Comparator → {{Booly a}} → ∀[ Just ψ ⇒ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
+    goto  : ∀[ Just ψ₁ ⇒ ⟨ Γ ∣ ψ₁ ⇒ ψ₂ ⟩ ]
+    if    : ∀ {as} → Comparator as → ∀[ Just ψ ⇒ ⟨ Γ ∣ as ++ ψ ⇒ ψ ⟩ ]
 
     -- exceptions/abrupt termination/etc
     ret   : ε[ ⟨ Γ ∣ a ∷ ψ ⇒ ψ ⟩ ]
+
+  -- Compute the stack type after running an instruction.
+  -- This is only *not* the same as the stack-type on the rhs for jumps.
+  post : ⟨ Γ ∣ ψ₁ ⇒ ψ₂ ⟩ Φ → StackTy
+  post {ψ₂ = ψ} noop      = ψ
+  post {ψ₂ = ψ} pop       = ψ
+  post {ψ₂ = ψ} (push x)  = ψ
+  post {ψ₂ = ψ} dup       = ψ
+  post {ψ₂ = ψ} swap      = ψ
+  post {ψ₂ = ψ} (bop x)   = ψ
+  post {ψ₂ = ψ} new       = ψ
+  post {ψ₂ = ψ} read      = ψ
+  post {ψ₂ = ψ} write     = ψ
+  post {ψ₂ = ψ} (load x)  = ψ
+  post {ψ₂ = ψ} (store x) = ψ
+  post {ψ₂ = ψ} ret       = ψ
+  post {ψ₁ = ψ} (goto x)  = ψ
+  post {ψ₁ = ψ} (if x x₁) = ψ
 
 module _ τ where
   open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ τ ∣_⇒_⟩ as BC

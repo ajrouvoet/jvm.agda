@@ -90,10 +90,10 @@ module Envs where
   splitEnv (ex (sub {e = e} x x₁) (sub {e = e'} x₄ x₅) σ↑ σ↓) (unv , dnv) = do
       let nu₁' , nu₂' = splitAll (λ ()) σ↑ unv
       let nd₁' , nd₂' = splitAll (λ dup px → px , px ) σ↓ dnv
-      ne  , nu₂   ← env-split-bag nu₂' x₁
-      ne' , nu₁   ← env-split-bag nu₁' x₅
-      let nd₁     = joinAll (λ ()) x  nd₂' ne
-      let nd₂     = joinAll (λ ()) x₄ nd₁' ne'
+      nse  , nu₂   ← env-split-bag nu₂' x₁
+      nse' , nu₁   ← env-split-bag nu₁' x₅
+      let nd₁     = joinAll (λ ()) x  nd₂' nse
+      let nd₂     = joinAll (λ ()) x₄ nd₁' nse'
       return ((nu₁ , nd₁) , (nu₂ , nd₂))
 
 module _ where

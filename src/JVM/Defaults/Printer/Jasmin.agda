@@ -87,6 +87,26 @@ module Descriptor where
       args : Desc → String
       args d = "(" S.++ (S.intersperse ";" d) S.++ ")"
 
+data Comparator : Set where
+  eq ne lt ge gt le : Comparator
+  icmpge icmpgt icmpeq icmpne icmplt icmple : Comparator
+
+module Comp where
+
+  out : Comparator → String
+  out eq = "eq"
+  out ne = "ne"
+  out lt = "lt"
+  out ge = "ge"
+  out gt = "gt"
+  out le = "le"
+  out icmpge = "_icmpge"
+  out icmpgt = "_icmpgt"
+  out icmpeq = "_icmpeq"
+  out icmpne = "_icmpne"
+  out icmplt = "_icmplt"
+  out icmple = "_icmple"
+
 data Instr : Set where
   nop pop dup swap ret : Instr
 
@@ -99,7 +119,8 @@ data Instr : Set where
 
   new           : String → Instr
 
-  ifeq ifne ifle iflt ifge ifgt goto : String → Instr
+  goto : String     → Instr
+  if   : Comparator → String → Instr
 
   iadd isub imul idiv ixor : Instr
 
@@ -131,12 +152,7 @@ module Instruction where
   out iconst2     = line "iconst_2"
 
   out (goto l)    = unwords $ "goto" ∷ lbl l ∷ []
-  out (ifeq l)    = unwords $ "ifeq" ∷ lbl l ∷ []
-  out (ifne l)    = unwords $ "ifne" ∷ lbl l ∷ []
-  out (ifle l)    = unwords $ "ifle" ∷ lbl l ∷ []
-  out (iflt l)    = unwords $ "iflt" ∷ lbl l ∷ []
-  out (ifge l)    = unwords $ "ifge" ∷ lbl l ∷ []
-  out (ifgt l)    = unwords $ "ifgt" ∷ lbl l ∷ []
+  out (if c l)    = unwords $ ("if" S.++ Comp.out c) ∷ lbl l ∷ []
 
   out iadd        = line "iadd" 
   out isub        = line "isub"

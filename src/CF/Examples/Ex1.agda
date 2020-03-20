@@ -24,7 +24,7 @@ open import CF.Syntax as Src
 open import CF.Transform.Hoist
 open import CF.Compile
 
-ex₁ : Src.Statement bool ε
+ex₁ : Src.Block bool ε
 ex₁ = ( 
   Src.while (
     Src.bool true ∙⟨ ∙-idˡ ⟩ Src.block 
@@ -52,25 +52,13 @@ ex₁ = (
               emp))
           )
         Src.⍮⟨ ∙-idʳ ⟩ emp
-    ))))
-
-open import JVM.Defaults.Printer
-
-ex₁-hoisted  = translate ex₁
-ex₁-bytecode =
-  let
-    (_ , Possibly.possibly _ ex) = ex₁-hoisted
-    (bc ∙⟨ _ ⟩ _) = compile {ψ = []} (return ex)
-  in bc
-
-ex₁-optimized = noooop ex₁-bytecode
+    ))) Src.⍮⟨ ∙-idʳ ⟩ emp)
 
 open import IO as IO
-open import Data.String.Base using (_++_)
 open import Codata.Musical.Notation
-open import Data.Sum
+open import JVM.Defaults.Printer
 
 main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
   where
   import JVM.Defaults.Printer.Jasmin as J
-  proc = procedure "ex1" ex₁-optimized
+  proc = procedure "ex1" (proj₂ $ compile ex₁)

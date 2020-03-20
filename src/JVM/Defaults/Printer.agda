@@ -21,7 +21,7 @@ open import JVM.Types
 open import JVM.Contexts using (indexOf)
 open import JVM.Model StackTy
 open import JVM.Defaults.Syntax.Values
-open import JVM.Defaults.Syntax.Instructions
+open import JVM.Defaults.Syntax.Instructions as I
 open import JVM.Defaults.Printer.Printer StackTy
 open import JVM.Defaults.Printer.Jasmin as J hiding (procedure)
 
@@ -51,13 +51,19 @@ bop-instr mul = imul
 bop-instr div = idiv
 bop-instr xor = ixor
 
-if-instr : Comparator → String → Instr
-if-instr eq = ifeq 
-if-instr ne = ifne
-if-instr lt = iflt
-if-instr ge = ifge
-if-instr gt = ifgt
-if-instr le = ifle
+if-instr : ∀ {as} → I.Comparator as → String → Instr
+if-instr eq = if eq 
+if-instr ne = if ne
+if-instr lt = if lt
+if-instr ge = if ge
+if-instr gt = if gt
+if-instr le = if le
+if-instr icmpge = if icmpge
+if-instr icmpgt = if icmpgt
+if-instr icmpeq = if icmpeq
+if-instr icmpne = if icmpne
+if-instr icmplt = if icmplt
+if-instr icmple = if icmple
 
 module _ {Γ} where
 
