@@ -5,6 +5,7 @@ open import Level
 open import JVM.Prelude hiding (Σ; _⊢_; _⊆_)
 
 open import Data.Bool
+open import Data.String
 open import Data.List hiding (null)
 open import Data.List.Relation.Unary.All
 open import Relation.Unary.PredicateTransformer using (Pt)
@@ -13,11 +14,10 @@ open import Relation.Binary.PropositionalEquality using (isEquivalence)
 open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad.Possibly
 
-open import JVM.Types
+open import JVM.Types hiding (Ctx)
 open import JVM.Defaults.Syntax.Instructions
-open import JVM.Contexts
+open import CF.Contexts
 
-open import Relation.Ternary.Monad.Intros Ty public
 open import Relation.Ternary.Data.Allstar Ty
 
 data BinOp : Ty → Ty → Ty → Set where
@@ -32,17 +32,20 @@ data Exp : Ty → Pred Ctx 0ℓ where
   bool     : Bool → ε[ Exp bool ]
 
   -- storeless expressions
-  var      : ∀[ Just a ⇒ Exp a ]
+  var      : ∀[ Var a ⇒ Exp a ]
   bop      : BinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
 
   -- storeful
-  ref   : ∀[ Exp a ⇒ Exp (ref a) ]
-  deref : ∀[ Exp (ref a) ⇒ Exp a ]
+  ref      : ∀[ Exp a ⇒ Exp (ref a) ]
+  deref    : ∀[ Exp (ref a) ⇒ Exp a ]
+
+  -- procedure calls
+  call     : ∀[ Fun 𝑓 (as ⟶ b) ✴ Allstar Exp as ⇒ Exp b ]
 
 module Statements (Block : Ty → Pred Ctx 0ℓ) where
 
   data Statement (r : Ty) : Pred Ctx 0ℓ where
-    asgn          : ∀[ Just a ✴ Exp a ⇒ Statement r ]
+    asgn          : ∀[ Var a ✴ Exp a ⇒ Statement r ]
 
     set           : ∀[ Exp (ref a) ✴ Exp a ⇒ Statement r ]
 
@@ -53,6 +56,8 @@ module Statements (Block : Ty → Pred Ctx 0ℓ) where
     while         : ∀[ Exp bool ✴ Statement r ⇒ Statement r ]
     block         : ∀[ Block r ⇒ Statement r ]
 
+    print         : ∀[ Exp int ⇒ Statement r ] 
+
 mutual
   Stmt = Statements.Statement Block
 
@@ -61,6 +66,8 @@ mutual
     cons  : ∀[ Stmt r ✴ Block r ⇒ Block r ]
     emp   : ε[ Block r ]
 
+-- Function : String → FunTy → Pred Intf 0ℓ
+-- Function n fty@(as ⟶ b) = Up (Fun n fty) ✴ Down (as ⊢ Block b)
 
 -- make constructors visible
 open Statements Block public

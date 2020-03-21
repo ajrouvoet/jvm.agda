@@ -10,7 +10,7 @@ open import Data.List.Properties as LP
 open import Relation.Unary hiding (_⊢_; _⊆_; _∈_)
 
 open import Relation.Binary.Structures
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
@@ -21,8 +21,14 @@ open import JVM.Contexts hiding (ctx-rel)
 
 open import Data.List.Relation.Binary.Permutation.Propositional
 
+record FunTy : Set where
+  constructor _⟶_
+  field
+    argtys : List Ty
+    retty  : Ty
+
 data ToplevelTy : Set where
-  _⟶_ : List Ty → Ty → ToplevelTy
+  fun : FunTy → ToplevelTy
 
 TopLevelDecl = String × ToplevelTy
 
@@ -75,22 +81,21 @@ abstract
   instance ctx-isMonoid : IsPartialMonoid _ctx≈_ ctx-rel unit
   ctx-isMonoid = ×-isPartialMonoid
 
+  instance ctx-isPositive : IsPositive 0ℓ _ctx≈_ ctx-rel unit
+  ctx-isPositive = ×-isPositive
+
   instance ctx-isCommutative : IsCommutative ctx-rel
   ctx-isCommutative = ×-isCommutative
 
   Vars : Lex → Pred Ctx 0ℓ
   Vars Γ = Π₁ (Exactly Γ)
-
-  Var : Ty → Pred Ctx 0ℓ
-  Var a = Π₁ (Just a)
   
-  Function : TopLevelDecl → Pred Ctx 0ℓ
-  Function tl = Π₂ (Just tl)
+  Global : TopLevelDecl → Pred Ctx 0ℓ
+  Global tl = Π₂ (Just tl)
 
   data _∼[_]_ : Ctx → Lex → Ctx → Set where
     intros : ∀ {Γ χ Δ Δ′} → Δ′ DJList.⊆ Δ → (Γ , χ) ∼[ Δ ] (Δ′ ++ Γ , χ)
 
-  -- McBride's introduction turnstile
   open import Relation.Ternary.Monad.Possibly
   open Possibly _∼[_]_
     public
@@ -134,3 +139,42 @@ abstract
 
   binders : ∀ {Γ} → ε[ Γ ⊢ Vars Γ ]
   binders = Possibly.possibly ∼-all (fst (subst ｛ _ ｝ (sym (LP.++-identityʳ _)) refl))
+
+module _ where
+
+  Var : Ty → Pred Ctx 0ℓ
+  Var a = Vars [ a ]
+
+  Fun : String → FunTy → Pred Ctx 0ℓ
+  Fun n f = Global (n , fun f)
+
+-- abstract
+
+--   {- Interfaces -}
+--   Tl = Globals × Ctx
+
+  -- instance tl-rel : Rel₃ Tl
+  -- tl-rel = ×-rel {{?}} {{DJBag.bags}}
+
+  -- private
+  --   tlunit : Tl
+  --   tlunit = [] , []
+
+  -- instance tl-emptiness : Emptiness {A = Tl} tlunit
+  -- tl-emptiness = record {}
+
+  -- _tl≈_ : Tl → Tl → Set
+  -- _tl≈_ = Pr._≈_ {{isEquivalence}} {{↭-isEquivalence}}
+
+  -- instance tl-isSemigroup : IsPartialSemigroup _tl≈_ tl-rel
+  -- tl-isSemigroup = ×-isSemigroup
+
+  -- instance tl-isMonoid : IsPartialMonoid _tl≈_ tl-rel unit
+  -- tl-isMonoid = ×-isPartialMonoid
+
+  -- instance tl-isPositive : IsPositive 0ℓ _tl≈_ tl-rel unit
+  -- tl-isPositive = ×-isPositive
+
+  -- instance tl-isCommutative : IsCommutative tl-rel
+  -- tl-isCommutative = ×-isCommutative
+  

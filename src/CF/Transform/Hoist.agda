@@ -6,17 +6,16 @@ open import Function using (_∘_)
 open import Data.List
 open import Data.Unit
 open import Data.Product
-open import Relation.Unary
+open import Relation.Unary hiding (_⊢_)
 open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad
-open import Relation.Ternary.Respect.Propositional
 open import Relation.Ternary.Monad.Possibly
 open import Relation.Ternary.Structures.Syntax
 
-open import JVM.Types
-open import JVM.Contexts
+open import JVM.Types hiding (Ctx)
 
+open import CF.Contexts
 open import CF.Syntax as Src hiding (Stmt; Block; Statement) public
 
 module Tgt where
@@ -35,8 +34,11 @@ open Tgt public
 
 pattern _⍮⟨_⟩_ s σ b = cons (s ×⟨ σ ⟩ b)
 
-hoist-binder : ∀ {P : Pred Ctx 0ℓ} {Γ} → ∀[ (Γ Src.⊢ P) ⇒ ◇ (Exactly Γ ✴ P) ]
+hoist-binder : ∀ {P : Pred Ctx 0ℓ} {Γ} → ∀[ (Γ ⊢ P) ⇒ ◇ (Vars Γ ✴ P) ]
 hoist-binder px = pack (⊢-zip ∙-copy (binders ×⟨ ∙-idˡ ⟩ px))
+
+postulate instance ⊢-respect-≈ : ∀ {p Δ} {P : Pred Ctx p} → Respect _ctx≈_ (Δ ⊢ P)
+postulate instance ◇-respect-≈ : ∀ {p} {P : Pred Ctx p} → Respect _ctx≈_ (◇ P)
 
 -- A typed hoisting transformation for statement blocks
 {-# TERMINATING #-}
@@ -84,3 +86,6 @@ mutual
   translate (Src.block bl) = do
     bl'                      ← hoist bl
     return (Tgt.block bl')
+
+  translate (Src.print e) = do
+    return (Tgt.print e)

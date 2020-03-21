@@ -96,6 +96,12 @@ mutual
     -- label the end
     coe (∙-id⁻ʳ σ) (attach +e)
 
+  compileₛ (print e' ⇈ wk) = do
+    let e = e' ⇈ wk
+
+    refl ← compileₑ e
+    code {! !}
+
   {- Compiling blocks -}
   compiler : ∀ (ψ : StackTy) → (Block r ⇑) Γ → ε[ Compiler Γ ψ ψ Emp ]  
 
