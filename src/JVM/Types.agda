@@ -32,8 +32,9 @@ Ctx : Set
 Ctx = List Ty
 
 variable
-  a b c r s t : Ty
+  a b c r s t   : Ty
   Γ₁ Γ₂ Γ₃ Γ₄ Γ : Ctx
+  as bs cs      : List Ty
 
 data Primitive : Ty → Set where
   int  : Primitive int

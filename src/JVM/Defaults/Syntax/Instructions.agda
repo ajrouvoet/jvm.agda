@@ -3,6 +3,7 @@ module JVM.Defaults.Syntax.Instructions where
 
 open import JVM.Prelude hiding (swap)
 open import Data.List
+open import Data.List.Membership.Propositional using () renaming (_∈_ to Reg)
 
 open import JVM.Types
 open import JVM.Contexts
@@ -22,9 +23,6 @@ module _ where
   data Comparator : List Ty → Set where
     eq ne lt ge gt le : {{Inty a}} → Comparator [ a ]
     icmpge icmpgt icmpeq icmpne icmplt icmple : Comparator (int ∷ int ∷ [])
-
-  Reg : Ty → Pred LocalsTy 0ℓ
-  Reg a = (Just a) ⇑
 
   -- True to bytecode, the collection of registers is fixed.
   -- The stack typing varies.
