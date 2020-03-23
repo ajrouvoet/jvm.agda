@@ -7,6 +7,7 @@ open import Data.List as List
 open import Data.List.Relation.Unary.Any
 open import Data.Nat
 open import Data.Nat.Show as Nat
+open import Data.Fin
 open import Data.String
 open import Relation.Unary
 open import Relation.Ternary.Core
@@ -15,7 +16,6 @@ open import Relation.Ternary.Structures.Syntax using (Emp; emp)
 
 open import Relation.Binary.PropositionalEquality
 open import Relation.Ternary.Monad
-open import Relation.Ternary.Monad.Weakening using (_⇈_)
 
 open import JVM.Types
 open import JVM.Contexts using (indexOf)
@@ -81,10 +81,10 @@ module _ {Γ} where
   prettyᵢ (↓ read)      = print (instr nop)
   prettyᵢ (↓ write)     = print (instr nop)
 
-  prettyᵢ (↓ (load {a = a} (refl ⇈ wk)))  = do
-    print (instr (load-instr a (indexOf wk)))
-  prettyᵢ (↓ (store {a = a} (refl ⇈ wk))) = do
-    print (instr (store-instr a (indexOf wk)))
+  prettyᵢ (↓ (load {a = a} r))  = do
+    print (instr (load-instr a (toℕ $ index r)))
+  prettyᵢ (↓ (store {a = a} r)) = do
+    print (instr (store-instr a (toℕ $ index r)))
 
   prettyᵢ (↓ (goto x))  = do
     emp n ← lookDown (↓ x)

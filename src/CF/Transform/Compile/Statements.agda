@@ -1,5 +1,5 @@
 {-# OPTIONS --no-qualified-instances #-}
-module CF.Compile.Statements where
+module CF.Transform.Compile.Statements where
 
 open import Data.Product
 open import Data.List hiding (null; [_])
@@ -10,8 +10,8 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 
-open import CF.Compile.Expressions
 open import CF.Syntax.DeBruijn
+open import CF.Transform.Compile.Expressions
 
 open import JVM.Types
 open import JVM.Contexts

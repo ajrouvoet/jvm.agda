@@ -11,17 +11,12 @@ open import Relation.Binary.PropositionalEquality using (refl)
 open import Relation.Ternary.Core
 open import Relation.Ternary.Separation
 open import Relation.Ternary.Structures.Syntax
-open import Relation.Ternary.Monad
 open import Relation.Ternary.Monad.Possibly
-open import Relation.Ternary.Monad.Weakening
 
 open import JVM.Contexts
 open import JVM.Types
-open import JVM.Defaults.Syntax.Instructions
-open import JVM.Defaults.Transform.Noooops
 
 open import CF.Syntax as Src
-open import CF.Transform.Hoist
 open import CF.Compile
 
 ex₂ : Src.Block bool ε

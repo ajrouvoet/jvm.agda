@@ -1,4 +1,4 @@
-module CF.Compile.Expressions where
+module CF.Transform.Compile.Expressions where
 
 open import Level
 open import Data.Unit
@@ -19,10 +19,10 @@ open import JVM.Defaults.Syntax.Values
 open import JVM.Defaults.Syntax.Instructions
 
 module _ Γ where
-  open import CF.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop using (Compiler) public
+  open import CF.Transform.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop using (Compiler) public
 
 module _ {Γ} where
-  open import CF.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop hiding (Compiler) public
+  open import CF.Transform.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop hiding (Compiler) public
 
   compileₑ : ∀ {ψ : StackTy} → Exp a Γ → ε[ Compiler Γ ψ (a ∷ ψ) Emp ]
 

@@ -7,6 +7,7 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
+open import Relation.Ternary.Monad
 open import Relation.Ternary.Monad.Weakening
 
 open import JVM.Types
@@ -39,8 +40,11 @@ mutual
     s₁ , s₂    = unstar s₁✴s₂
     in ifthenelse (uncoₑ c) (uncoₛ s₁) (uncoₛ s₂)
   uncoₛ (while c✴s ⇈ wk) with c , s ← unstar (c✴s ⇈ wk) = while (uncoₑ c) (uncoₛ s)
-  uncoₛ (block x ⇈ wk) = block (unco (x ⇈ wk))
+  uncoₛ (block x ⇈ wk) = block (unco' (x ⇈ wk))
 
-  unco : ∀[ Src.Block r ⇑ ⇒ Tgt.Block r ]
-  unco (nil ⇈ wk) = nil
-  unco (cons s✴b ⇈ wk) with s , b ← unstar (s✴b ⇈ wk) = uncoₛ s ⍮ unco b
+  unco' : ∀[ Src.Block r ⇑ ⇒ Tgt.Block r ]
+  unco' (nil ⇈ wk) = nil
+  unco' (cons s✴b ⇈ wk) with s , b ← unstar (s✴b ⇈ wk) = uncoₛ s ⍮ unco' b
+
+unco : ∀[ Src.Block r ⇒ Tgt.Block r ]
+unco bl = unco' (return bl)
