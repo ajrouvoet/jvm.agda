@@ -15,7 +15,7 @@ open import Relation.Nullary
 data Ty : Set where
   boolean                   : Ty
   byte short int long char  : Ty
-  float double              : Ty
+  -- float double              : Ty
   ref                       : String → Ty
 
 IsIntegral : Ty → Set

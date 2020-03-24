@@ -27,22 +27,27 @@ open import JVM.Defaults.Printer.Jasmin as J hiding (procedure)
 
 const-instr : Const a → Instr
 const-instr Const.null   = aconst_null
-const-instr unit         = aconst_null
 const-instr (num x)      = sipush x
 const-instr (bool false) = iconst0
 const-instr (bool true)  = iconst1
 
 load-instr : Ty → ℕ → Instr
-load-instr void    = aload
 load-instr (ref _) = aload
 load-instr int     = iload
-load-instr bool    = iload
+load-instr boolean = iload
+load-instr byte    = iload
+load-instr short   = iload
+load-instr long    = iload
+load-instr char    = iload
 
 store-instr : Ty → ℕ → Instr
-store-instr void    = astore
 store-instr (ref _) = astore
 store-instr int     = istore
-store-instr bool    = istore
+store-instr boolean = istore
+store-instr byte    = istore
+store-instr short   = istore
+store-instr long    = istore
+store-instr char    = istore
 
 bop-instr : NativeBinOp a b c → Instr
 bop-instr add = iadd
@@ -65,9 +70,9 @@ if-instr icmpne = if icmpne
 if-instr icmplt = if icmplt
 if-instr icmple = if icmple
 
-module _ {Γ} where
+module _ {𝑪 Γ} where
 
-  prettyᵢ : ∀ {ψ₁ ψ₂} → ∀[ Down ⟨ Γ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ Printer Emp ]
+  prettyᵢ : ∀ {ψ₁ ψ₂} → ∀[ Down ⟨ 𝑪 ⍮ Γ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ Printer Emp ]
   prettyᵢ (↓ noop)      = print (instr nop)
   prettyᵢ (↓ pop)       = print (instr pop)
   prettyᵢ (↓ dup)       = print (instr dup)
@@ -76,10 +81,6 @@ module _ {Γ} where
 
   prettyᵢ (↓ (push x))  = print (instr (const-instr x))
   prettyᵢ (↓ (bop x))   = print (instr (bop-instr x))
-
-  prettyᵢ (↓ new)       = print (instr nop)
-  prettyᵢ (↓ read)      = print (instr nop)
-  prettyᵢ (↓ write)     = print (instr nop)
 
   prettyᵢ (↓ (load {a = a} r))  = do
     print (instr (load-instr a (toℕ $ index r)))
@@ -93,10 +94,15 @@ module _ {Γ} where
     emp n ← lookDown (↓ x)
     print (instr (if-instr c (Nat.show n)))
 
-  import JVM.Defaults.Syntax.Bytecode.Printer ⟨ Γ ∣_⇒_⟩ prettyᵢ as Printer
+  prettyᵢ (↓ (new c))   = print (instr nop)
+  prettyᵢ (↓ (getstatic s)) = print (instr nop)
+  prettyᵢ (↓ (getfield  s)) = print (instr nop)
+  prettyᵢ (↓ (putfield  s)) = print (instr nop)
 
-  pretty : ∀ {ψ₁ ψ₂ Φ} → ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → List Stat
+  import JVM.Defaults.Syntax.Bytecode.Printer ⟨ 𝑪 ⍮ Γ ∣_⇒_⟩ prettyᵢ as Printer
+
+  pretty : ∀ {ψ₁ ψ₂ Φ} → ⟪ 𝑪 ⍮ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → List Stat
   pretty bc = execPrinter (Printer.pretty bc)
 
-  procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
+  procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ 𝑪 ⍮ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
   procedure name bc = J.procedure name (List.length Γ) 10 (pretty bc)

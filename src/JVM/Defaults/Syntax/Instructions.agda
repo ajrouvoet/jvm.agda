@@ -20,6 +20,17 @@ data Constant : Set where
 
 Constantpool = List Constant
 
+variable
+  𝑪 : Constantpool
+  𝑐 𝑑 𝑒 : String
+
+data NativeBinOp : Ty → Ty → Ty → Set where
+  add sub mul div xor : NativeBinOp int int int
+
+data Comparator : List Ty → Set where
+  eq ne lt ge gt le : {{IsIntegral a}} → Comparator [ a ]
+  icmpge icmpgt icmpeq icmpne icmplt icmple : Comparator (int ∷ [ int ])
+
 {- Instructions -}
 module _ (𝑪 : Constantpool) where
 
@@ -27,16 +38,6 @@ module _ (𝑪 : Constantpool) where
 
   𝑪[_] : Constant → Set
   𝑪[ κ ] = κ ∈ 𝑪
-
-  data NativeBinOp : Ty → Ty → Ty → Set where
-    add sub mul div xor : NativeBinOp int int int
-
-  data Comparator : List Ty → Set where
-    eq ne lt ge gt le : {{IsIntegral a}} → Comparator [ a ]
-    icmpge icmpgt icmpeq icmpne icmplt icmple : Comparator (int ∷ [ int ])
-
-  variable
-    𝑐 𝑑 𝑒 : String
 
   -- True to bytecode, the collection of registers is fixed.
   -- The stack typing varies.
@@ -92,9 +93,9 @@ module _ (𝑪 : Constantpool) (τ : LocalsTy) where
   open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ 𝑪 ⍮ τ ∣_⇒_⟩ as BC
   open BC using (Code) public
 
-  ⟪_,_∣_⇐_⟫   = ⟪_⇐_⟫
-  ⟪_,_∣_⇒_⟫   = ⟪_⇒_⟫
-  ⟪_,_∣_⇒_⟫+  = ⟪_⇒_⟫+
+  ⟪_⍮_∣_⇐_⟫   = ⟪_⇐_⟫
+  ⟪_⍮_∣_⇒_⟫   = ⟪_⇒_⟫
+  ⟪_⍮_∣_⇒_⟫+  = ⟪_⇒_⟫+
 
 module _ {𝑪 τ} where
   open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ 𝑪 ⍮ τ ∣_⇒_⟩
