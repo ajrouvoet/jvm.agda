@@ -1,5 +1,5 @@
 {-# OPTIONS --no-qualified-instances #-}
-module CF.Compile.Statements where
+module CF.Transform.Compile.Statements where
 
 open import Data.Product
 open import Data.List hiding (null; [_])
@@ -10,8 +10,8 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 
-open import CF.Transform.Hoist
-open import CF.Compile.Expressions
+open import CF.Syntax.DeBruijn
+open import CF.Transform.Compile.Expressions
 
 open import JVM.Types
 open import JVM.Contexts
@@ -19,43 +19,33 @@ open import JVM.Model StackTy
 open import JVM.Defaults.Syntax.Values
 open import JVM.Defaults.Syntax.Instructions
 
-{-# TERMINATING #-}
 mutual
   {- Compiling statements -}
-  compileₛ : ∀ {ψ : StackTy} → (Stmt r ⇑) Γ → ε[ Compiler Γ ψ ψ Emp  ]
+  compileₛ : ∀ {ψ : StackTy} → Stmt r Γ → ε[ Compiler Γ ψ ψ Emp  ]
 
-  compileₛ (asgn x∙e ⇈ wk) = do
-    let x = (x∙e  ⇈ wk) ⇑->>= π₁
-    let e = (x∙e  ⇈ wk) ⇑->>= π₂
-
+  compileₛ (asgn x e) = do
     refl ← compileₑ e
     code (store x)
 
-  compileₛ (set e₁∙e₂ ⇈ wk) = do
-    let e₁ = (e₁∙e₂ ⇈ wk) ⇑->>= π₁
-    let e₂ = (e₁∙e₂ ⇈ wk) ⇑->>= π₂
-
+  compileₛ (set e₁ e₂) = do
     refl ← compileₑ e₁
     refl ← compileₑ e₂
 
     code write
 
-  compileₛ (run e ⇈ wk) = do
-    refl ← compileₑ (e  ⇈ wk)
+  compileₛ (run e) = do
+    refl ← compileₑ (e )
     code pop
 
-  compileₛ (ret e ⇈ wk) = do
-    refl ← compileₑ (e  ⇈ wk)
+  compileₛ (ret e) = do
+    refl ← compileₑ (e )
     code ret
 
-  compileₛ (block x ⇈ wk) = do
-    compiler _ (x  ⇈ wk)
+  compileₛ (block x) = do
+    compiler _ (x )
 
   -- do while? abstraction -- for loops
-  compileₛ {ψ = ψ} (while e∙s ⇈ wk) = do
-    let e    = (e∙s ⇈ wk) ⇑->>= π₁
-    let body = (e∙s ⇈ wk) ⇑->>= π₂
-
+  compileₛ {ψ = ψ} (while e body) = do
     -- +c: [[ e ]]
     -- iffalse -e
     -- [[ body ]]
@@ -75,13 +65,10 @@ mutual
     -- label the end
     coe (∙-id⁻ʳ σ) (attach +e)
 
-  compileₛ {ψ = ψ} (ifthenelse e∙s₁∙s₂ ⇈ wk) = do
-    let e₁   = (e∙s₁∙s₂ ⇈ wk) ⇑->>= π₁ 
-    let then = (e∙s₁∙s₂ ⇈ wk) ⇑->>= π₂ ⇑->>= π₁
-    let else = (e∙s₁∙s₂ ⇈ wk) ⇑->>= π₂ ⇑->>= π₂
+  compileₛ {ψ = ψ} (ifthenelse c then else) = do
 
     -- condition
-    refl                ← compileₑ e₁
+    refl                ← compileₑ c
     +t ∙⟨ σ ⟩ ↓ -t      ← mklabel {τ = ψ}
     +t ∙⟨ σ ⟩ refl      ← code (if ne -t)                              &⟨ Up _  # σ        ⟩ +t
 
@@ -103,14 +90,11 @@ mutual
     code {! !}
 
   {- Compiling blocks -}
-  compiler : ∀ (ψ : StackTy) → (Block r ⇑) Γ → ε[ Compiler Γ ψ ψ Emp ]  
+  compiler : ∀ (ψ : StackTy) → Block r Γ → ε[ Compiler Γ ψ ψ Emp ]  
 
-  compiler ψ (nil ⇈ wk) = do
+  compiler ψ (nil) = do
     return refl
 
-  compiler ψ ((cons s∙b) ⇈ wk) = do
-    let s = (s∙b ⇈ wk) ⇑->>= π₁
-    let b = (s∙b ⇈ wk) ⇑->>= π₂
-
+  compiler ψ (s ⍮ b) = do
     refl ← compileₛ s
     compiler _ b 

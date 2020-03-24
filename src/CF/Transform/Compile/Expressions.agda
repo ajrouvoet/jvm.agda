@@ -1,4 +1,4 @@
-module CF.Compile.Expressions where
+module CF.Transform.Compile.Expressions where
 
 open import Level
 open import Data.Unit
@@ -10,7 +10,7 @@ open import Relation.Unary
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 
-open import CF.Transform.Hoist
+open import CF.Syntax.DeBruijn
 
 open import JVM.Types
 open import JVM.Contexts
@@ -18,40 +18,30 @@ open import JVM.Model StackTy; open Syntax
 open import JVM.Defaults.Syntax.Values
 open import JVM.Defaults.Syntax.Instructions
 
-module _ where
-  open import Relation.Ternary.Monad {{ctx-rel}}
-  open import Relation.Ternary.Monad.Weakening {{_}} {{ctx-commutative}} {{ctx-monoid}} public
-  open Bind {{ctx-monoid}} {{⇑-monad {0ℓ} }} {{IsPartialSemigroup.⊙-respect-≈ ctx-semigroup}} using () renaming (_>>=_ to _⇑->>=_) public
-
 module _ Γ where
-  open import CF.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop using (Compiler) public
+  open import CF.Transform.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop using (Compiler) public
 
 module _ {Γ} where
-  open import CF.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop hiding (Compiler) public
+  open import CF.Transform.Compile.Monad StackTy ⟨ Γ ∣_⇒_⟩ noop hiding (Compiler) public
 
+  compileₑ : ∀ {ψ : StackTy} → Exp a Γ → ε[ Compiler Γ ψ (a ∷ ψ) Emp ]
 
-  {-# TERMINATING #-}
-  compileₑ : ∀ {ψ : StackTy} → (Exp a ⇑) Γ → ε[ Compiler Γ ψ (a ∷ ψ) Emp ]
-
-  compileₑ (unit ⇈ wk) = do
+  compileₑ (unit) = do
     code (push unit)
 
-  compileₑ (null ⇈ wk) = do
+  compileₑ (null) = do
     code (push null)
 
-  compileₑ (num x ⇈ wk) = do
+  compileₑ (num x) = do
     code (push (num x))
 
-  compileₑ (bool b ⇈ wk) = do
+  compileₑ (bool b) = do
     code (push (bool b))
 
-  compileₑ (var x ⇈ wk) = do
-    code (load (x ⇈ wk))
+  compileₑ (var x) = do
+    code (load x)
 
-  compileₑ (bop f e₁∙e₂ ⇈ wk) = do
-    let e₁ = (e₁∙e₂  ⇈ wk) ⇑->>= π₁
-    let e₂ = (e₁∙e₂  ⇈ wk) ⇑->>= (π₂)
-
+  compileₑ (bop f e₁ e₂) = do
     refl ← compileₑ e₂
     refl ← compileₑ e₁
     compile-bop f
@@ -91,10 +81,10 @@ module _ {Γ} where
       compile-bop gt  = compile-comp icmpgt
       compile-bop le  = compile-comp icmplt
 
-  compileₑ (ref e ⇈ wk) = do
-    refl ← compileₑ (e  ⇈ wk)
+  compileₑ (ref e) = do
+    refl ← compileₑ (e )
     code new
 
-  compileₑ (deref e ⇈ wk) = do
-    refl ← compileₑ (e ⇈ wk)
+  compileₑ (deref e) = do
+    refl ← compileₑ (e)
     code read
