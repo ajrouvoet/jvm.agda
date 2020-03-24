@@ -16,8 +16,7 @@ open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Construct.Product as Pr
 
-open import JVM.Types renaming (Ctx to Lex)
-open import JVM.Contexts hiding (ctx-rel)
+open import CF.Types
 
 open import Data.List.Relation.Binary.Permutation.Propositional
 
@@ -38,6 +37,10 @@ variable
 Globals : Set
 Globals = List TopLevelDecl
 
+open import JVM.Model TopLevelDecl public
+
+Lex = List Ty
+
 abstract
 
   Ctx : Set
@@ -50,20 +53,14 @@ abstract
   _⍮_ : Ctx → List Ty → Ctx
   (Γ , X) ⍮ Δ = (Δ ++ Γ , X)
 
-  open import Relation.Ternary.Construct.Empty     TopLevelDecl
-  open import Relation.Ternary.Construct.Duplicate TopLevelDecl
-
   module DJList where
     open import Relation.Ternary.Construct.List.Disjoint Ty public
 
   module OVList where
     open import Relation.Ternary.Construct.List.Overlapping Ty public
 
-  module DJBag where
-    open import Relation.Ternary.Construct.Bag empty-rel tt public
-
   instance ctx-rel : Rel₃ Ctx
-  ctx-rel = ×-rel {{OVList.overlap-rel}} {{DJBag.bags}}
+  ctx-rel = ×-rel {{OVList.overlap-rel}} {{Overlap.bags}}
 
   private
     unit : Ctx
@@ -148,33 +145,6 @@ module _ where
   Fun : String → FunTy → Pred Ctx 0ℓ
   Fun n f = Global (n , fun f)
 
--- abstract
-
---   {- Interfaces -}
---   Tl = Globals × Ctx
-
-  -- instance tl-rel : Rel₃ Tl
-  -- tl-rel = ×-rel {{?}} {{DJBag.bags}}
-
-  -- private
-  --   tlunit : Tl
-  --   tlunit = [] , []
-
-  -- instance tl-emptiness : Emptiness {A = Tl} tlunit
-  -- tl-emptiness = record {}
-
-  -- _tl≈_ : Tl → Tl → Set
-  -- _tl≈_ = Pr._≈_ {{isEquivalence}} {{↭-isEquivalence}}
-
-  -- instance tl-isSemigroup : IsPartialSemigroup _tl≈_ tl-rel
-  -- tl-isSemigroup = ×-isSemigroup
-
-  -- instance tl-isMonoid : IsPartialMonoid _tl≈_ tl-rel unit
-  -- tl-isMonoid = ×-isPartialMonoid
-
-  -- instance tl-isPositive : IsPositive 0ℓ _tl≈_ tl-rel unit
-  -- tl-isPositive = ×-isPositive
-
-  -- instance tl-isCommutative : IsCommutative tl-rel
-  -- tl-isCommutative = ×-isCommutative
-  
+  abstract
+    Closed : ∀ {ℓ} → Pred Ctx ℓ → Pred Globals ℓ
+    Closed P X = P (ε , X)

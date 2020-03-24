@@ -2,20 +2,25 @@
 module CF.Syntax where
 
 open import Level
-open import JVM.Prelude hiding (Σ; _⊢_; _⊆_)
 
+open import Data.Nat
 open import Data.Bool
 open import Data.String
+open import Data.Product
 open import Data.List hiding (null)
 open import Data.List.Relation.Unary.All
+
+open import Relation.Unary hiding (_⊢_)
 open import Relation.Unary.PredicateTransformer using (Pt)
 open import Relation.Binary.Structures using (IsPreorder)
 open import Relation.Binary.PropositionalEquality using (isEquivalence)
 open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad.Possibly
+open import Relation.Ternary.Data.Bigstar hiding ([_])
 
-open import JVM.Types hiding (Ctx)
 open import JVM.Defaults.Syntax.Instructions
+
+open import CF.Types
 open import CF.Contexts
 
 open import Relation.Ternary.Data.Allstar Ty
@@ -66,8 +71,18 @@ mutual
     cons  : ∀[ Stmt r ✴ Block r ⇒ Block r ]
     emp   : ε[ Block r ]
 
--- Function : String → FunTy → Pred Intf 0ℓ
--- Function n fty@(as ⟶ b) = Up (Fun n fty) ✴ Down (as ⊢ Block b)
+Function : Pred Intf 0ℓ
+Function =
+  ⋃[ (n , fty@(as ⟶ b)) ∶ String × FunTy ]
+    ( Up (Just (n , fun fty))
+    ✴ Down (Closed (as ⊢ Block b))
+    )
+
+Program : Set
+Program =
+  ( Down (Just ("main" , (fun ([] ⟶ void)))) -- reference to the main function
+  ✴ Bigstar Function
+  ) ε
 
 -- make constructors visible
 open Statements Block public
