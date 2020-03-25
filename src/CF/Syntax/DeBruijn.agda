@@ -13,26 +13,27 @@ open import Relation.Binary.Structures using (IsPreorder)
 open import Relation.Binary.PropositionalEquality using (isEquivalence)
 
 open import CF.Types
-open import CF.Contexts as Ctx using (Ctx; module DeBruijn)
+open import CF.Contexts as Ctx using (𝑓; Ctx; module DeBruijn; _⟶_)
 open import CF.Syntax using (BinOp; module BinOp) public
 
 open DeBruijn public
 open BinOp    public
 
-data Exp : Ty → Pred Ctx 0ℓ where
-  -- irreducible expressions
-  unit     : ∀[ Exp void ]
-  -- null     : ∀[ Exp (ref a) ]
-  num      : ℕ    → ∀[ Exp int ]
-  bool     : Bool → ∀[ Exp bool ]
+mutual
+  data Exp : Ty → Pred Ctx 0ℓ where
+    -- irreducible expressions
+    unit     : ∀[ Exp void ]
+    -- null     : ∀[ Exp (ref a) ]
+    num      : ℕ    → ∀[ Exp int ]
+    bool     : Bool → ∀[ Exp bool ]
 
-  -- storeless expressions
-  var      : ∀[ Var a ⇒ Exp a ]
-  bop      : BinOp a b c → ∀[ Exp a ⇒ Exp b ⇒ Exp c ]
+    -- storeless expressions
+    var      : ∀[ Var a ⇒ Exp a ]
+    bop      : BinOp a b c → ∀[ Exp a ⇒ Exp b ⇒ Exp c ]
 
-  -- storeful
-  -- ref   : ∀[ Exp a ⇒ Exp (ref a) ]
-  -- deref : ∀[ Exp (ref a) ⇒ Exp a ]
+    call     : ∀[ Fun 𝑓 (as ⟶ b) ⇒ Exps as ⇒ Exp b ]
+
+  Exps = λ as Γ → All (λ a → Exp a Γ) as
 
 mutual
   data Stmt (r : Ty) : Pred Ctx 0ℓ where

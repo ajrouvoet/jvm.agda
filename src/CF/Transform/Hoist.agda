@@ -13,10 +13,11 @@ open import Relation.Ternary.Monad
 open import Relation.Ternary.Monad.Possibly
 open import Relation.Ternary.Structures.Syntax
 
-open import JVM.Types hiding (Ctx)
-
+open import CF.Types
 open import CF.Contexts
 open import CF.Syntax as Src hiding (Stmt; Block; Statement) public
+
+open import Relation.Ternary.Construct.List.Overlapping Ty
 
 module Tgt where
   mutual
@@ -64,9 +65,6 @@ mutual
   translate (Src.asgn x) = do
     return (Tgt.asgn x)
 
-  translate (Src.set v×x) = do
-    return (Tgt.set v×x)
-
   translate (Src.run e) = do
     return (Tgt.run e)
 
@@ -86,6 +84,3 @@ mutual
   translate (Src.block bl) = do
     bl'                      ← hoist bl
     return (Tgt.block bl')
-
-  translate (Src.print e) = do
-    return (Tgt.print e)

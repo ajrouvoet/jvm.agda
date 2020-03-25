@@ -140,6 +140,9 @@ module DeBruijn where
   Var : Ty → Pred Ctx 0ℓ
   Var a (X , Γ) = a ∈ Γ
 
+  Fun : String → FunTy → Pred Ctx 0ℓ
+  Fun n t (X , Γ) = (n , fun t) ∈ X
+
 open CoDeBruijn public
 
 {- We redefine the instances to force instanc resolution to happen here rather than in the dependants -}

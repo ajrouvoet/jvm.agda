@@ -64,8 +64,6 @@ module Statements (Block : Ty → Pred Ctx 0ℓ) where
     while         : ∀[ Exp bool ✴ Statement r ⇒ Statement r ]
     block         : ∀[ Block r ⇒ Statement r ]
 
-    print         : ∀[ Exp int ⇒ Statement r ] 
-
 mutual
   Stmt = Statements.Statement Block
 

@@ -8,6 +8,7 @@ open import Data.Product as P
 open import Data.List as L hiding (null; [_])
 open import Data.List.Membership.Propositional
 open import Data.List.Membership.Propositional.Properties
+open import Data.List.Relation.Unary.All
 open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Unary hiding (_∈_)
 open import Relation.Ternary.Core
@@ -67,6 +68,8 @@ module _ where
   To.⟦_⟧ cfToJvm-var = ∈-map⁺ ⟦_⟧
 
 -- Compilation of CF expressions
+compileₑₛ : ∀ {as ψ K} → Exps as K → ε[ Compiler ⟦ K ⟧ ψ (⟦ as ⟧ ++ ψ) Emp ]
+
 compileₑ : ∀ {a ψ K} → Exp a K → ε[ Compiler ⟦ K ⟧ ψ (⟦ a ⟧ ∷ ψ) Emp ]
 
 compileₑ (unit) = do
@@ -80,6 +83,10 @@ compileₑ (bool b) = do
 
 compileₑ (var x) = do
   code (load ⟦ x ⟧)
+
+compileₑ (call f es) = do
+  refl ← compileₑₛ es
+  code (invokestatic ⟦ f ⟧)
 
 compileₑ (bop f e₁ e₂) = do
   refl ← compileₑ e₂
@@ -120,3 +127,8 @@ compileₑ (bop f e₁ e₂) = do
     compile-bop ge  = compile-comp icmpge
     compile-bop gt  = compile-comp icmpgt
     compile-bop le  = compile-comp icmplt
+
+compileₑₛ [] = return refl
+compileₑₛ (e ∷ es) = do
+  refl ← compileₑₛ es
+  compileₑ e

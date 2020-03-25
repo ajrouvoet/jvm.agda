@@ -42,7 +42,7 @@ module _ (𝑭 : FrameTy) where
     dup  : ε[ ⟨ a ∷ ψ      ⇒  a ∷ a ∷ ψ ⟩ ]
     swap : ε[ ⟨ a ∷ b ∷ ψ  ⇒  b ∷ a ∷ ψ ⟩ ]
 
-    -- primitive operations
+    -- binary operations on primitive types
     bop   : NativeBinOp a b c → ε[ ⟨ a ∷ b ∷ ψ  ⇒  c ∷ ψ ⟩ ]
 
     -- member access
@@ -61,6 +61,9 @@ module _ (𝑭 : FrameTy) where
 
     -- exceptions/abrupt termination/etc
     ret   : ε[ ⟨ a ∷ ψ ⇒ ψ ⟩ ]
+
+    -- calls
+    invokestatic : ∀ {𝑓} → 𝑪[ staticfun 𝑓 as b ] → ∀[ ⟨ (as ++ ψ) ⇒ b ∷ ψ ⟩ ]
 
   ⟨_∣_⇒_⟩ = ⟨_⇒_⟩
 

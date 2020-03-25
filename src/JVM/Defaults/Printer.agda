@@ -3,6 +3,7 @@ module JVM.Defaults.Printer where
 
 open import Function
 open import Data.Bool
+open import Data.Product hiding (swap)
 open import Data.List as List
 open import Data.List.Relation.Unary.Any
 open import Data.Nat
@@ -70,9 +71,9 @@ if-instr icmpne = if icmpne
 if-instr icmplt = if icmplt
 if-instr icmple = if icmple
 
-module _ {𝑪 Γ} where
+module _ {𝑭} where
 
-  prettyᵢ : ∀ {ψ₁ ψ₂} → ∀[ Down ⟨ 𝑪 ⍮ Γ ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ Printer Emp ]
+  prettyᵢ : ∀ {ψ₁ ψ₂} → ∀[ Down ⟨ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ Printer Emp ]
   prettyᵢ (↓ noop)      = print (instr nop)
   prettyᵢ (↓ pop)       = print (instr pop)
   prettyᵢ (↓ dup)       = print (instr dup)
@@ -99,10 +100,10 @@ module _ {𝑪 Γ} where
   prettyᵢ (↓ (getfield  s)) = print (instr nop)
   prettyᵢ (↓ (putfield  s)) = print (instr nop)
 
-  import JVM.Defaults.Syntax.Bytecode.Printer ⟨ 𝑪 ⍮ Γ ∣_⇒_⟩ prettyᵢ as Printer
+  import JVM.Defaults.Syntax.Bytecode.Printer ⟨ 𝑭 ∣_⇒_⟩ prettyᵢ as Printer
 
-  pretty : ∀ {ψ₁ ψ₂ Φ} → ⟪ 𝑪 ⍮ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → List Stat
+  pretty : ∀ {ψ₁ ψ₂ Φ} → ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → List Stat
   pretty bc = execPrinter (Printer.pretty bc)
 
-  procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ 𝑪 ⍮ Γ ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
-  procedure name bc = J.procedure name (List.length Γ) 10 (pretty bc)
+  procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
+  procedure name bc = J.procedure name (List.length (proj₁ 𝑭)) 10 (pretty bc)

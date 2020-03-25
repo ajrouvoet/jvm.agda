@@ -19,7 +19,6 @@ open import Relation.Ternary.Data.Allstar
 open import CF.Types
 open import CF.Syntax as Src
 open import CF.Contexts
--- open import CF.Compile
 
 module _ {T : Set} where
   open import Relation.Ternary.Construct.List.Overlapping T public
@@ -58,11 +57,13 @@ ex₁ = (
         Src.⍮⟨ ∙-idʳ ⟩ emp
     ))) Src.⍮⟨ ∙-idʳ ⟩ emp)
 
--- open import IO as IO
--- open import Codata.Musical.Notation
--- open import JVM.Defaults.Printer
+open import IO as IO
+open import Codata.Musical.Notation
+open import JVM.Defaults.Printer
 
--- main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
---   where
---   import JVM.Defaults.Printer.Jasmin as J
---   proc = procedure "ex1" (proj₂ $ compile ex₁)
+open import CF.Compile
+
+main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
+  where
+  import JVM.Defaults.Printer.Jasmin as J
+  proc = procedure "ex1" (proj₂ $ compile ex₁)
