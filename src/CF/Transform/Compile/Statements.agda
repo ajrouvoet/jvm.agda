@@ -1,6 +1,7 @@
 {-# OPTIONS --no-qualified-instances #-}
 module CF.Transform.Compile.Statements where
 
+open import Data.Unit using (⊤; tt)
 open import Data.Product
 open import Data.List hiding (null; [_])
 open import Relation.Binary.PropositionalEquality hiding ([_])
@@ -12,6 +13,7 @@ open import Relation.Ternary.Structures.Syntax
 
 open import CF.Syntax.DeBruijn
 open import CF.Transform.Compile.Expressions
+open import CF.Contexts using (K)
 
 open import JVM.Types
 open import JVM.Contexts
@@ -21,17 +23,11 @@ open import JVM.Defaults.Syntax.Instructions
 
 mutual
   {- Compiling statements -}
-  compileₛ : ∀ {ψ : StackTy} → Stmt r Γ → ε[ Compiler Γ ψ ψ Emp  ]
+  compileₛ : ∀ {ψ : StackTy} {r} → Stmt r K → ε[ Compiler ⟦ K ⟧ ψ ψ Emp  ]
 
   compileₛ (asgn x e) = do
     refl ← compileₑ e
-    code (store x)
-
-  compileₛ (set e₁ e₂) = do
-    refl ← compileₑ e₁
-    refl ← compileₑ e₂
-
-    code write
+    code (store ⟦ x ⟧)
 
   compileₛ (run e) = do
     refl ← compileₑ (e )
@@ -83,14 +79,8 @@ mutual
     -- label the end
     coe (∙-id⁻ʳ σ) (attach +e)
 
-  compileₛ (print e' ⇈ wk) = do
-    let e = e' ⇈ wk
-
-    refl ← compileₑ e
-    code {! !}
-
   {- Compiling blocks -}
-  compiler : ∀ (ψ : StackTy) → Block r Γ → ε[ Compiler Γ ψ ψ Emp ]  
+  compiler : ∀ (ψ : StackTy) {r} → Block r K → ε[ Compiler ⟦ K ⟧ ψ ψ Emp ]  
 
   compiler ψ (nil) = do
     return refl

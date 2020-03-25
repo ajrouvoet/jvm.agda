@@ -1,4 +1,4 @@
-{-# OPTIONS --safe #-}
+{-# OPTIONS --safe --no-qualified-instances #-}
 module CF.Syntax where
 
 open import Level
@@ -13,7 +13,7 @@ open import Data.List.Relation.Unary.All
 open import Relation.Unary hiding (_⊢_)
 open import Relation.Unary.PredicateTransformer using (Pt)
 open import Relation.Binary.Structures using (IsPreorder)
-open import Relation.Binary.PropositionalEquality using (isEquivalence)
+open import Relation.Binary.PropositionalEquality using (isEquivalence; refl)
 open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad.Possibly
 open import Relation.Ternary.Data.Bigstar hiding ([_])
@@ -22,6 +22,7 @@ open import JVM.Defaults.Syntax.Instructions
 
 open import CF.Types
 open import CF.Contexts
+open import Relation.Ternary.Construct.Product using (fst; snd)
 
 open import Relation.Ternary.Data.Allstar Ty
 
@@ -32,17 +33,17 @@ data BinOp : Ty → Ty → Ty → Set where
 data Exp : Ty → Pred Ctx 0ℓ where
   -- irreducible expressions
   unit     : ε[ Exp void ]
-  null     : ε[ Exp (ref a) ]
+  -- null     : ε[ Exp (ref a) ]
   num      : ℕ → ε[ Exp int ]
   bool     : Bool → ε[ Exp bool ]
 
   -- storeless expressions
-  var      : ∀[ Var a ⇒ Exp a ]
+  var'      : ∀[ Var a ⇒ Exp a ]
   bop      : BinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
 
   -- storeful
-  ref      : ∀[ Exp a ⇒ Exp (ref a) ]
-  deref    : ∀[ Exp (ref a) ⇒ Exp a ]
+  -- ref      : ∀[ Exp a ⇒ Exp (ref a) ]
+  -- deref    : ∀[ Exp (ref a) ⇒ Exp a ]
 
   -- procedure calls
   call     : ∀[ Fun 𝑓 (as ⟶ b) ✴ Allstar Exp as ⇒ Exp b ]
@@ -52,7 +53,7 @@ module Statements (Block : Ty → Pred Ctx 0ℓ) where
   data Statement (r : Ty) : Pred Ctx 0ℓ where
     asgn          : ∀[ Var a ✴ Exp a ⇒ Statement r ]
 
-    set           : ∀[ Exp (ref a) ✴ Exp a ⇒ Statement r ]
+    -- set           : ∀[ Exp (ref a) ✴ Exp a ⇒ Statement r ]
 
     run           : ∀[ Exp a ⇒ Statement r ]
     ret           : ∀[ Exp r ⇒ Statement r ]
@@ -90,3 +91,5 @@ open Statements Block public
 infixr 5 _⍮⟨_⟩_
 pattern _⍮⟨_⟩_ s σ b = cons (s ×⟨ σ ⟩ b)
 pattern _≔⟨_⟩_ e σ b = local (e ×⟨ σ ⟩ b)
+pattern vars = fst refl
+pattern var  = var' vars

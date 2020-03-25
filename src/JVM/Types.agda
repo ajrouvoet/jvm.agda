@@ -1,8 +1,9 @@
 {-# OPTIONS --safe --without-K #-}
 module JVM.Types where
 
-open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
+open import Data.Unit using (⊤; tt)
+open import Data.Product
 open import Data.List
 open import Data.String
 
@@ -27,16 +28,27 @@ IsIntegral long    = ⊤
 IsIntegral char    = ⊤
 IsIntegral _       = ⊥
 
-Ctx      = List Ty
 StackTy  = List Ty
 LocalsTy = List Ty
 Labels   = List StackTy
 
+data Constant : Set where
+  classref  : String → Constant
+  fieldref  : String → Ty → Constant
+  staticref : String → Ty → Constant -- in the actual constant pool static fields are fields
+  staticfun : String → List Ty → Ty → Constant
+
+Constantpool = List Constant
+FrameTy      = Constantpool × LocalsTy
+
 variable
-  a b c r s t   : Ty
-  Γ₁ Γ₂ Γ₃ Γ₄ Γ : Ctx
-  as bs cs      : List Ty
-  ψ₁ ψ₂ ψ₃ ψ    : StackTy  -- stack typings
+  𝑪               : Constantpool
+  𝑹₁ 𝑹₂ 𝑹₃ 𝑹₄ 𝑹 : LocalsTy
+  𝑭₁ 𝑭₂ 𝑭₃ 𝑭₄ 𝑭  : FrameTy
+  𝑐 𝑑 𝑒           : String
+  a b c r s t     : Ty
+  as bs cs        : List Ty
+  ψ₁ ψ₂ ψ₃ ψ      : StackTy  -- stack typings
 
 -- data Primitive : Ty → Set where
 --   int  : Primitive int
