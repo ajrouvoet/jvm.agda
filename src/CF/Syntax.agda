@@ -48,6 +48,8 @@ data Exp : Ty → Pred Ctx 0ℓ where
   -- procedure calls
   call     : ∀[ Fun 𝑓 (as ⟶ b) ✴ Allstar Exp as ⇒ Exp b ]
 
+pattern var  = var' vars
+
 module Statements (Block : Ty → Pred Ctx 0ℓ) where
 
   data Statement (r : Ty) : Pred Ctx 0ℓ where
@@ -91,5 +93,3 @@ open Statements Block public
 infixr 5 _⍮⟨_⟩_
 pattern _⍮⟨_⟩_ s σ b = cons (s ×⟨ σ ⟩ b)
 pattern _≔⟨_⟩_ e σ b = local (e ×⟨ σ ⟩ b)
-pattern vars = fst refl
-pattern var  = var' vars

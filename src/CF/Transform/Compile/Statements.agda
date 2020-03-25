@@ -30,18 +30,18 @@ mutual
     code (store ⟦ x ⟧)
 
   compileₛ (run e) = do
-    refl ← compileₑ (e )
+    refl ← compileₑ e 
     code pop
 
   compileₛ (ret e) = do
-    refl ← compileₑ (e )
+    refl ← compileₑ e 
     code ret
 
   compileₛ (block x) = do
-    compiler _ (x )
+    compiler _ x
 
   -- do while? abstraction -- for loops
-  compileₛ {ψ = ψ} (while e body) = do
+  compileₛ (while e body) = do
     -- +c: [[ e ]]
     -- iffalse -e
     -- [[ body ]]
@@ -49,7 +49,7 @@ mutual
     -- +e: nop
 
     -- condition
-    +c ∙⟨ σ ⟩ -c        ← mklabel {τ = ψ}
+    +c ∙⟨ σ ⟩ -c        ← mklabel
     -c ∙⟨ σ ⟩ refl      ← attachTo +c ⟨ ∙-idʳ ⟩ compileₑ e         &⟨ Down _ # ∙-comm σ ⟩ -c
     (↓ -e) ∙⟨ σ ⟩ -c∙+e ← mapM ⊙-rotateᵣ (mklabel                  &⟨ Down _ # σ        ⟩ -c)
     -c∙+e  ∙⟨ σ ⟩ refl  ← code (if eq -e)                          &⟨ _ ⊙ _  # ∙-comm σ ⟩ -c∙+e
@@ -61,16 +61,16 @@ mutual
     -- label the end
     coe (∙-id⁻ʳ σ) (attach +e)
 
-  compileₛ {ψ = ψ} (ifthenelse c then else) = do
+  compileₛ (ifthenelse c then else) = do
 
     -- condition
     refl                ← compileₑ c
-    +t ∙⟨ σ ⟩ ↓ -t      ← mklabel {τ = ψ}
+    +t ∙⟨ σ ⟩ ↓ -t      ← mklabel
     +t ∙⟨ σ ⟩ refl      ← code (if ne -t)                              &⟨ Up _  # σ        ⟩ +t
 
     -- else
     +t   ∙⟨ σ ⟩ refl    ← compileₛ else                                &⟨ Up _  # σ        ⟩ +t
-    ↓ -e ∙⟨ σ ⟩ +t∙+e   ← ⊙-rotateᵣ ⟨$⟩ (mklabel { τ = ψ }             &⟨ Up _  # σ        ⟩ +t)
+    ↓ -e ∙⟨ σ ⟩ +t∙+e   ← ⊙-rotateᵣ ⟨$⟩ (mklabel                       &⟨ Up _  # σ        ⟩ +t)
 
     -- then
     +t ∙⟨ σ ⟩ +e        ← ⊙-id⁻ʳ ⟨$⟩ (code (goto -e)                   &⟨ _ ⊙ _ # ∙-comm σ ⟩ +t∙+e)

@@ -124,10 +124,12 @@ module CoDeBruijn where
   Var : Ty → Pred Ctx 0ℓ
   Var a = Vars [ a ]
 
+  pattern vars = snd refl
+
   Fun : String → FunTy → Pred Ctx 0ℓ
   Fun n f = Global (n , fun f)
 
-  pattern fn = snd refl
+  pattern fn = fst refl
 
   Closed : ∀ {ℓ} → Pred Ctx ℓ → Pred Globals ℓ
   Closed P X = P (X , ε)
