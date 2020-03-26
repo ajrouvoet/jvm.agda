@@ -54,3 +54,6 @@ attachTo : ∀ {P} → ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₂ P ─⊙ Co
 attachTo l ⟨ σ ⟩ c = do
   c ∙⟨ σ ⟩ refl ← attach l &⟨ Compiler _ _ _ # ∙-comm σ ⟩ c
   coe (∙-id⁻ʳ σ) c
+
+execCompiler : ∀ {ψ₁ ψ₂} → ∀[ Compiler ψ₁ ψ₂ Emp ⇒ ⟪ ψ₁ ⇒ ψ₂ ⟫ ]
+execCompiler (bc ∙⟨ σ ⟩ refl) = coe (∙-id⁻ʳ σ) bc

@@ -76,9 +76,6 @@ module _ where
   data _∼[_]_ : Ctx → Lex → Ctx → Set where
     intros : ∀ {Γ X Δ Δ′} → Δ′ DJList.⊆ Δ → (X , Γ) ∼[ Δ ] (X , Δ′ ++ Γ)
 
-  -- ∼-respects-≈ˡ : ∀ {g K} → Respect _ctx≈_ (_∼[ g ] K)
-  -- Respect.coe ∼-respects-≈ˡ {y = X , Γ} (eq₁ , eq₂) (intros s) = {!intros {Γ = Γ} s!}
-
   open import Relation.Ternary.Monad.Possibly
   open Possibly _∼[_]_
     public

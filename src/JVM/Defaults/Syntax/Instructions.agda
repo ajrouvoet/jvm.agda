@@ -31,6 +31,9 @@ module _ (𝑭 : FrameTy) where
   𝑹[_] : Ty → Set
   𝑹[ a ] = a ∈ (proj₂ 𝑭)
 
+  open Fld
+  open Fun
+
   -- True to bytecode, the collection of registers is fixed.
   -- The stack typing varies.
   data ⟨_⇒_⟩ : StackTy → StackTy → Pred Labels 0ℓ where
@@ -46,10 +49,10 @@ module _ (𝑭 : FrameTy) where
     bop   : NativeBinOp a b c → ε[ ⟨ a ∷ b ∷ ψ  ⇒  c ∷ ψ ⟩ ]
 
     -- member access
-    getstatic : 𝑪[ staticref 𝑐 a ] → ε[ ⟨ ψ ⇒ a ∷ ψ ⟩ ]
-    getfield  : 𝑪[ fieldref 𝑐 a  ] → ε[ ⟨ ref 𝑐 ∷ ψ ⇒ a ∷ ψ ⟩ ]
-    putfield  : 𝑪[ fieldref 𝑐 a  ] → ε[ ⟨ a ∷ ref 𝑐 ∷ ψ ⇒ ψ ⟩ ]
-    new       : 𝑪[ classref 𝑐    ] → ε[ ⟨ ψ ⇒ ref 𝑐 ∷ ψ ⟩ ]
+    getstatic : 𝑪[ staticref 𝑎 ] → ε[ ⟨ ψ ⇒ fld 𝑎 ty ∷ ψ ⟩ ]
+    getfield  : 𝑪[ fieldref 𝑎  ] → ε[ ⟨ ref (fld 𝑎 cls) ∷ ψ ⇒ fld 𝑎 ty ∷ ψ ⟩ ]
+    putfield  : 𝑪[ fieldref 𝑎  ] → ε[ ⟨ fld 𝑎 ty ∷ ref (fld 𝑎 cls) ∷ ψ ⇒ ψ ⟩ ]
+    new       : 𝑪[ class 𝑐     ] → ε[ ⟨ ψ ⇒ ref 𝑐 ∷ ψ ⟩ ]
 
     -- register manipulation
     load  : 𝑹[ a ] → ε[ ⟨ ψ ⇒ a ∷ ψ ⟩ ]
@@ -63,7 +66,8 @@ module _ (𝑭 : FrameTy) where
     ret   : ε[ ⟨ a ∷ ψ ⇒ ψ ⟩ ]
 
     -- calls
-    invokestatic : ∀ {𝑐 𝑓 as r} → 𝑪[ staticfun (𝑐 / 𝑓 :⟨ as ⟩ r) ] → ε[ ⟨ (as ++ ψ) ⇒ b ∷ ψ ⟩ ]
+    invokestatic  : ∀ {as r} → 𝑪[ staticfun (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ++ ψ) ⇒ b ∷ ψ ⟩ ]
+    invokevirtual : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ∷ʳ ref 𝑐 ++ ψ) ⇒ r :?: ψ ⟩ ]
 
   ⟨_∣_⇒_⟩ = ⟨_⇒_⟩
 
