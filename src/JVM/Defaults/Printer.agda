@@ -101,7 +101,10 @@ module _ {𝑭} where
   prettyᵢ (↓ (getstatic s)) = print (instr nop)
   prettyᵢ (↓ (getfield  s)) = print (instr nop)
   prettyᵢ (↓ (putfield  s)) = print (instr nop)
-  prettyᵢ (↓ (invokestatic {𝑐 = 𝑐} {𝑓} {as} {r} f)) = print (instr (invokestatic (𝑐 / 𝑓 :⟨ as ⟩ r))) 
+  prettyᵢ (↓ (invokestatic  {𝑐 = 𝑐} {𝑚} {as} {r} f))      =
+    print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ ty r))) 
+  prettyᵢ (↓ (invokevirtual {𝑐 = 𝑐} {𝑚} {as = as} {r} f)) =
+    print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ r))) 
 
   import JVM.Defaults.Syntax.Bytecode.Printer ⟨ 𝑭 ∣_⇒_⟩ prettyᵢ as Printer
 

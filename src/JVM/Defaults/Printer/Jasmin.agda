@@ -102,7 +102,7 @@ data Comparator : Set where
   eq ne lt ge gt le : Comparator
   icmpge icmpgt icmpeq icmpne icmplt icmple : Comparator
 
-open import JVM.Types using (StaticFun)
+open import JVM.Types using (Fun)
 
 module Comp where
 
@@ -137,11 +137,11 @@ data Instr : Set where
 
   iadd isub imul idiv ixor         : Instr
 
-  invokespecial invokestatic       : StaticFun → Instr
+  invokevirtual invokespecial invokestatic : Fun → Instr
 
-module Static where
+module Funs where
 
-  out : StaticFun → String
+  out : Fun → String
   out (c / m :⟨ as ⟩ r) = c S.++ "/" S.++ m S.++ Descriptor.out as r
   
 module Instruction where
@@ -182,8 +182,9 @@ module Instruction where
 
   out (new c)     = unwords $ "new" ∷ c ∷ []
 
-  out (invokespecial sf) = unwords $ "invokespecial" ∷ Static.out sf ∷ [] 
-  out (invokestatic  sf) = unwords $ "invokestatic"  ∷ Static.out sf ∷ []
+  out (invokespecial sf) = unwords $ "invokespecial" ∷ Funs.out sf ∷ [] 
+  out (invokestatic  sf) = unwords $ "invokestatic"  ∷ Funs.out sf ∷ []
+  out (invokevirtual sf) = unwords $ "invokevirtual" ∷ Funs.out sf ∷ []
 
 data Stat : Set where
   label : String → Stat
