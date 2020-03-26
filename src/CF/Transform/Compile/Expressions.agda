@@ -87,12 +87,12 @@ compileₑ (var x) = do
   code (load ⟦ x ⟧)
 
 compileₑ (call f es) = do
-  refl ← compileₑₛ es
+  compileₑₛ es
   code (invokestatic ⟦ f ⟧)
 
 compileₑ (bop f e₁ e₂) = do
-  refl ← compileₑ e₂
-  refl ← compileₑ e₁
+  compileₑ e₂
+  compileₑ e₁
   compile-bop f
 
   where
@@ -132,5 +132,5 @@ compileₑ (bop f e₁ e₂) = do
 
 compileₑₛ [] = return refl
 compileₑₛ (e ∷ es) = do
-  refl ← compileₑₛ es
+  compileₑₛ es
   compileₑ e

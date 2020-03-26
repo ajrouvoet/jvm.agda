@@ -1,3 +1,4 @@
+{-# OPTIONS --no-qualified-instances #-}
 module CF.Builtins where
 
 open import Data.Bool
@@ -45,7 +46,7 @@ builtins = print
 
     ⟦print⟧ : Compiler (jre , [ int ]) [] [ boolean ] Emp ε
     ⟦print⟧ = do
-      refl ← code (getstatic (here refl))
-      refl ← code (load (here refl))
-      refl ← code (invokevirtual (there (here refl)))
+      code (getstatic (here refl))
+      code (load (here refl))
+      code (invokevirtual (there (here refl)))
       code (push (bool true))

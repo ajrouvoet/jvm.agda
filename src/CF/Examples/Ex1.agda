@@ -13,6 +13,7 @@ open import Relation.Ternary.Separation
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad.Possibly
 open import Relation.Ternary.Data.Allstar
+open import Relation.Ternary.Data.Bigstar hiding ([_])
 
 -- open import JVM.Contexts
 
@@ -23,11 +24,10 @@ open import CF.Contexts
 module _ {T : Set} where
   open import Relation.Ternary.Construct.List.Overlapping T public
 
-printsig : TopLevelDecl
-printsig = "print" , fun ([ int ] ⟶ void)
+open import CF.Examples.Builtins
 
-ex₁ : Closed (Src.Block bool) [ printsig ]
-ex₁ = ( 
+main-fun : Closed (Src.Block void) [ print ] 
+main-fun = ( 
   Src.while (
     Src.bool true ∙⟨ ∙-idˡ ⟩ Src.block 
     -- int j = 42
@@ -50,8 +50,8 @@ ex₁ = (
           Src.block (
             -- int i = j
             var ≔⟨ ∙-idˡ , consˡ ∙-idˡ ⟩
-            Possibly.possibly ∼-all (
-              Src.ret var ⍮⟨ ∙-idʳ ⟩
+            Possibly.possibly ∼-none (
+              Src.ret unit ⍮⟨ ∙-idʳ ⟩
               emp))
           )
         Src.⍮⟨ ∙-idʳ ⟩ emp
@@ -63,7 +63,13 @@ open import JVM.Defaults.Printer
 
 open import CF.Compile
 
+-- program : Program
+-- program = ↓ refl
+--         ∙⟨ {!!} ⟩ ((("main" , [] ⟶ void) , ↑ refl ∙⟨ {!!} ⟩ ↓ (Possibly.possibly ∼-all main-fun))
+--         ✴⟨ {!!} ⟩ ((("print" , [ int ] ⟶ void) , {!!})
+--         ✴⟨ {!!} ⟩ emp))
+
 main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
   where
   import JVM.Defaults.Printer.Jasmin as J
-  proc = procedure "ex1" (proj₂ $ compile ex₁)
+  proc = procedure "ex1" (proj₂ $ compile {!!})

@@ -27,15 +27,15 @@ mutual
   compileₛ : ∀ {ψ : StackTy} {r} → Stmt r K → ε[ Compiler ⟦ K ⟧ ψ ψ Emp  ]
 
   compileₛ (asgn x e) = do
-    refl ← compileₑ e
+    compileₑ e
     code (store ⟦ x ⟧)
 
   compileₛ (run e) = do
-    refl ← compileₑ e 
+    compileₑ e 
     code pop
 
   compileₛ (ret e) = do
-    refl ← compileₑ e 
+    compileₑ e 
     code ret
 
   compileₛ (block x) = do
@@ -87,5 +87,5 @@ mutual
     return refl
 
   compiler ψ (s ⍮ b) = do
-    refl ← compileₛ s
+    compileₛ s
     compiler _ b 
