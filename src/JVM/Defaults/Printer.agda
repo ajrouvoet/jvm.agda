@@ -4,12 +4,12 @@ module JVM.Defaults.Printer where
 open import Function
 open import Data.Bool
 open import Data.Product hiding (swap)
-open import Data.List as List
+open import Data.List as L
 open import Data.List.Relation.Unary.Any
 open import Data.Nat
 open import Data.Nat.Show as Nat
 open import Data.Fin
-open import Data.String
+open import Data.String as S
 open import Relation.Unary
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
@@ -33,7 +33,8 @@ const-instr (bool false) = iconst0
 const-instr (bool true)  = iconst1
 
 load-instr : Ty → ℕ → Instr
-load-instr (ref _) = aload
+load-instr (ref _)   = aload
+load-instr (array _) = iload
 load-instr int     = iload
 load-instr boolean = iload
 load-instr byte    = iload
@@ -42,7 +43,8 @@ load-instr long    = iload
 load-instr char    = iload
 
 store-instr : Ty → ℕ → Instr
-store-instr (ref _) = astore
+store-instr (ref _)   = astore
+store-instr (array _) = aastore
 store-instr int     = istore
 store-instr boolean = istore
 store-instr byte    = istore
@@ -99,6 +101,7 @@ module _ {𝑭} where
   prettyᵢ (↓ (getstatic s)) = print (instr nop)
   prettyᵢ (↓ (getfield  s)) = print (instr nop)
   prettyᵢ (↓ (putfield  s)) = print (instr nop)
+  prettyᵢ (↓ (invokestatic {𝑐 = 𝑐} {𝑓} {as} {r} f)) = print (instr (invokestatic (𝑐 / 𝑓 :⟨ as ⟩ r))) 
 
   import JVM.Defaults.Syntax.Bytecode.Printer ⟨ 𝑭 ∣_⇒_⟩ prettyᵢ as Printer
 
@@ -106,4 +109,4 @@ module _ {𝑭} where
   pretty bc = execPrinter (Printer.pretty bc)
 
   procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
-  procedure name bc = J.procedure name (List.length (proj₁ 𝑭)) 10 (pretty bc)
+  procedure name bc = J.procedure name (L.length (proj₁ 𝑭)) 10 (pretty bc)

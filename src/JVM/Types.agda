@@ -16,8 +16,12 @@ open import Relation.Nullary
 data Ty : Set where
   boolean                   : Ty
   byte short int long char  : Ty
-  -- float double              : Ty
   ref                       : String → Ty
+  array                     : Ty → Ty
+
+data Ret : Set where
+  ty   : Ty → Ret
+  void : Ret      -- clearly void is not a type... right? (Spec accurate)
 
 IsIntegral : Ty → Set
 IsIntegral boolean = ⊤ -- int instructions compatible with boolean
@@ -32,11 +36,19 @@ StackTy  = List Ty
 LocalsTy = List Ty
 Labels   = List StackTy
 
+record StaticFun : Set where
+  constructor _/_:⟨_⟩_
+  field
+    cls     : String
+    name    : String
+    sf_args : List Ty
+    sf_ret  : Ret
+
 data Constant : Set where
   classref  : String → Constant
   fieldref  : String → Ty → Constant
   staticref : String → Ty → Constant -- in the actual constant pool static fields are fields
-  staticfun : String → List Ty → Ty → Constant
+  staticfun : StaticFun → Constant
 
 Constantpool = List Constant
 FrameTy      = Constantpool × LocalsTy

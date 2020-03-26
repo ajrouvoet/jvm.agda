@@ -38,9 +38,6 @@ pattern _⍮⟨_⟩_ s σ b = cons (s ×⟨ σ ⟩ b)
 hoist-binder : ∀ {P : Pred Ctx 0ℓ} {Γ} → ∀[ (Γ ⊢ P) ⇒ ◇ (Vars Γ ✴ P) ]
 hoist-binder px = pack (⊢-zip ∙-copy (binders ×⟨ ∙-idˡ ⟩ px))
 
-postulate instance ⊢-respect-≈ : ∀ {p Δ} {P : Pred Ctx p} → Respect _ctx≈_ (Δ ⊢ P)
-postulate instance ◇-respect-≈ : ∀ {p} {P : Pred Ctx p} → Respect _ctx≈_ (◇ P)
-
 -- A typed hoisting transformation for statement blocks
 {-# TERMINATING #-}
 mutual

@@ -63,7 +63,7 @@ module _ (𝑭 : FrameTy) where
     ret   : ε[ ⟨ a ∷ ψ ⇒ ψ ⟩ ]
 
     -- calls
-    invokestatic : ∀ {𝑓} → 𝑪[ staticfun 𝑓 as b ] → ∀[ ⟨ (as ++ ψ) ⇒ b ∷ ψ ⟩ ]
+    invokestatic : ∀ {𝑐 𝑓 as r} → 𝑪[ staticfun (𝑐 / 𝑓 :⟨ as ⟩ r) ] → ε[ ⟨ (as ++ ψ) ⇒ b ∷ ψ ⟩ ]
 
   ⟨_∣_⇒_⟩ = ⟨_⇒_⟩
 

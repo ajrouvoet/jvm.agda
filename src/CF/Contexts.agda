@@ -47,7 +47,7 @@ module _ where
   Ctx : Set
   Ctx = Globals × Lex
 
-  open import Relation.Ternary.Construct.Product
+  open import Relation.Ternary.Construct.Product as Pr
 
   variable
     K K₁ K₂ K₃ K₄ : Ctx
@@ -64,6 +64,9 @@ module _ where
 
   open import Relation.Ternary.Construct.List.Overlapping Ty
 
+  _ctx≈_ : Ctx → Ctx → Set
+  _ctx≈_ = Pr._≈_ {{↭-isEquivalence}} {{isEquivalence}}
+
   Vars : Lex → Pred Ctx 0ℓ
   Vars Γ = Π₂ (Exactly Γ)
   
@@ -73,10 +76,13 @@ module _ where
   data _∼[_]_ : Ctx → Lex → Ctx → Set where
     intros : ∀ {Γ X Δ Δ′} → Δ′ DJList.⊆ Δ → (X , Γ) ∼[ Δ ] (X , Δ′ ++ Γ)
 
+  -- ∼-respects-≈ˡ : ∀ {g K} → Respect _ctx≈_ (_∼[ g ] K)
+  -- Respect.coe ∼-respects-≈ˡ {y = X , Γ} (eq₁ , eq₂) (intros s) = {!intros {Γ = Γ} s!}
+
   open import Relation.Ternary.Monad.Possibly
   open Possibly _∼[_]_
     public
-    using (◇; module ◇-Zip; module ◇-Monad; _∼_; pack)
+    using (◇; module ◇-Zip; _∼_; pack)
     renaming
       ( ◇[_] to _⊢_)
 
@@ -99,8 +105,7 @@ module _ where
   ∼-fp : K₁ ∼ K₂ → (di₁ : K₃ ◆ K₁) → ∃ λ (di₂ : K₃ ◆ K₂) → whole di₁ ∼ whole di₂
   ∼-fp (_ , intros ext) (_ , σ₂ , σ₁) = (-, σ₂ , ∙-∙ᵣₗ σ₁) , _ , intros DJList.⊆-refl
 
-  open ◇-Monad ∼-isPreorder ∼-fp public
-    renaming (◇-⤇ to ⊢-⤇)
+  open ◇-Monad _∼[_]_ ∼-isPreorder ∼-fp public
 
   module _ where
     open import Relation.Ternary.Construct.List.Overlapping Ty as Ov
@@ -160,9 +165,6 @@ module _ where
 
   instance ctx-emptiness : Emptiness {A = Ctx} unit
   ctx-emptiness = record {}
-
-  _ctx≈_ : Ctx → Ctx → Set
-  _ctx≈_ = Pr._≈_ {{↭-isEquivalence}} {{isEquivalence}}
 
   instance ctx-isSemigroup : IsPartialSemigroup _ctx≈_ ctx-rel
   ctx-isSemigroup = ×-isSemigroup

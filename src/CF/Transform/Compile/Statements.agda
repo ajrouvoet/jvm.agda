@@ -10,6 +10,7 @@ open import Relation.Unary.PredicateTransformer using (Pt)
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
+open import Relation.Ternary.Monad
 
 open import CF.Syntax.DeBruijn
 open import CF.Transform.Compile.Expressions

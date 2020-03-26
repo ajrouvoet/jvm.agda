@@ -6,6 +6,8 @@ open import Data.Nat.Show as NatShow
 open import Data.String as S using (String)
 open import Data.List as List
 
+open import JVM.Types
+
 sep : List (List String) → List String
 sep = List.concat ∘ List.intersperse [ " " ]
 
@@ -74,22 +76,33 @@ record Header : Set where
       ∷ SuperSpec.out super_spec
       ∷ []
 
-Desc : Set
-Desc = List String
-
 module Descriptor where
 
-  out : Desc → String
-  out d with reverse d
-  ... | []     = "()V"
-  ... | r ∷ d' = args d' S.++ r
+  type-desc : Ty → String
+  type-desc boolean   = "Z"
+  type-desc byte      = "B"
+  type-desc short     = "S"
+  type-desc int       = "I"
+  type-desc long      = "J"
+  type-desc char      = "C"
+  type-desc (array t) = "[" S.++ type-desc t
+  type-desc (ref cls) = S.concat $ "L" ∷ cls ∷ ";" ∷ []
+
+  ret-desc : Ret → String
+  ret-desc void   = "V"
+  ret-desc (ty t) = type-desc t
+
+  out : List Ty → Ret → String
+  out as r = args as S.++ ret-desc r
     where
-      args : Desc → String
-      args d = "(" S.++ (S.intersperse ";" d) S.++ ")"
+      args : List Ty → String
+      args d = "(" S.++ (S.intersperse ";" (List.map type-desc d)) S.++ ")"
 
 data Comparator : Set where
   eq ne lt ge gt le : Comparator
   icmpge icmpgt icmpeq icmpne icmplt icmple : Comparator
+
+open import JVM.Types using (StaticFun)
 
 module Comp where
 
@@ -110,21 +123,26 @@ module Comp where
 data Instr : Set where
   nop pop dup swap ret : Instr
 
-  aconst_null   : Instr
-  bipush sipush : ℕ → Instr
+  aconst_null                      : Instr
+  bipush sipush                    : ℕ → Instr
   iconstm1 iconst0 iconst1 iconst2 : Instr
 
-  aload iload   : ℕ → Instr
-  astore istore : ℕ → Instr
+  aaload  aload  iload             : ℕ → Instr
+  aastore astore istore            : ℕ → Instr
 
-  new           : String → Instr
+  new                              : String → Instr
 
-  goto : String     → Instr
-  if   : Comparator → String → Instr
+  goto                             : String     → Instr
+  if                               : Comparator → String → Instr
 
-  iadd isub imul idiv ixor : Instr
+  iadd isub imul idiv ixor         : Instr
 
-  invokespecial invokestatic : String → String → Desc → Instr
+  invokespecial invokestatic       : StaticFun → Instr
+
+module Static where
+
+  out : StaticFun → String
+  out (c / m :⟨ as ⟩ r) = c S.++ "/" S.++ m S.++ Descriptor.out as r
   
 module Instruction where
 
@@ -142,9 +160,11 @@ module Instruction where
   out (bipush n)  = unwords $ "sipush" ∷ NatShow.show n ∷ []
   out (sipush n)  = unwords $ "bipush" ∷ NatShow.show n ∷ []
   out (aload n)   = unwords $ "aload"  ∷ NatShow.show n ∷ []
-  out (iload n)   = unwords $ "iload"  ∷ NatShow.show n ∷ []
   out (astore n)  = unwords $ "astore" ∷ NatShow.show n ∷ []
+  out (iload n)   = unwords $ "iload"  ∷ NatShow.show n ∷ []
   out (istore n)  = unwords $ "istore" ∷ NatShow.show n ∷ []
+  out (aaload n)  = unwords $ "aaload" ∷ NatShow.show n ∷ []
+  out (aastore n) = unwords $ "astore" ∷ NatShow.show n ∷ []
 
   out iconstm1    = line "iconstm1"
   out iconst0     = line "iconst_0"
@@ -162,8 +182,8 @@ module Instruction where
 
   out (new c)     = unwords $ "new" ∷ c ∷ []
 
-  out (invokespecial c m d) = unwords $ "invokespecial" ∷ (c S.++ "/" S.++ m S.++ Descriptor.out d) ∷ [] 
-  out (invokestatic  c m d) = unwords $ "invokestatic"  ∷ (c S.++ "/" S.++ m S.++ Descriptor.out d) ∷ []
+  out (invokespecial sf) = unwords $ "invokespecial" ∷ Static.out sf ∷ [] 
+  out (invokestatic  sf) = unwords $ "invokestatic"  ∷ Static.out sf ∷ []
 
 data Stat : Set where
   label : String → Stat
@@ -182,11 +202,12 @@ record Method : Set where
     access     : List String
     locals     : ℕ
     stacksize  : ℕ
-    descriptor : Desc
+    m_args     : List Ty
+    m_ret      : Ret
     body       : List Stat
 
   out : Lines
-  out =  (unwords $ ".method" ∷ (S.unwords access) ∷ (name S.++ Descriptor.out descriptor) ∷ [])
+  out =  (unwords $ ".method" ∷ (S.unwords access) ∷ (name S.++ Descriptor.out m_args m_ret) ∷ [])
       <+ (ident $ unwords $ ".limit locals" ∷ NatShow.show locals ∷ [])
       <+ (ident $ unwords $ ".limit stack"  ∷ NatShow.show stacksize ∷ [])
       <+ (lines $ List.map (ident ∘ Statement.out) body)
@@ -207,15 +228,15 @@ module _ where
   procedure name locals stack st =
     jasmin
       (record { class_spec = class name ; super_spec = super "java/lang/Object" })
-      ( method "apply" ("public" ∷ "static" ∷ []) locals stack [] (st ∷ʳ instr ret)
-      ∷ method "<init>" [ "public" ] 1 1 [] 
+      ( method "apply" ("public" ∷ "static" ∷ []) locals stack [] void (st ∷ʳ instr ret)
+      ∷ method "<init>" [ "public" ] 1 1 [] void
         ( instr (aload 0)
-        ∷ instr (invokespecial "java/lang/Object" "<init>" [])
+        ∷ instr (invokespecial ("java/lang/Object" / "<init>" :⟨ [] ⟩ void))
         ∷ instr ret
         ∷ []
         )
-      ∷ method "main" ("public" ∷ "static" ∷ []) 1 0 ("[Ljava/lang/String;" ∷ "V" ∷ [] )
-        ( instr (invokestatic name "apply" [])
+      ∷ method "main" ("public" ∷ "static" ∷ []) 1 0 [ array (ref "java/lang/String") ] void
+        ( instr (invokestatic (name / "apply" :⟨ [] ⟩ void))
         ∷ instr ret
         ∷ []
         )

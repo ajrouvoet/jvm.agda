@@ -24,13 +24,16 @@ open import JVM.Defaults.Syntax.Bytecode T ⟨_⇒_⟩
 Compiler : T → T → Pt Intf 0ℓ
 Compiler ψ₁ ψ₂ P = ⟪ ψ₁ ⇒ ψ₂ ⟫ ⊙ P
 
-instance compiler-monad : Monad T Compiler
-Monad.return compiler-monad = nil ∙⟨ ∙-idˡ ⟩_
-Monad.bind compiler-monad f ⟨ σ ⟩ (is ∙⟨ σ₂ ⟩ px) =
-  let
-    _ , σ₃ , σ₄   = ∙-assocₗ σ (∙-comm σ₂)
-    js ∙⟨ σ₃ ⟩ qx = f ⟨ σ₃ ⟩ px
-    _ , σ₅ , σ₆   = ∙-assocₗ (∙-comm σ₄) σ₃ in (Star.append is ⟨ σ₅ ⟩ js) ∙⟨ σ₆ ⟩ qx
+instance
+  compiler-monad : Monad T Compiler
+  Monad.return compiler-monad = nil ∙⟨ ∙-idˡ ⟩_
+  Monad._=<<_ compiler-monad f (w ∙⟨ σ ⟩ px) with (w' ∙⟨ σ₂ ⟩ qx) ← f px =
+    let _ , σ₃ , σ₄ = ∙-assocₗ σ σ₂ in
+    (Star.append w ⟨ σ₃ ⟩ w' ) ∙⟨ σ₄ ⟩ qx
+
+  compiler-strong : Strong T Compiler
+  Strong.str compiler-strong qx ⟨ σ ⟩ (w ∙⟨ σ₂ ⟩ px) with _ , σ₃ , σ₄ ← ∙-assocₗ σ (∙-comm σ₂) =
+    w ∙⟨ ∙-comm σ₄ ⟩ (qx ∙⟨ σ₃ ⟩ px)
 
 -- Output a single, unlabeled instruction
 tell : ∀[ Code τ₁ τ₂ ⇒ Compiler τ₁ τ₂ Emp ] 
@@ -51,7 +54,3 @@ attachTo : ∀ {P} → ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₂ P ─⊙ Co
 attachTo l ⟨ σ ⟩ c = do
   c ∙⟨ σ ⟩ refl ← attach l &⟨ Compiler _ _ _ # ∙-comm σ ⟩ c
   coe (∙-id⁻ʳ σ) c
-
-open Monad compiler-monad public
-open Bind     {{monad = compiler-monad}} {{ ⊙-respect-≈ }} public
-open Strength {{monad = compiler-monad}} public

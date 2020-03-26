@@ -19,11 +19,11 @@ open import Relation.Ternary.Data.ReflexiveTransitive {{intf-rel}}
 open IsEquivalence {{...}} using (sym)
 open import Data.Maybe using (just; nothing; Maybe)
 
-is-noop : ∀ {Φ} → (i : ⟨ τ ∣ ψ₁ ⇒ ψ₂ ⟩ Φ) → Maybe (ψ₁ ≡ ψ₂ × Φ ≡ [])
+is-noop : ∀ {Φ} → (i : ⟨ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟩ Φ) → Maybe (ψ₁ ≡ ψ₂ × Φ ≡ [])
 is-noop noop = just (refl , refl)
 is-noop _    = nothing
 
-noooop : ∀[ ⟪ τ ∣ ψ₁ ⇒ ψ₂ ⟫ ⇒ ⟪ τ ∣ ψ₁ ⇒ ψ₂ ⟫ ]
+noooop : ∀[ ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ ⇒ ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ ]
 noooop nil = nil
 
 -- (1) not labeled

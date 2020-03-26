@@ -14,19 +14,21 @@ open import Relation.Unary hiding (_∈_)
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
+open import Relation.Ternary.Monad
 
-module Src where
-  open import CF.Syntax.DeBruijn as Src hiding (_⍮_) public
-  open import CF.Types public
-  open import CF.Contexts using (TopLevelTy; TopLevelDecl; FunTy; _⟶_; Ctx; module DeBruijn) public; open DeBruijn
-  open TopLevelTy public
-  open FunTy public
+private
+  module Src where
+    open import CF.Syntax.DeBruijn as Src hiding (_⍮_) public
+    open import CF.Types public
+    open import CF.Contexts using (TopLevelTy; TopLevelDecl; FunTy; _⟶_; Ctx; module DeBruijn) public; open DeBruijn
+    open TopLevelTy public
+    open FunTy public
 
-module Tgt where
-  open import JVM.Types public
-  open import JVM.Model StackTy public
-  open import JVM.Defaults.Syntax.Values public
-  open import JVM.Defaults.Syntax.Instructions public hiding (Labels)
+  module Tgt where
+    open import JVM.Types public
+    open import JVM.Model StackTy public
+    open import JVM.Defaults.Syntax.Values public
+    open import JVM.Defaults.Syntax.Instructions public hiding (Labels)
 
 open Src
 open Tgt
@@ -61,7 +63,7 @@ module _ where
       ‵ bool  = boolean
 
   instance cfToJvm-constant : To TopLevelDecl Constant
-  To.⟦ cfToJvm-constant ⟧ (name , fun (as ⟶ r)) = staticfun name ⟦ as ⟧ ⟦ r ⟧
+  To.⟦ cfToJvm-constant ⟧ (name , fun (as ⟶ r)) = staticfun (name / "apply" :⟨ ⟦ as ⟧ ⟩ ty ⟦ r ⟧)
 
   instance cfToJvm-var : ∀ {ℓ} {A B : Set ℓ} {{_ : To A B}} {a : A} {as} →
                          To (a ∈ as) (⟦ a ⟧ ∈ ⟦ as ⟧)

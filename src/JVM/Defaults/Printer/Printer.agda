@@ -39,7 +39,7 @@ counter = proj₁ ∘ proj₁
 Printer : Pt Intf _
 Printer = StateT Id PState
 
-open StateTransformer Id {{Id.id-monad}} {PState} public
+open StateTransformer Id {{Id.id-strong}} {PState} public
 open import Relation.Ternary.Construct.Bag.Properties
 open import Level
 
