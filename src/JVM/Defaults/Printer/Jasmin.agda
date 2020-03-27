@@ -196,6 +196,21 @@ module Statement where
   out (label x) = line $ Instruction.lbl x S.++ ":"
   out (instr x) = Instruction.out x
 
+record ClassField : Set where
+  constructor clsfield
+  field
+    name   : String
+    access : List String
+    f_ty   : Ty
+
+  out : Line
+  out = unwords
+      $ ".field"
+      ∷ access
+     ++ name
+      ∷ Descriptor.type-desc f_ty
+      ∷ []
+
 record Method : Set where
   constructor method
   field
@@ -218,10 +233,13 @@ record Jasmin : Set where
   constructor jasmin
   field
     header  : Header
+    fields  : List ClassField
     methods : List Method
   
   out : Lines
-  out = Header.out header <> pars (List.map Method.out methods)
+  out = Header.out header
+      <> lines (List.map ClassField.out fields)
+      <> pars (List.map Method.out methods)
 
 module _ where
 
@@ -229,6 +247,7 @@ module _ where
   procedure name locals stack st =
     jasmin
       (record { class_spec = class name ; super_spec = super "java/lang/Object" })
+      []
       ( method "apply" ("public" ∷ "static" ∷ []) locals stack [] void (st ∷ʳ instr ret)
       ∷ method "<init>" [ "public" ] 1 1 [] void
         ( instr (aload 0)
