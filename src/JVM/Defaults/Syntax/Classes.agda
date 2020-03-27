@@ -81,6 +81,8 @@ Class = ⋃[ cls ∶ String ]
 mkClass : ∀ cls → ∀[ ( Up (Classname cls) ⊙ Bigstar Member) ⇒ Class ]
 mkClass c = c ,_
 
+Classes = Bigstar Class
+
 functionClass : (fn : Fun) (open Fun fn)
               → ∀[ Down (StaticBody fn) ⇒ Class ⊙ Down (Classname cls ⊗ Funname fn) ]
 functionClass fn body = 

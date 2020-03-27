@@ -61,7 +61,7 @@ mutual
 
   unco' : ∀[ Src.Block r ⇑ ⇒ Tgt.Block r ]
   unco' (nil ⇈ wk) = nil
-  unco' (cons s✴b ⇈ wk) with s , b ← unstar (s✴b ⇈ wk) = uncoₛ s Tgt.⍮ unco' b
+  unco' (cons s✴b ⇈ wk) with s , b ← unstar (s✴b ⇈ wk) = uncoₛ s ⍮⍮ unco' b
 
 unco : ∀[ Src.Block r ⇒ Tgt.Block r ]
 unco bl = unco' (return bl)

@@ -128,7 +128,9 @@ module _ where
   ofClass (cls , _ ∙⟨ _ ⟩ members) = jasmin
     (record { class_spec = class cls ; super_spec = super Object })
     (fieldsOf members)
-    (methodsOf members)
+    ( defaultInit       -- currently no way to do typed init
+    ∷ methodsOf members
+    )
 
      where
        open import Relation.Ternary.Data.Bigstar

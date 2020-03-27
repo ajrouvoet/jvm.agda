@@ -14,9 +14,11 @@ open import Relation.Ternary.Monad
 
 open import CF.Syntax.DeBruijn
 open import CF.Transform.Compile.Expressions
-open import CF.Contexts using (K)
+open import CF.Types
+open import CF.Transform.Compile.ToJVM
 
 open import JVM.Types
+open import JVM.Compiler
 open import JVM.Contexts
 open import JVM.Model StackTy
 open import JVM.Defaults.Syntax.Values
@@ -86,6 +88,6 @@ mutual
   compiler ψ (nil) = do
     return refl
 
-  compiler ψ (s ⍮ b) = do
+  compiler ψ (s ⍮⍮ b) = do
     compileₛ s
     compiler _ b 

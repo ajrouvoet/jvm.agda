@@ -3,7 +3,9 @@ module CF.Types where
 
 open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
-open import Data.List
+open import Data.Product
+open import Data.List as L
+open import Data.String
 open import Relation.Binary
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary.Decidable
@@ -15,9 +17,35 @@ data Ty : Set where
   bool : Ty
   -- ref  : Ty → Ty
 
+record FunTy : Set where
+  constructor _⟶_
+  field
+    argtys : List Ty
+    retty  : Ty
+
+data TopLevelTy : Set where
+  fun : FunTy → TopLevelTy
+
+TopLevelDecl = String × TopLevelTy
+
+Globals : Set
+Globals = List TopLevelDecl
+
+
+Lex = List Ty
+
+Ctx : Set
+Ctx = Globals × Lex
+
+_⍮_ : Ctx → List Ty → Ctx
+(X , Γ) ⍮ Δ = (X , Δ L.++ Γ)
+
 variable
   a b c r s t   : Ty
   as bs cs      : List Ty
+  𝑓 𝑔 ℎ : String
+  K K₁ K₂ K₃ K₄ : Ctx
+  Δ Δ₁ Δ₂ : List Ty
 
 -- _≟_ : Decidable (_≡_ {A = Ty})
 -- void ≟ void = yes refl

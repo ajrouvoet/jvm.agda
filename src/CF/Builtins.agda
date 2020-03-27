@@ -1,4 +1,4 @@
-{-# OPTIONS --no-qualified-instances #-}
+{-# OPTIONS --safe --no-qualified-instances #-}
 module CF.Builtins where
 
 open import Data.Bool
@@ -15,11 +15,9 @@ open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad
 
-open import CF.Contexts using (TopLevelDecl; TopLevelTy; _⟶_)
-open TopLevelTy
+open import CF.Contexts
 open import CF.Types
-open import CF.Syntax
-open import CF.Transform.Compile.Expressions
+open import CF.Transform.Compile.ToJVM
 
 open import JVM.Types
 open import JVM.Compiler

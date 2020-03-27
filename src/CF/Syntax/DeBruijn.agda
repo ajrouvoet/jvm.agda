@@ -13,7 +13,7 @@ open import Relation.Binary.Structures using (IsPreorder)
 open import Relation.Binary.PropositionalEquality using (isEquivalence)
 
 open import CF.Types
-open import CF.Contexts as Ctx using (𝑓; Ctx; module DeBruijn; _⟶_)
+open import CF.Contexts as Ctx using (module DeBruijn)
 open import CF.Syntax using (BinOp; module BinOp) public
 
 open DeBruijn public
@@ -49,8 +49,8 @@ mutual
     block         : ∀[ Block r  ⇒ Stmt r ]
 
   _⊢_ : ∀ {ℓ} → List Ty → Pt Ctx ℓ
-  Δ ⊢ P = λ Γ → P (Γ Ctx.⍮ Δ)
+  Δ ⊢ P = λ Γ → P (Γ ⍮ Δ)
 
   data Block (r : Ty) : Pred Ctx 0ℓ where
-    _⍮_ : ∀[ Stmt r ⇒ Block r ⇒ Block r ]
+    _⍮⍮_ : ∀[ Stmt r ⇒ Block r ⇒ Block r ]
     nil : ∀[ Block r ]

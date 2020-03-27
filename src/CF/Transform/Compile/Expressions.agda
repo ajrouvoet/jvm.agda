@@ -18,9 +18,9 @@ open import Relation.Ternary.Monad
 
 private
   module Src where
-    open import CF.Syntax.DeBruijn as Src hiding (_⍮_) public
+    open import CF.Syntax.DeBruijn public
     open import CF.Types public
-    open import CF.Contexts using (TopLevelTy; TopLevelDecl; FunTy; _⟶_; Ctx; module DeBruijn) public; open DeBruijn
+    open import CF.Contexts using (module DeBruijn) public; open DeBruijn public
     open TopLevelTy public
     open FunTy public
 
@@ -34,36 +34,7 @@ open Src
 open Tgt
 
 open import JVM.Compiler
-
-{- A typeclass for converting between type disciplines #-}
-module _ where
-
-  record To {l r} (L : Set l) (R : Set r) : Set (l ⊔ r) where
-    field
-      ⟦_⟧ : L → R
-
-  open To {{...}} public
-
-  instance ⟦⟧-list : ∀ {a} {A B : Set a} {{_ : To A B}} → To (List A) (List B)
-  To.⟦_⟧ ⟦⟧-list = L.map ⟦_⟧
-
-  instance ⟦⟧-prod : ∀ {a} {A B C D : Set a} {{_ : To A B}} {{_ : To C D}} → To (A × C) (B × D)
-  To.⟦_⟧ ⟦⟧-prod = P.map ⟦_⟧ ⟦_⟧
-
-  instance cfToJvm-ty : To Src.Ty Tgt.Ty
-  To.⟦_⟧ cfToJvm-ty = ‵_
-    where
-      ‵_ : Src.Ty → Tgt.Ty
-      ‵ void  = boolean
-      ‵ int   = int
-      ‵ bool  = boolean
-
-  instance cfToJvm-constant : To TopLevelDecl Constant
-  To.⟦ cfToJvm-constant ⟧ (name , fun (as ⟶ r)) = staticfun (name / "apply" :⟨ ⟦ as ⟧ ⟩ ty ⟦ r ⟧)
-
-  instance cfToJvm-var : ∀ {ℓ} {A B : Set ℓ} {{_ : To A B}} {a : A} {as} →
-                         To (a ∈ as) (⟦ a ⟧ ∈ ⟦ as ⟧)
-  To.⟦_⟧ cfToJvm-var = ∈-map⁺ ⟦_⟧
+open import CF.Transform.Compile.ToJVM
 
 -- Compilation of CF expressions
 compileₑₛ : ∀ {as ψ K} → Exps as K → ε[ Compiler ⟦ K ⟧ ψ (⟦ as ⟧ ++ ψ) Emp ]

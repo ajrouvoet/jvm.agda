@@ -20,6 +20,7 @@ open import CF.Transform.Hoist
 open import CF.Transform.UnCo
 open import CF.Transform.Compile.Expressions
 open import CF.Transform.Compile.Statements
+open import CF.Transform.Compile.ToJVM
 
 open import JVM.Types
 open import JVM.Contexts

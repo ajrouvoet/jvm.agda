@@ -16,12 +16,15 @@ open import Relation.Binary.Structures using (IsPreorder)
 open import Relation.Binary.PropositionalEquality using (isEquivalence; refl)
 open import Relation.Ternary.Separation
 open import Relation.Ternary.Monad.Possibly
+open import Relation.Ternary.Monad.Weakening
 open import Relation.Ternary.Data.Bigstar hiding ([_])
 
 open import JVM.Defaults.Syntax.Instructions
 
 open import CF.Types
 open import CF.Contexts
+open import CF.Builtins
+
 open import Relation.Ternary.Construct.Product using (fst; snd)
 
 open import Relation.Ternary.Data.Allstar Ty
@@ -81,9 +84,10 @@ Function =
 
 Program : Set
 Program =
-  ( Down (Just ("main" , (fun ([] ⟶ void)))) -- reference to the main function
-  ✴ Bigstar Function
-  ) ε
+  Down⁻ (
+    ( Down (Just ("main" , (fun ([] ⟶ void)))) -- reference to the main function
+    ✴ Bigstar Function
+    ) ⇑) builtins
 
 -- make constructors visible
 open Statements Block public

@@ -24,9 +24,9 @@ open import CF.Contexts
 module _ {T : Set} where
   open import Relation.Ternary.Construct.List.Overlapping T public
 
-open import CF.Examples.Builtins
+open import CF.Builtins
 
-main-fun : Closed (Src.Block void) [ print ] 
+main-fun : Closed (Src.Block void) [ print ]
 main-fun = ( 
   Src.while (
     Src.bool true ∙⟨ ∙-idˡ ⟩ Src.block 

@@ -19,42 +19,13 @@ open import CF.Types
 
 open import Data.List.Relation.Binary.Permutation.Propositional
 
-record FunTy : Set where
-  constructor _⟶_
-  field
-    argtys : List Ty
-    retty  : Ty
-
-data TopLevelTy : Set where
-  fun : FunTy → TopLevelTy
-
-TopLevelDecl = String × TopLevelTy
-
-variable
-  𝑓 𝑔 ℎ : String
-
-Globals : Set
-Globals = List TopLevelDecl
-
 open import JVM.Model TopLevelDecl public hiding (module Syntax)
 open Overlap hiding (∙-∙ᵣₗ; ∙-parallel)
 open Overlap using (^_) public
 
-Lex = List Ty
-
 module _ where
 
-  Ctx : Set
-  Ctx = Globals × Lex
-
   open import Relation.Ternary.Construct.Product as Pr
-
-  variable
-    K K₁ K₂ K₃ K₄ : Ctx
-    Δ Δ₁ Δ₂ : List Ty
-
-  _⍮_ : Ctx → List Ty → Ctx
-  (X , Γ) ⍮ Δ = (X , Δ ++ Γ)
 
   module DJList where
     open import Relation.Ternary.Construct.List.Disjoint Ty public

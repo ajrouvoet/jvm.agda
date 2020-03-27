@@ -244,18 +244,21 @@ record Jasmin : Set where
 
 module _ where
 
+  defaultInit : Method
+  defaultInit = method "<init>" [ "public" ] 1 1 [] void
+              ( instr (aload 0)
+              ∷ instr (invokespecial (Object / "<init>" :⟨ [] ⟩ void))
+              ∷ instr ret
+              ∷ []
+              )
+
   procedure : (name : String) → ℕ → ℕ → List Stat → Jasmin
   procedure name locals stack st =
     jasmin
       (record { class_spec = class name ; super_spec = super Object })
       []
       ( method "apply" ("public" ∷ "static" ∷ []) locals stack [] void (st ∷ʳ instr ret)
-      ∷ method "<init>" [ "public" ] 1 1 [] void
-        ( instr (aload 0)
-        ∷ instr (invokespecial ("java/lang/Object" / "<init>" :⟨ [] ⟩ void))
-        ∷ instr ret
-        ∷ []
-        )
+      ∷ defaultInit
       ∷ method "main" ("public" ∷ "static" ∷ []) 1 0 [ array (ref "java/lang/String") ] void
         ( instr (invokestatic (name / "apply" :⟨ [] ⟩ void))
         ∷ instr ret
