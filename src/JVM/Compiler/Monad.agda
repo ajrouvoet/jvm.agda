@@ -1,6 +1,7 @@
+{-# OPTIONS --safe #-}
 open import Data.List hiding ([_])
 
-module CF.Transform.Compile.Monad (T : Set) (⟨_⇒_⟩ : T → T → List T → Set) (nop : ∀ {τ} → ⟨ τ ⇒ τ ⟩ []) where
+module JVM.Compiler.Monad (T : Set) (⟨_⇒_⟩ : T → T → List T → Set) (nop : ∀ {τ} → ⟨ τ ⇒ τ ⟩ []) where
 
 open import Level
 open import Function using (_∘_)

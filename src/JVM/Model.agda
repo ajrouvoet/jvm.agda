@@ -14,26 +14,31 @@ open import Relation.Ternary.Structures
 open import Relation.Ternary.Construct.Empty T public
 open import Relation.Ternary.Construct.Duplicate T public
 
+open import Data.List.Relation.Binary.Permutation.Propositional
+  using ()
+  renaming (_↭_ to _≈_)
+open import Data.List.Relation.Binary.Permutation.Propositional.Properties
+  using (++-isMonoid)
+
+instance ++-monoid-instance = ++-isMonoid
+
 module Disjoint where
   open import Relation.Ternary.Construct.Bag empty-rel tt public
   open IsPartialSemigroup bags-isSemigroup public
   open IsPartialMonoid bags-isMonoid public
   open IsCommutative bags-isCommutative public
-  open import Data.List.Relation.Binary.Permutation.Propositional using () public
-    renaming (_↭_ to _≈_)
 
 module Overlap where
   open import Relation.Ternary.Construct.Bag duplicate tt public
   open IsPartialSemigroup bags-isSemigroup public
   open IsPartialMonoid bags-isMonoid public
-  open IsCommutative bags-isCommutative 
-  open import Data.List.Relation.Binary.Permutation.Propositional using () public
-    renaming (_↭_ to _≈_)
+  open IsCommutative bags-isCommutative  public
+  open IsTotal bags-isTotal public
 
 open Rel₃ Disjoint.bags using ()
-  renaming (_∙_≣_ to _⊕_≣_; _⊙_ to _⊕_; _─⊙_ to _─⊕_)
+  renaming (_∙_≣_ to _⊕_≣_; _⊙_ to _⊕_; _─⊙_ to _─⊕_; _∙⟨_⟩_ to _⊕⟨_⟩_) public
 open Rel₃ Overlap.bags using ()
-  renaming (_∙_≣_ to _⊗_≣_; _⊙_ to _⊗_; _─⊙_ to _─⊗_)
+  renaming (_∙_≣_ to _⊗_≣_; _⊙_ to _⊗_; _─⊙_ to _─⊗_; _∙⟨_⟩_ to _⊗⟨_⟩_) public
 
 open import Relation.Ternary.Construct.Bag.Properties
 open CrossSplittable {{div₁ = duplicate}} {{empty-rel}} (λ _ ())
@@ -51,7 +56,11 @@ abstract
     ux = (uncrossover (unxcross λ ()))
 
   open import Relation.Ternary.Construct.Exchange
-    {{m₁}} {{m₂}} {{p₁}} {{p₂}} {{c₁}} {{c₂}} {{i}} x ux
+    {{m₁}} {{m₂}} {{p₁}} {{p₂}} {{c₁}} {{c₂}} {{i}}
+    {{Disjoint.bags-isTotal}}
+    {{Overlap.bags-isTotal}}
+    {{++-isMonoid}}
+    x ux
     public
     renaming
       (Account to Intf
@@ -61,7 +70,8 @@ abstract
       ; exchange-isSemigroup to intf-isSemigroup
       ; exchange-isCommutative to intf-isCommutative
       ; exchange-isMonoid to intf-isMonoid
-      ; exchange-intuitive-down to intf-isIntuitive)
+      ; exchange-intuitive-down to intf-isIntuitive
+      ; exchange-isTotal to intf-isTotal)
 
 module Syntax where
   open Rel₃ intf-rel public

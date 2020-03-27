@@ -33,11 +33,7 @@ private
 open Src
 open Tgt
 
-module _ 𝑭 where
-  open import CF.Transform.Compile.Monad StackTy ⟨ 𝑭 ∣_⇒_⟩ noop using (Compiler) public
-
-module _ {𝑭} where
-  open import CF.Transform.Compile.Monad StackTy ⟨ 𝑭 ∣_⇒_⟩ noop hiding (Compiler) public
+open import JVM.Compiler
 
 {- A typeclass for converting between type disciplines #-}
 module _ where

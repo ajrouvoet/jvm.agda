@@ -67,6 +67,7 @@ module _ (𝑭 : FrameTy) where
 
     -- calls
     invokestatic  : ∀ {as r} → 𝑪[ staticfun (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ++ ψ) ⇒ b ∷ ψ ⟩ ]
+    invokespecial : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ∷ʳ ref 𝑐 ++ ψ) ⇒ r :?: ψ ⟩ ]
     invokevirtual : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ∷ʳ ref 𝑐 ++ ψ) ⇒ r :?: ψ ⟩ ]
 
   ⟨_∣_⇒_⟩ = ⟨_⇒_⟩
