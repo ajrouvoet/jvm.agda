@@ -26,14 +26,15 @@ open import JVM.Builtins
 open import JVM.Defaults.Syntax.Instructions
 open import JVM.Compiler
 
-module _ (T : Set) where
-  open import JVM.Model T public using (Intf)
+private
+  module _ (T : Set) where
+    open import JVM.Model T public using (Intf)
 
-module _ {T : Set} where
-  open import JVM.Model T public hiding (Intf; empty-rel; duplicate)
+  module _ {T : Set} where
+    open import JVM.Model T public hiding (Intf; empty-rel; duplicate)
 
-  instance list-empty : Emptiness {A = List T} []
-  list-empty = record {}
+    instance list-empty : Emptiness {A = List T} []
+    list-empty = record {}
 
 [_]-stack : Ret → StackTy
 [ ty a ]-stack = [ a ]

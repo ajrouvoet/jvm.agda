@@ -7,6 +7,7 @@ open import Data.String as S using (String)
 open import Data.List as List
 
 open import JVM.Types
+open import JVM.Builtins
 
 sep : List (List String) → List String
 sep = List.concat ∘ List.intersperse [ " " ]
@@ -246,7 +247,7 @@ module _ where
   procedure : (name : String) → ℕ → ℕ → List Stat → Jasmin
   procedure name locals stack st =
     jasmin
-      (record { class_spec = class name ; super_spec = super "java/lang/Object" })
+      (record { class_spec = class name ; super_spec = super Object })
       []
       ( method "apply" ("public" ∷ "static" ∷ []) locals stack [] void (st ∷ʳ instr ret)
       ∷ method "<init>" [ "public" ] 1 1 [] void

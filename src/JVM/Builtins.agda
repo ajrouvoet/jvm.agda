@@ -5,9 +5,11 @@ open import Data.List
 
 open import JVM.Types
 
+Object = "java/lang/Object"
+
 jre : Constantpool
 jre = staticref ("java/lang/System"    / "out"     ∶ ref "java/io/PrintStream")
     ∷ virtual   ("java/io/PrintStream" / "println" :⟨ [ int ] ⟩ void)
-    ∷ class     ("java/lang/Object")
-    ∷ virtual   ("java/lang/Object"    / "<init>" :⟨ [] ⟩ void)
+    ∷ class     (Object)
+    ∷ virtual   (Object / "<init>" :⟨ [] ⟩ void)
     ∷ []
