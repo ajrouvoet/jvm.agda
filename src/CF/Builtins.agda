@@ -22,6 +22,7 @@ open import CF.Syntax
 open import CF.Transform.Compile.Expressions
 
 open import JVM.Types
+open import JVM.Compiler
 open import JVM.Model StackTy
 open import JVM.Defaults.Syntax.Values
 open import JVM.Defaults.Syntax.Instructions
@@ -44,7 +45,6 @@ builtins = print
 
   where
 
-    ⟦print⟧ : Compiler (jre , [ int ]) [] [ boolean ] Emp ε
     ⟦print⟧ = do
       code (getstatic (here refl))
       code (load (here refl))

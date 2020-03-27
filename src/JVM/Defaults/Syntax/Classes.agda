@@ -1,6 +1,7 @@
 {-# OPTIONS --safe --no-qualified-instances #-}
 module JVM.Defaults.Syntax.Classes where
 
+
 open import Level
 open import Function
 open import Data.Empty
@@ -17,7 +18,8 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad
-open import Relation.Ternary.Data.Bigstar hiding ([_])
+open import Relation.Ternary.Monad.Identity using (module Wrapped); open Wrapped
+open import Relation.Ternary.Data.Bigstar as ⊛ hiding ([_])
 
 open import JVM.Types
 open import JVM.Builtins
@@ -63,13 +65,32 @@ Classname cls = Just (class cls)
 Funname : Fun → Pred Constantpool 0ℓ
 Funname fn = Just (staticfun fn)
 
+Member : Pred (Intf Constant) 0ℓ
+Member = ⋃[ k ∶ Constant ] (Up (Just k) ⊙ Down (Impl k))
+
+mkMember : ∀ k → ∀[ (Up (Just k) ⊙ Down (Impl k)) ⇒ Member ]
+mkMember k = k ,_
+
 Class : Pred (Intf Constant) 0ℓ
 Class = ⋃[ cls ∶ String ]
       ( Up (Classname cls)
-      ⊙ Bigstar (⋃[ k ∶ Constant ] (Up (Just k) ⊙ Down (Impl k)))
+      ⊙ Bigstar Member 
       )
 
-  where
+mkClass : ∀ cls → ∀[ ( Up (Classname cls) ⊙ Bigstar Member) ⇒ Class ]
+mkClass c = c ,_
+
+functionClass : (fn : Fun) (open Fun fn)
+              → ∀[ Down (StaticBody fn) ⇒ Class ⊙ Down (Classname cls ⊗ Funname fn) ]
+functionClass fn body = 
+  let
+    open Fun fn
+    kind                 = staticfun fn
+    f↓∙[f↑∙b]            = ⊙-assocᵣ $ (⊙-swap $ binder kind) ∙⟨ ∙-idˡ ⟩ body
+    f↓∙members           = ⟨ id ⟨⊙⟩ (⊛.[_] ∘ mkMember kind) ⟩ f↓∙[f↑∙b]
+    c↑∙[c↓∙[f↓∙members]] = ⊙-assocᵣ $ binder (class cls) ∙⟨ ∙-idˡ ⟩ f↓∙members
+    [c↑∙members]∙[c↓∙f↓] = ⊙-assocₗ $ ⟨ id ⟨⊙⟩ ⊙-rotateᵣ ⟩ c↑∙[c↓∙[f↓∙members]]
+  in ⟨ mkClass cls ⟨⊙⟩ zipDown ⟩ [c↑∙members]∙[c↓∙f↓]
 
 -- Typesafe initializers require sub-typing (calling Object init on cls ref)
 -- defaultInit : (cls : String) → VirtualBody (cls / "<init>" :⟨ [] ⟩ void) jre
@@ -77,14 +98,3 @@ Class = ⋃[ cls ∶ String ]
 --   code (load (here refl))
 --   refl ← code (invokespecial (there (there (there {!here refl!}))))
 --   {!!}
-
-functionClass : (fn : Fun) (open Fun fn)
-               → ∀[ Down (StaticBody fn) ⇒ Class ⊙ Down (Classname cls ⊗ Funname fn) ]
-functionClass fn@(cls / name :⟨ as ⟩ r) body =
-  {!!}
-  -- ( cls
-  -- , ↑ refl            -- provide class
-  -- ∙⟨ ∙-∙ ⟩ (staticfun fn , ↑ refl ∙⟨ ∙-∙ ⟩ body) ✴⟨ ∙-idʳ ⟩ emp)
-  -- ∙⟨ ex sub-ε (sub {!^!} {!!}) {!!} {!!} ⟩ ↓ (refl ⊗⟨ Overlap.∙-∙ ⟩ refl) -- ref to defined function
-
-  where open Overlap using (bags-isMonoid)

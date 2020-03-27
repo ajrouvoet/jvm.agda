@@ -37,7 +37,7 @@ Globals : Set
 Globals = List TopLevelDecl
 
 open import JVM.Model TopLevelDecl public hiding (module Syntax)
-open Overlap
+open Overlap hiding (∙-∙ᵣₗ; ∙-parallel)
 open Overlap using (^_) public
 
 Lex = List Ty
