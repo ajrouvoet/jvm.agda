@@ -38,7 +38,7 @@ open import CF.Transform.Compile.ToJVM
 -- Compilation of CF expressions
 compileₑₛ : ∀ {as ψ K} → Exps as K → ε[ Compiler ⟦ K ⟧ ψ (⟦ as ⟧ ++ ψ) Emp ]
 
-compileₑ : ∀ {a ψ K} → Exp a K → ε[ Compiler ⟦ K ⟧ ψ (⟦ a ⟧ ∷ ψ) Emp ]
+compileₑ  : ∀ {a ψ K}  → Exp a K   → ε[ Compiler ⟦ K ⟧ ψ (⟦ a ⟧ ∷ ψ) Emp ]
 
 compileₑ (unit) = do
   code (push (bool true))

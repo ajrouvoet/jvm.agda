@@ -35,7 +35,7 @@ module _ {T : Set} where
 
 compile : ∀ {X r} → Closed (Src.Block r) X → ∃ λ Γ → ε[ ⟪ ⟦ X ⟧ , Γ ∣ [] ⇒ [] ⟫ ]
 compile bl₁                       with hoist bl₁
-... | _ , Possibly.possibly (intros r) bl₂       -- The grading of the possibility modality
+... | _ , Possibly.possibly (intros r refl) bl₂  -- The grading of the possibility modality
                                                  -- proves that only the lexical context has been extended
                                   with unco bl₂
 ... | bl₃                         with compiler [] bl₃

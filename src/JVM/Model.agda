@@ -5,7 +5,6 @@ open import Level hiding (Lift)
 open import Data.Product
 open import Data.Unit
 open import Data.List
-open import Data.List.Extra
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 open import Relation.Ternary.Core

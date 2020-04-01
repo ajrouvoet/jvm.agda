@@ -79,7 +79,7 @@ mutual
 -- This will throw away the declarations of locals that are not used in the function.
 hoist-function : ∀[ Src.Function ⇒ Hoisted.Function ]
 hoist-function (function sig fd σ (possibly args code))
-  with locals , possibly (intros _) code' ← hoist code
+  with locals , possibly (intros _ refl) code' ← hoist code
   = function sig fd σ (possibly args (-, possibly ∼-all code')) 
 
 hoist-program : Src.Program → Hoisted.Program 

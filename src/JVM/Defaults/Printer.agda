@@ -6,7 +6,7 @@ open import Data.Bool
 open import Data.Product hiding (swap)
 open import Data.List as L
 open import Data.List.Relation.Unary.Any
-open import Data.Nat
+open import Data.Nat as N
 open import Data.Nat.Show as Nat
 open import Data.Fin
 open import Data.String as S
@@ -104,8 +104,8 @@ module _ {𝑭} where
   prettyᵢ (↓ (getstatic s)) = print (instr nop)
   prettyᵢ (↓ (getfield  s)) = print (instr nop)
   prettyᵢ (↓ (putfield  s)) = print (instr nop)
-  prettyᵢ (↓ (invokestatic  {𝑐 = 𝑐} {𝑚} {as} {r} f))      =
-    print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ ty r))) 
+  prettyᵢ (↓ (invokestatic  {𝑐 = 𝑐} {𝑚} {as} {r = r} f))  =
+    print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ r))) 
   prettyᵢ (↓ (invokevirtual {𝑐 = 𝑐} {𝑚} {as = as} {r} f)) =
     print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ r))) 
   prettyᵢ (↓ (invokespecial {𝑐 = 𝑐} {𝑚} {as = as} {r} f)) =
@@ -117,7 +117,7 @@ module _ {𝑭} where
   pretty bc = execPrinter (Printer.pretty bc)
 
   procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
-  procedure name bc = J.procedure name (L.length (proj₁ 𝑭)) 10 (pretty bc)
+  procedure name bc = J.procedure name (L.length (proj₂ 𝑭)) 10 (pretty bc)
 
 module _ where
 
@@ -139,10 +139,10 @@ module _ where
        access = "public" ∷ "static" ∷ []
 
        mth : ∀ {Φ} → Member Φ → Maybe Method
-       mth (virtual   (cls / name :⟨ as ⟩ r) , _ ∙⟨ _ ⟩ ↓ body) =
-         just (method name access (L.length as) 50 as r (pretty body))
-       mth (staticfun (cls / name :⟨ as ⟩ r) , _ ∙⟨ _ ⟩ ↓ body) =
-         just (method name access (L.length as) 50 as r (pretty body))
+       mth (virtual   (cls / name :⟨ as ⟩ r) , _ ∙⟨ _ ⟩ ↓ (locs , body)) =
+         just (method name access (L.length locs N.+ L.length as) 50 as r (pretty body))
+       mth (staticfun (cls / name :⟨ as ⟩ r) , _ ∙⟨ _ ⟩ ↓ (locs , body)) =
+         just (method name access (L.length locs N.+ L.length as) 50 as r (pretty body))
        mth _  = nothing
 
        fld : ∀ {Φ} → Member Φ → Maybe ClassField

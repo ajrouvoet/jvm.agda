@@ -12,7 +12,7 @@ open import JVM.Types
 open import JVM.Defaults.Syntax.Values
 
 open import Relation.Unary hiding (_∈_)
-open import Relation.Ternary.Core
+open import Relation.Ternary.Core renaming (Just to One)
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Construct.Empty StackTy
@@ -66,16 +66,16 @@ module _ (𝑭 : FrameTy) where
     store : 𝑹[ a ] → ε[ ⟨ a ∷ ψ ⇒ ψ ⟩ ]
 
     -- jumps
-    goto  : ∀[ Just ψ₁ ⇒ ⟨ ψ₁ ⇒ ψ₂ ⟩ ]
-    if    : ∀ {as} → Comparator as → ∀[ Just ψ ⇒ ⟨ as ++ ψ ⇒ ψ ⟩ ]
+    goto  : ∀[ One ψ₁ ⇒ ⟨ ψ₁ ⇒ ψ₂ ⟩ ]
+    if    : ∀ {as} → Comparator as → ∀[ One ψ ⇒ ⟨ as ++ ψ ⇒ ψ ⟩ ]
 
     -- exceptions/abrupt termination/etc
-    ret   : ε[ ⟨ a ∷ ψ ⇒ ψ ⟩ ]
+    ret   : ε[ ⟨ a ∷ ψ₁ ⇒ ψ₂ ⟩ ]
 
     -- calls
-    invokestatic  : ∀ {as r} → 𝑪[ staticfun (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ++ ψ) ⇒ b ∷ ψ ⟩ ]
-    invokespecial : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ∷ʳ ref 𝑐 ++ ψ) ⇒ r :?: ψ ⟩ ]
-    invokevirtual : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ∷ʳ ref 𝑐 ++ ψ) ⇒ r :?: ψ ⟩ ]
+    invokestatic  : ∀ {as r} → 𝑪[ staticfun (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ++ ψ)         ⇒ r :?: ψ ⟩ ]
+    invokespecial : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (ref 𝑐 ∷ as ++ ψ) ⇒ r :?: ψ ⟩ ]
+    invokevirtual : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (ref 𝑐 ∷ as ++ ψ) ⇒ r :?: ψ ⟩ ]
 
   ⟨_∣_⇒_⟩ = ⟨_⇒_⟩
 

@@ -119,7 +119,7 @@ module _ where
   print-labels : ∀ {τ} → ∀[ Up (Labeling τ) ⇒ Printer Emp ]
   print-labels (↑ emp)                  = return refl
   print-labels (↑ (cons (x ∙⟨ σ ⟩ xs))) = do
-    xs ← ⊙-id⁻ʳ ⟨$⟩ (print-label (↑ x) &⟨ Up (Labeling _) # ∙-comm $ liftUp σ ⟩ ↑ xs)
+    xs ← ✴-id⁻ʳ ⟨$⟩ (print-label (↑ x) &⟨ Up (Labeling _) # ∙-comm $ liftUp σ ⟩ ↑ xs)
     print-labels xs
     where open Disjoint using (bags; bags-isMonoid)
 

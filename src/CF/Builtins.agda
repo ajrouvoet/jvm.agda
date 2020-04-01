@@ -43,8 +43,9 @@ builtins = print
 
   where
 
+    ⟦print⟧ : Compiler (jre , _) [] [ _ ] Emp _
     ⟦print⟧ = do
-      code (getstatic (here refl))
       code (load (here refl))
+      code (getstatic (here refl))
       code (invokevirtual (there (here refl)))
       code (push (bool true))

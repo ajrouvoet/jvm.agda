@@ -3,7 +3,6 @@ module CF.Transform.UnCo where
 
 open import Data.Product
 open import Data.List
-open import Data.List.Extra
 open import Data.List.Relation.Unary.All
 open import Data.List.Membership.Propositional
 
@@ -42,7 +41,7 @@ uncoₑ (call f✴es ⇈ wk) with unstar (f✴es ⇈ wk)
     open import Data.List.Relation.Binary.Permutation.Propositional.Properties
 
     lemma : ∀ {x : TopLevelDecl} {xs ys} → [ x ] ∙ xs ≣ ys → x ∈ ys
-    lemma (hustle ρx _ ρys σ) rewrite ↭-one ρx = let m = member σ in Any-resp-↭ ρys m
+    lemma (hustle ρx _ ρys σ) rewrite ↭-singleton-inv ρx = let m = member σ in Any-resp-↭ ρys m
 
     uncos : ∀[ (Allstar Hoisted.Exp as) ⇑ ⇒ Exps as ]
     uncos (nil       ⇈ wk) = []

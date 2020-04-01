@@ -9,7 +9,7 @@ open import Data.String
 
 open import Relation.Binary.PropositionalEquality using (refl)
 open import Relation.Ternary.Core
-open import Relation.Ternary.Separation
+open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad.Possibly
 open import Relation.Ternary.Data.Allstar
@@ -35,7 +35,7 @@ main-fun = (
       Src.ifthenelse
         -- if j != 0
         (var 
-          ×⟨ ∙-idˡ , overlaps ∙-idˡ ⟩
+          ∙⟨ ∙-idˡ , overlaps ∙-idˡ ⟩
           -- then
           Src.block (
             -- int i = j
@@ -46,7 +46,7 @@ main-fun = (
               Src.run (Src.call (fn ∙⟨ ^ consˡ ∙-idˡ , ∙-idˡ ⟩ cons (num 42 ∙⟨ ∙-idʳ ⟩ nil))) ⍮⟨ ∙-idʳ ⟩
               emp))
           -- else
-          ×⟨ ∙-idʳ , overlaps ∙-idˡ ⟩
+          ∙⟨ ∙-idʳ , overlaps ∙-idˡ ⟩
           Src.block (
             -- int i = j
             var ≔⟨ ∙-idˡ , consˡ ∙-idˡ ⟩
@@ -63,13 +63,13 @@ open import JVM.Defaults.Printer
 
 open import CF.Compile
 
+main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
+  where
+  import JVM.Defaults.Printer.Jasmin as J
+  proc = procedure "ex1" (proj₂ $ compile main-fun)
+
 -- program : Program
 -- program = ↓ refl
 --         ∙⟨ {!!} ⟩ ((("main" , [] ⟶ void) , ↑ refl ∙⟨ {!!} ⟩ ↓ (Possibly.possibly ∼-all main-fun))
 --         ✴⟨ {!!} ⟩ ((("print" , [ int ] ⟶ void) , {!!})
 --         ✴⟨ {!!} ⟩ emp))
-
-main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
-  where
-  import JVM.Defaults.Printer.Jasmin as J
-  proc = procedure "ex1" (proj₂ $ compile {!!})
