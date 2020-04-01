@@ -6,9 +6,11 @@ open import Data.List.Relation.Binary.Permutation.Propositional
 open import Data.List.Relation.Binary.Permutation.Propositional.Properties
 open import Data.Product hiding (map)
 open import Relation.Binary.PropositionalEquality
+open import Relation.Ternary.Construct.Bag.Properties
 open import Relation.Ternary.Morphisms
 open import Function
 
+{- Mapping along any injection yields a model morphism -}
 module _ {a b} {A : Set a} {B : Set b} (𝑚 : A ↣ B) where
 
   open Injection 𝑚
@@ -19,11 +21,10 @@ module _ {a b} {A : Set a} {B : Set b} (𝑚 : A ↣ B) where
 
   open import JVM.Model A as L
   open import JVM.Model B as R
-  import Relation.Ternary.Construct.Bag.Properties as B
   import Relation.Ternary.Construct.Duplicate.Properties as D
   import Relation.Ternary.Construct.Empty.Properties as E
-  module OMM = MonoidMorphism (B.bagMap (D.f-morphism 𝑚))
-  module DMM = MonoidMorphism (B.bagMap (E.⊥-morphism ⟦_⟧))
+  module OMM = MonoidMorphism (bagMap (D.f-morphism 𝑚))
+  module DMM = MonoidMorphism (bagMap (E.⊥-morphism ⟦_⟧))
   import Relation.Ternary.Construct.Bag.Overlapping as O
   import Relation.Ternary.Construct.Bag.Disjoint as D
 
