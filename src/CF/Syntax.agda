@@ -14,12 +14,12 @@ open import Relation.Unary hiding (_⊢_)
 open import Relation.Unary.PredicateTransformer using (Pt)
 open import Relation.Binary.Structures using (IsPreorder)
 open import Relation.Binary.PropositionalEquality using (isEquivalence; refl)
-open import Relation.Ternary.Separation
+open import Relation.Ternary.Core
+open import Relation.Ternary.Structures
+open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad.Possibly
 open import Relation.Ternary.Monad.Weakening
 open import Relation.Ternary.Data.Bigstar hiding ([_])
-
-open import JVM.Defaults.Syntax.Instructions
 
 open import CF.Types
 open import CF.Contexts
@@ -41,7 +41,7 @@ data Exp : Ty → Pred Ctx 0ℓ where
   bool     : Bool → ε[ Exp bool ]
 
   -- storeless expressions
-  var'      : ∀[ Var a ⇒ Exp a ]
+  var'     : ∀[ Var a ⇒ Exp a ]
   bop      : BinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
 
   -- storeful
@@ -49,7 +49,7 @@ data Exp : Ty → Pred Ctx 0ℓ where
   -- deref    : ∀[ Exp (ref a) ⇒ Exp a ]
 
   -- procedure calls
-  call     : ∀[ Fun 𝑓 (as ⟶ b) ✴ Allstar Exp as ⇒ Exp b ]
+  call     : ∀[ Fun (𝑓 ∶ as ⟶ b) ✴ Allstar Exp as ⇒ Exp b ]
 
 pattern var  = var' vars
 
@@ -75,23 +75,10 @@ mutual
     cons  : ∀[ Stmt r ✴ Block r ⇒ Block r ]
     emp   : ε[ Block r ]
 
-Function : Pred Intf 0ℓ
-Function =
-  ⋃[ (n , fty@(as ⟶ b)) ∶ String × FunTy ]
-    ( Up (Just (n , fun fty))
-    ✴ Down (Closed (as ⊢ Block b))
-    )
-
-Program : Set
-Program =
-  Down⁻ (
-    ( Down (Just ("main" , (fun ([] ⟶ void)))) -- reference to the main function
-    ✴ Bigstar Function
-    ) ⇑) builtins
-
 -- make constructors visible
 open Statements Block public
+open import CF.Syntax.Programs (λ as b → Closed (as ⊢ Block b)) public
 
 infixr 5 _⍮⟨_⟩_
-pattern _⍮⟨_⟩_ s σ b = cons (s ×⟨ σ ⟩ b)
-pattern _≔⟨_⟩_ e σ b = local (e ×⟨ σ ⟩ b)
+pattern _⍮⟨_⟩_ s σ b = cons (s ∙⟨ σ ⟩ b)
+pattern _≔⟨_⟩_ e σ b = local (e ∙⟨ σ ⟩ b)

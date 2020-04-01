@@ -21,7 +21,6 @@ private
     open import CF.Syntax.DeBruijn public
     open import CF.Types public
     open import CF.Contexts using (module DeBruijn) public; open DeBruijn public
-    open TopLevelTy public
     open FunTy public
 
   module Tgt where
@@ -50,7 +49,7 @@ compileₑ (num x) = do
 compileₑ (bool b) = do
   code (push (bool b))
 
-compileₑ (var x) = do
+compileₑ (var' x) = do
   code (load ⟦ x ⟧)
 
 compileₑ (call f es) = do
@@ -66,22 +65,22 @@ compileₑ (bop f e₁ e₂) = do
 
     -- a < b compiles to (assume a and b on stack):
     --
-    --     if_icmplt -l
+    --     if_icmplt l⁻
     --     iconst_1
-    --     goto -e
-    -- +l: iconst_0
-    -- +e: nop
+    --     goto e⁻
+    -- l⁺: iconst_0
+    -- e⁺: nop
     --
     -- Other comparisons go similar
     compile-comp : ∀ {as} → Comparator as → ε[ Compiler 𝑭 (as ++ ψ) (boolean ∷ ψ) Emp ]
     compile-comp cmp = do
-      +l ∙⟨ σ ⟩ ↓ -l    ← mklabel
-      +l ∙⟨ σ ⟩ refl    ← code (if cmp -l)                               &⟨ Up _  # σ ⟩ +l
-      +l ∙⟨ σ ⟩ refl    ← code (push (bool true))                        &⟨ Up _  # σ ⟩ +l
-      ↓ -e ∙⟨ σ ⟩ +l∙+e ← ⊙-rotateᵣ ⟨$⟩ (mklabel                         &⟨ Up _  # σ ⟩ +l)
-      +l ∙⟨ σ ⟩ +e      ← ⊙-id⁻ʳ ⟨$⟩ (code (goto -e)                     &⟨ _ ⊙ _ # ∙-comm σ ⟩ +l∙+e)
-      +e ∙⟨ σ ⟩ refl    ← attachTo +l ⟨ ∙-idʳ ⟩ code (push (bool false)) &⟨ Up _  # ∙-comm σ ⟩ +e
-      coe (∙-id⁻ʳ σ) (attach +e)
+      l⁺ ∙⟨ σ ⟩ ↓ l⁻    ← mklabel
+      l⁺ ∙⟨ σ ⟩ refl    ← code (if cmp l⁻)                               &⟨ Up _  # σ ⟩ l⁺
+      l⁺ ∙⟨ σ ⟩ refl    ← code (push (bool true))                        &⟨ Up _  # σ ⟩ l⁺
+      ↓ e⁻ ∙⟨ σ ⟩ l⁺∙e⁺ ← ✴-rotateᵣ ⟨$⟩ (mklabel                         &⟨ Up _  # σ ⟩ l⁺)
+      l⁺ ∙⟨ σ ⟩ e⁺      ← ✴-id⁻ʳ ⟨$⟩ (code (goto e⁻)                     &⟨ _ ✴ _ # ∙-comm σ ⟩ l⁺∙e⁺)
+      e⁺ ∙⟨ σ ⟩ refl    ← attachTo l⁺ ⟨ ∙-idʳ ⟩ code (push (bool false)) &⟨ Up _  # ∙-comm σ ⟩ e⁺
+      coe (∙-id⁻ʳ σ) (attach e⁺)
 
     -- Compile comparisons and other binary operations
     compile-bop : ∀ {a b c} → BinOp a b c → ε[ Compiler 𝑭 (⟦ a ⟧ ∷ ⟦ b ⟧ ∷ ψ) (⟦ c ⟧ ∷ ψ) Emp ]

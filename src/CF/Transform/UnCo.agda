@@ -1,4 +1,4 @@
-{-# OPTIONS --no-qualified-instances #-}
+{-# OPTIONS --no-qualified-instances --rewriting #-}
 module CF.Transform.UnCo where
 
 open import Data.Product
@@ -14,11 +14,14 @@ open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad
 open import Relation.Ternary.Monad.Weakening
+open import Relation.Ternary.Data.Bigstar hiding ([_])
 
 open import CF.Types
+open import CF.Syntax.Hoisted as Hoisted
 open import CF.Contexts
-open import CF.Transform.Hoist as Src hiding (module Tgt)
+open import CF.Transform.Hoist
 open import CF.Syntax.DeBruijn as Tgt
+open Hoisted
 
 module _ {T : Set} where
   open import Relation.Ternary.Construct.List.Overlapping T using (member) public
@@ -26,11 +29,11 @@ module _ {T : Set} where
 open import Relation.Ternary.Data.Allstar Ty
 
 {-# TERMINATING #-}
-uncoₑ : ∀[ Src.Exp a ⇑ ⇒ Tgt.Exp a ]
+uncoₑ : ∀[ Hoisted.Exp a ⇑ ⇒ Tgt.Exp a ]
 uncoₑ (unit ⇈ wk)     = unit
 uncoₑ (num x ⇈ wk)    = num x
 uncoₑ (bool x ⇈ wk)   = bool x
-uncoₑ (Src.var ⇈ wk)  = Tgt.var (member (proj₂ wk))
+uncoₑ (Exp.var' vars ⇈ wk)  = Tgt.var' (member (proj₂ wk))
 uncoₑ (bop f e₁✴e₂ ⇈ wk) with e₁ , e₂ ← unstar (e₁✴e₂ ⇈ wk) = bop f (uncoₑ e₁) (uncoₑ e₂)
 uncoₑ (call f✴es ⇈ wk) with unstar (f✴es ⇈ wk)
 ... | fn ⇈ wk' , es = call (lemma (proj₁ wk')) (uncos es)
@@ -41,13 +44,13 @@ uncoₑ (call f✴es ⇈ wk) with unstar (f✴es ⇈ wk)
     lemma : ∀ {x : TopLevelDecl} {xs ys} → [ x ] ∙ xs ≣ ys → x ∈ ys
     lemma (hustle ρx _ ρys σ) rewrite ↭-one ρx = let m = member σ in Any-resp-↭ ρys m
 
-    uncos : ∀[ (Allstar Src.Exp as) ⇑ ⇒ Exps as ]
+    uncos : ∀[ (Allstar Hoisted.Exp as) ⇑ ⇒ Exps as ]
     uncos (nil       ⇈ wk) = []
     uncos (cons e✴es ⇈ wk) with e , es ← unstar (e✴es ⇈ wk) = uncoₑ e ∷ uncos es
 
 {-# TERMINATING #-}
 mutual
-  uncoₛ : ∀[ Src.Stmt r ⇑ ⇒ Tgt.Stmt r ]
+  uncoₛ : ∀[ Hoisted.Stmt r ⇑ ⇒ Tgt.Stmt r ]
   uncoₛ (run x ⇈ wk) = run (uncoₑ (x ⇈ wk))
   uncoₛ (ret x ⇈ wk) = ret (uncoₑ (x ⇈ wk))
   uncoₛ (asgn v✴e ⇈ wk) with unstar (v✴e ⇈ wk)
@@ -59,9 +62,26 @@ mutual
   uncoₛ (while c✴s ⇈ wk) with c , s ← unstar (c✴s ⇈ wk) = while (uncoₑ c) (uncoₛ s)
   uncoₛ (block x ⇈ wk) = block (unco' (x ⇈ wk))
 
-  unco' : ∀[ Src.Block r ⇑ ⇒ Tgt.Block r ]
+  unco' : ∀[ Hoisted.Block r ⇑ ⇒ Tgt.Block r ]
   unco' (nil ⇈ wk) = nil
   unco' (cons s✴b ⇈ wk) with s , b ← unstar (s✴b ⇈ wk) = uncoₛ s ⍮⍮ unco' b
 
-unco : ∀[ Src.Block r ⇒ Tgt.Block r ]
+unco : ∀[ Hoisted.Block r ⇒ Tgt.Block r ]
 unco bl = unco' (return bl)
+
+open import Relation.Ternary.Construct.List.Overlapping Ty public using (from-⊆)
+open import Data.List.Relation.Binary.Sublist.Propositional
+open import Data.List.Relation.Binary.Sublist.Propositional.Properties
+
+-- unco-⊢ : ∀ {as r} → ∀[ as Hoisted.⊢ (Hoisted.Block r) ⇒ as Tgt.⊢ (Tgt.Block r) ]
+-- unco-⊢ (possibly (intros q) code) = unco' (code ⇈ (Overlap.∙-idʳ , (proj₂ (from-⊆ (++⁺ q ⊆-refl)))))
+
+-- unco-◇ : ∀ {r} → ∀[ ◇ (Hoisted.Block r) ⇒ ◇′ (Tgt.Block r) ]
+-- unco-◇ = {!!}
+
+postulate unco-function : ∀[ Hoisted.Function ⇒ Tgt.Function ]
+-- unco-function (function sig fd σ (possibly (intros args) ◇body)) =
+--   function sig fd σ (unco-◇ {!◇body!}) -- (locals , {!!})
+
+unco-program : Hoisted.Program → Tgt.Program
+unco-program ((mn ∙⟨ σ ⟩ fs) ⇈ wk) = (mn ∙⟨ σ ⟩ ⊛-map unco-function fs) ⇈ wk

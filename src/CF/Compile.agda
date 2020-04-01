@@ -22,14 +22,18 @@ open import CF.Transform.Compile.Expressions
 open import CF.Transform.Compile.Statements
 open import CF.Transform.Compile.ToJVM
 
+open import JVM.Builtins
 open import JVM.Types
 open import JVM.Contexts
-open import JVM.Model StackTy
 open import JVM.Defaults.Syntax.Values
 open import JVM.Defaults.Syntax.Instructions
+open import JVM.Defaults.Syntax.Classes
 open import JVM.Defaults.Transform.Noooops
 
-compile : ∀ {X r} → Closed (Src.Block r) X → ∃ λ Γ → ε[ ⟪ (⟦ X ⟧ , Γ) ∣ [] ⇒ [] ⟫ ]
+module _ {T : Set} where
+  open import JVM.Model T public
+
+compile : ∀ {X r} → Closed (Src.Block r) X → ∃ λ Γ → ε[ ⟪ ⟦ X ⟧ , Γ ∣ [] ⇒ [] ⟫ ]
 compile bl₁                       with hoist bl₁
 ... | _ , Possibly.possibly (intros r) bl₂       -- The grading of the possibility modality
                                                  -- proves that only the lexical context has been extended
@@ -37,3 +41,6 @@ compile bl₁                       with hoist bl₁
 ... | bl₃                         with compiler [] bl₃
 ... | bl₄ ∙⟨ σ ⟩ refl             with noooop bl₄
 ... | bl₅ = -, coe (∙-id⁻ʳ σ) bl₅
+
+-- compile : Program → Up⁻ Classes jre
+-- compile (px ⇈ wk) = {!!}

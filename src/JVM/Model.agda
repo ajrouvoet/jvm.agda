@@ -36,9 +36,9 @@ module Overlap where
   open IsTotal bags-isTotal public
 
 open Rel₃ Disjoint.bags using ()
-  renaming (_∙_≣_ to _⊕_≣_; _⊙_ to _⊕_; _─⊙_ to _─⊕_; _∙⟨_⟩_ to _⊕⟨_⟩_) public
+  renaming (_∙_≣_ to _⊕_≣_; _✴_ to _⊕_; _─✴_ to _─⊕_; _∙⟨_⟩_ to _⊕⟨_⟩_) public
 open Rel₃ Overlap.bags using ()
-  renaming (_∙_≣_ to _⊗_≣_; _⊙_ to _⊗_; _─⊙_ to _─⊗_; _∙⟨_⟩_ to _⊗⟨_⟩_) public
+  renaming (_∙_≣_ to _⊗_≣_; _✴_ to _⊗_; _─✴_ to _─⊗_; _∙⟨_⟩_ to _⊗⟨_⟩_) public
 
 open import Relation.Ternary.Construct.Bag.Properties
 open CrossSplittable {{div₁ = duplicate}} {{empty-rel}} (λ _ ())
@@ -85,5 +85,5 @@ module Syntax where
 open Syntax
 
 -- Creating binders is pure in the model by means of hiding
-binder : ∀ τ → ε[ Up (Just τ) ⊙ Down (Just τ) ]
+binder : ∀ τ → ε[ Up (Just τ) ✴ Down (Just τ) ]
 binder τ = ↑ refl ∙⟨ ex ε-sub xs-xs≡ε Disjoint.∙-idˡ Overlap.∙-idˡ ⟩ ↓ refl

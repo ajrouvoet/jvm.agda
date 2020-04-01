@@ -30,14 +30,14 @@ open import Relation.Ternary.Data.ReflexiveTransitive
 
 -- Signatures of builtin functions of CF
 print : TopLevelDecl
-print = "print" , fun ([ int ] ⟶ void)
+print = fun ("print" ∶ [ int ] ⟶ void)
 
 builtins : List TopLevelDecl
 builtins = print
          ∷ []
 
 -- Compilation of builtins to typed bytecode
-⟦builtins⟧ : All (λ where (name , fun (as ⟶ b)) → ⟪ jre , ⟦ as ⟧ ∣ [] ⇒ ⟦ b ⟧ ∷ [] ⟫ ε) builtins
+⟦builtins⟧ : All (λ where (fun (name ∶ as ⟶ b)) → ⟪ jre , ⟦ as ⟧ ∣ [] ⇒ ⟦ b ⟧ ∷ [] ⟫ ε) builtins
 ⟦builtins⟧ = execCompiler ⟦print⟧
           ∷ []
 

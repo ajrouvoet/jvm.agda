@@ -6,6 +6,7 @@ open import Data.List
 open import JVM.Types
 
 Object = "java/lang/Object"
+Str    = "java/lang/String"
 
 jre : Constantpool
 jre = staticref ("java/lang/System"    / "out"     ∶ ref "java/io/PrintStream")

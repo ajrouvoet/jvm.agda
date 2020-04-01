@@ -1,7 +1,9 @@
 {-# OPTIONS --safe #-}
 module JVM.Defaults.Syntax.Instructions where
 
-open import JVM.Prelude hiding (swap)
+open import Level
+open import Data.Unit
+open import Data.Product hiding (swap)
 open import Data.String using (String)
 open import Data.List
 open import Data.List.Membership.Propositional using () renaming (_∈_ to Reg)
@@ -9,6 +11,10 @@ open import Data.List.Membership.Propositional using () renaming (_∈_ to Reg)
 open import JVM.Types
 open import JVM.Defaults.Syntax.Values
 
+open import Relation.Unary hiding (_∈_)
+open import Relation.Ternary.Core
+open import Relation.Ternary.Structures
+open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Construct.Empty StackTy
 open import Relation.Ternary.Construct.Bag empty-rel tt
 open import Relation.Ternary.Monad.Weakening
@@ -37,6 +43,7 @@ module _ (𝑭 : FrameTy) where
   -- True to bytecode, the collection of registers is fixed.
   -- The stack typing varies.
   data ⟨_⇒_⟩ : StackTy → StackTy → Pred Labels 0ℓ where
+
     noop : ε[ ⟨ ψ ⇒ ψ ⟩ ]
 
     -- stack manipulation

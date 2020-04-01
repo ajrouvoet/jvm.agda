@@ -18,19 +18,17 @@ data Ty : Set where
   -- ref  : Ty → Ty
 
 record FunTy : Set where
-  constructor _⟶_
+  constructor _∶_⟶_
   field
-    argtys : List Ty
-    retty  : Ty
+    funname : String
+    argtys  : List Ty
+    retty   : Ty
 
-data TopLevelTy : Set where
-  fun : FunTy → TopLevelTy
-
-TopLevelDecl = String × TopLevelTy
+data TopLevelDecl : Set where
+  fun : FunTy → TopLevelDecl
 
 Globals : Set
 Globals = List TopLevelDecl
-
 
 Lex = List Ty
 
@@ -38,7 +36,7 @@ Ctx : Set
 Ctx = Globals × Lex
 
 _⍮_ : Ctx → List Ty → Ctx
-(X , Γ) ⍮ Δ = (X , Δ L.++ Γ)
+(X , Γ) ⍮ Δ = (X , Γ L.++ Δ)
 
 variable
   a b c r s t   : Ty

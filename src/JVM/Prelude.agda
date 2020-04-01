@@ -13,5 +13,5 @@ open import Data.Product public hiding (map; zip)
 open import Relation.Unary hiding (_∈_; Empty) public
 open import Relation.Binary.PropositionalEquality hiding ([_]) public
 
-open import Relation.Ternary.Separation public
+open import Relation.Ternary.Core public
 open import Relation.Ternary.Structures public

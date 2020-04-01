@@ -23,7 +23,7 @@ open import JVM.Model T; open Syntax
 open import JVM.Defaults.Syntax.Bytecode T ⟨_⇒_⟩
 
 Compiler : T → T → Pt Intf 0ℓ
-Compiler ψ₁ ψ₂ P = ⟪ ψ₁ ⇒ ψ₂ ⟫ ⊙ P
+Compiler ψ₁ ψ₂ P = ⟪ ψ₁ ⇒ ψ₂ ⟫ ✴ P
 
 instance
   compiler-monad : Monad T Compiler
@@ -40,18 +40,18 @@ instance
 tell : ∀[ Code τ₁ τ₂ ⇒ Compiler τ₁ τ₂ Emp ] 
 tell c = (c ▹⟨ ∙-idʳ ⟩ nil) ∙⟨ ∙-idʳ ⟩ refl
 
-code : ∀[ ⟨ τ₁ ⇒ τ₂ ⟩ ⇒ (Compiler τ₁ τ₂ Emp) ∘ ([] ⇅_) ] 
+code : ∀[ ⟨ τ₁ ⇒ τ₂ ⟩ ⇒ Down⁻ (Compiler τ₁ τ₂ Emp) ] 
 code i = tell (instr (↓ i))
 
 -- Magically, we can create labels in pairs of positive and negative occurences, in a pure manner.
-mklabel : ε[ Compiler τ₁ τ₁ (Up (Just τ) ⊙ Down (Just τ)) ]
+mklabel : ε[ Compiler τ₁ τ₁ (Up (Just τ) ✴ Down (Just τ)) ]
 mklabel {τ = τ} = return (binder τ)
 
 attach : ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
 attach l = tell (labeled (⦇ [_] l ⦈ ∙⟨ ∙-idʳ ⟩ ↓ nop))
 
 -- We can label the start of a compiler computation
-attachTo : ∀ {P} → ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₂ P ─⊙ Compiler τ₁ τ₂ P ]
+attachTo : ∀ {P} → ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₂ P ─✴ Compiler τ₁ τ₂ P ]
 attachTo l ⟨ σ ⟩ c = do
   c ∙⟨ σ ⟩ refl ← attach l &⟨ Compiler _ _ _ # ∙-comm σ ⟩ c
   coe (∙-id⁻ʳ σ) c
