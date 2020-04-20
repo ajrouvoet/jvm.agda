@@ -17,35 +17,33 @@ open import Relation.Ternary.Data.Bigstar hiding ([_])
 
 open import CF.Types
 open import CF.Syntax.Hoisted as Hoisted
-open import CF.Contexts
+open import CF.Contexts.Lexical
 open import CF.Transform.Hoist
 open import CF.Syntax.DeBruijn as Tgt
 open Hoisted
 
-module _ {T : Set} where
-  open import Relation.Ternary.Construct.List.Overlapping T using (member) public
-
 open import Relation.Ternary.Data.Allstar Ty
 
 {-# TERMINATING #-}
-uncoₑ : ∀[ Hoisted.Exp a ⇑ ⇒ Tgt.Exp a ]
-uncoₑ (unit ⇈ wk)     = unit
-uncoₑ (num x ⇈ wk)    = num x
-uncoₑ (bool x ⇈ wk)   = bool x
-uncoₑ (Exp.var' vars ⇈ wk)  = Tgt.var' (member (proj₂ wk))
-uncoₑ (bop f e₁✴e₂ ⇈ wk) with e₁ , e₂ ← unstar (e₁✴e₂ ⇈ wk) = bop f (uncoₑ e₁) (uncoₑ e₂)
-uncoₑ (call f✴es ⇈ wk) with unstar (f✴es ⇈ wk)
-... | fn ⇈ wk' , es = call (lemma (proj₁ wk')) (uncos es)
-  where
-    open Overlap
-    open import Data.List.Relation.Binary.Permutation.Propositional.Properties
+mutual
+  uncoₑ : ∀[ Hoisted.Exp a ⇑ ⇒ Tgt.Exp a ]
+  uncoₑ (unit ⇈ wk)     = unit
+  uncoₑ (num x ⇈ wk)    = num x
+  uncoₑ (bool x ⇈ wk)   = bool x
+  uncoₑ (Exp.var' vars ⇈ wk)  = Tgt.var' (member wk)
+  uncoₑ (bop f e₁✴e₂ ⇈ wk) with e₁ , e₂ ← unstar (e₁✴e₂ ⇈ wk) = bop f (uncoₑ e₁) (uncoₑ e₂)
+  -- uncoₑ (call f✴es ⇈ wk) with unstar (f✴es ⇈ wk)
+  -- ... | fn ⇈ wk' , es = call (lemma (proj₁ wk')) (uncos es)
+  --   where
+  --     open Overlap
+  --     open import Data.List.Relation.Binary.Permutation.Propositional.Properties
 
-    lemma : ∀ {x : TopLevelDecl} {xs ys} → [ x ] ∙ xs ≣ ys → x ∈ ys
-    lemma (hustle ρx _ ρys σ) rewrite ↭-singleton-inv ρx = let m = member σ in Any-resp-↭ ρys m
+  --     lemma : ∀ {x : TopLevelDecl} {xs ys} → [ x ] ∙ xs ≣ ys → x ∈ ys
+  --     lemma (hustle ρx _ ρys σ) rewrite ↭-singleton-inv ρx = let m = member σ in Any-resp-↭ ρys m
 
-    uncos : ∀[ (Allstar Hoisted.Exp as) ⇑ ⇒ Exps as ]
-    uncos (nil       ⇈ wk) = []
-    uncos (cons e✴es ⇈ wk) with e , es ← unstar (e✴es ⇈ wk) = uncoₑ e ∷ uncos es
+  uncos : ∀[ (Allstar Hoisted.Exp as) ⇑ ⇒ Exps as ]
+  uncos (nil       ⇈ wk) = []
+  uncos (cons e✴es ⇈ wk) with e , es ← unstar (e✴es ⇈ wk) = uncoₑ e ∷ uncos es
 
 {-# TERMINATING #-}
 mutual
@@ -53,7 +51,7 @@ mutual
   uncoₛ (run x ⇈ wk) = run (uncoₑ (x ⇈ wk))
   uncoₛ (ret x ⇈ wk) = ret (uncoₑ (x ⇈ wk))
   uncoₛ (asgn v✴e ⇈ wk) with unstar (v✴e ⇈ wk)
-  ... | vars ⇈ wk' , e⇑ = asgn (member (proj₂ wk')) (uncoₑ e⇑)
+  ... | vars ⇈ wk' , e⇑ = asgn (member wk') (uncoₑ e⇑)
   uncoₛ (ifthenelse c✴s₁✴s₂ ⇈ wk) = let
     c  , s₁✴s₂ = unstar (c✴s₁✴s₂ ⇈ wk)
     s₁ , s₂    = unstar s₁✴s₂
@@ -78,9 +76,9 @@ open import Data.List.Relation.Binary.Sublist.Propositional.Properties
 -- unco-◇ : ∀ {r} → ∀[ ◇ (Hoisted.Block r) ⇒ ◇′ (Tgt.Block r) ]
 -- unco-◇ = {!!}
 
-postulate unco-function : ∀[ Hoisted.Function ⇒ Tgt.Function ]
+-- postulate unco-function : ∀[ Hoisted.Function ⇒ Tgt.Function ]
 -- unco-function (function sig fd σ (possibly (intros args) ◇body)) =
 --   function sig fd σ (unco-◇ {!◇body!}) -- (locals , {!!})
 
-unco-program : Hoisted.Program → Tgt.Program
-unco-program ((mn ∙⟨ σ ⟩ fs) ⇈ wk) = (mn ∙⟨ σ ⟩ ⊛-map unco-function fs) ⇈ wk
+-- unco-program : Hoisted.Program → Tgt.Program
+-- unco-program ((mn ∙⟨ σ ⟩ fs) ⇈ wk) = (mn ∙⟨ σ ⟩ ⊛-map unco-function fs) ⇈ wk

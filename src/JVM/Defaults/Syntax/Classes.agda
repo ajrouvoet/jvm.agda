@@ -1,4 +1,4 @@
-{-# OPTIONS --safe --no-qualified-instances #-}
+{-# OPTIONS --no-qualified-instances #-}
 module JVM.Defaults.Syntax.Classes where
 
 open import Level
@@ -26,90 +26,81 @@ open import JVM.Builtins
 open import JVM.Defaults.Syntax.Instructions
 open import JVM.Compiler
 
-private
-  module _ (T : Set) where
-    open import JVM.Model T public using (Intf)
 
-  module _ {T : Set} where
-    open import JVM.Model T public hiding (Intf; empty-rel; duplicate)
+-- [_]-stack : Ret → StackTy
+-- [ ty a ]-stack = [ a ]
+-- [ void ]-stack = []
 
-    instance list-empty : Emptiness {A = List T} []
-    list-empty = record {}
+-- VirtualBody : Fun → Pred Constantpool 0ℓ
+-- VirtualBody (cls / name :⟨ as ⟩ r) 𝑪 =
+--   ∃ λ locals →
+--     ⟪ 𝑪 , ref cls ∷ (as ++ locals) ∣ [] ⇒ [] ⟫ ε
 
-[_]-stack : Ret → StackTy
-[ ty a ]-stack = [ a ]
-[ void ]-stack = []
+-- StaticBody : Fun → Pred Constantpool 0ℓ
+-- StaticBody (_ / _ :⟨ as ⟩ r) 𝑪       =
+--   ∃ λ locals →
+--     ⟪ 𝑪 , as ++ locals             ∣ [] ⇒ [] ⟫ ε
 
-VirtualBody : Fun → Pred Constantpool 0ℓ
-VirtualBody (cls / name :⟨ as ⟩ r) 𝑪 =
-  ∃ λ locals →
-    ⟪ 𝑪 , ref cls ∷ (as ++ locals) ∣ [] ⇒ [] ⟫ ε
+-- -- Implementation of class members
+-- Impl : Constant → Pred Constantpool 0ℓ
+-- Impl (class x)      = ∅ -- no inner/nested classes supported
+-- Impl (fieldref x)   = ∅ -- todo
+-- Impl (staticref x)  = Emp
+-- Impl (virtual fn)   = VirtualBody fn
+-- Impl (staticfun fn) = StaticBody fn
 
-StaticBody : Fun → Pred Constantpool 0ℓ
-StaticBody (_ / _ :⟨ as ⟩ r) 𝑪       =
-  ∃ λ locals →
-    ⟪ 𝑪 , as ++ locals             ∣ [] ⇒ [] ⟫ ε
+-- -- Special initialization virtual
+-- Init : String → Pred (Intf Constant) 0ℓ
+-- Init cls = let init = cls / "<init>" :⟨ [] ⟩ void
+--          in Up (Just (virtual init))
+--           ✴ Down (VirtualBody init)
 
--- Implementation of class members
-Impl : Constant → Pred Constantpool 0ℓ
-Impl (class x)      = ∅ -- no inner/nested classes supported
-Impl (fieldref x)   = ∅ -- todo
-Impl (staticref x)  = Emp
-Impl (virtual fn)   = VirtualBody fn
-Impl (staticfun fn) = StaticBody fn
+-- Classname : String → Pred Constantpool 0ℓ
+-- Classname cls = Just (class cls)
 
--- Special initialization virtual
-Init : String → Pred (Intf Constant) 0ℓ
-Init cls = let init = cls / "<init>" :⟨ [] ⟩ void
-         in Up (Just (virtual init))
-          ✴ Down (VirtualBody init)
+-- Funname : Fun → Pred Constantpool 0ℓ
+-- Funname fn = Just (staticfun fn)
 
-Classname : String → Pred Constantpool 0ℓ
-Classname cls = Just (class cls)
+-- Main : Pred Constantpool 0ℓ
+-- Main = ⋃[ cls ∶ _ ] Just (staticfun (cls / "main" :⟨ array (ref Str) ∷ [] ⟩ void))
 
-Funname : Fun → Pred Constantpool 0ℓ
-Funname fn = Just (staticfun fn)
+-- Member : Pred (Intf Constant) 0ℓ
+-- Member = ⋃[ k ∶ Constant ] (Up (Just k) ✴ Down (Impl k))
 
-Main : Pred Constantpool 0ℓ
-Main = ⋃[ cls ∶ _ ] Just (staticfun (cls / "main" :⟨ array (ref Str) ∷ [] ⟩ void))
+-- mkMember : ∀ k → ∀[ (Up (Just k) ✴ Down (Impl k)) ⇒ Member ]
+-- mkMember k = k ,_
 
-Member : Pred (Intf Constant) 0ℓ
-Member = ⋃[ k ∶ Constant ] (Up (Just k) ✴ Down (Impl k))
+-- -- Optional declaration of the class
+-- Classdecl = λ cls → Up (Classname cls) ∪ Emp
+-- pattern nodecl = inj₂ refl
 
-mkMember : ∀ k → ∀[ (Up (Just k) ✴ Down (Impl k)) ⇒ Member ]
-mkMember k = k ,_
+-- Class : Pred (Intf Constant) 0ℓ
+-- Class = ⋃[ cls ∶ String ]
+--       ( Classdecl cls
+--       ✴ Bigstar Member 
+--       )
 
--- Optional declaration of the class
-Classdecl = λ cls → Up (Classname cls) ∪ Emp
-pattern nodecl = inj₂ refl
+-- mkClass : ∀ cls → ∀[ ( Classdecl cls ✴ Bigstar Member) ⇒ Class ]
+-- mkClass c = c ,_
 
-Class : Pred (Intf Constant) 0ℓ
-Class = ⋃[ cls ∶ String ]
-      ( Classdecl cls
-      ✴ Bigstar Member 
-      )
+-- Classes = Bigstar Class
 
-mkClass : ∀ cls → ∀[ ( Classdecl cls ✴ Bigstar Member) ⇒ Class ]
-mkClass c = c ,_
+-- Program : Set
+-- Program = Down⁻ ((Down Main ✴ Classes) ⇑) jre
 
-Classes = Bigstar Class
+-- functionClass : (fn : Fun) (open Fun fn)
+--               → ∀[ Down (StaticBody fn) ⇒ Class ✴ Down (Funname fn) ]
+-- functionClass fn body = 
+--   let
+--     open Fun fn
+--     kind                 = staticfun fn
+--     f↓∙[f↑∙b]            = ✴-assocᵣ $ (✴-swap $ binder kind) ∙⟨ ∙-idˡ ⟩ body
+--     f↓∙members           = ⟨ id ⟨✴⟩ (⊛.[_] ∘ mkMember kind) ⟩ f↓∙[f↑∙b]
+--   in ⟨ (λ m → mkClass name (nodecl ∙⟨ ∙-idˡ ⟩ m)) ⟨✴⟩ id ⟩ (✴-swap f↓∙members)
 
-Program : Set
-Program = Down⁻ ((Down Main ✴ Classes) ⇑) jre
-
-functionClass : (fn : Fun) (open Fun fn)
-              → ∀[ Down (StaticBody fn) ⇒ Class ✴ Down (Funname fn) ]
-functionClass fn body = 
-  let
-    open Fun fn
-    kind                 = staticfun fn
-    f↓∙[f↑∙b]            = ✴-assocᵣ $ (✴-swap $ binder kind) ∙⟨ ∙-idˡ ⟩ body
-    f↓∙members           = ⟨ id ⟨✴⟩ (⊛.[_] ∘ mkMember kind) ⟩ f↓∙[f↑∙b]
-  in ⟨ (λ m → mkClass name (nodecl ∙⟨ ∙-idˡ ⟩ m)) ⟨✴⟩ id ⟩ (✴-swap f↓∙members)
-
--- Typesafe initializers require sub-typing (calling Object init on cls ref)
--- defaultInit : (cls : String) → VirtualBody (cls / "<init>" :⟨ [] ⟩ void) jre
--- defaultInit cls = execCompiler $ do
---   code (load (here refl))
---   refl ← code (invokespecial (there (there (there {!here refl!}))))
---   {!!}
+-- -- Typesafe initializers require sub-typing (calling Object init on cls ref)
+-- -- defaultInit : (cls : String) → VirtualBody (cls / "<init>" :⟨ [] ⟩ void) jre
+-- -- defaultInit cls = execCompiler $ do
+-- --   code (load (here refl))
+-- --   refl ← code (invokespecial (there (there (there {!here refl!}))))
+-- --   {!!}

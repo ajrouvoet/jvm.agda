@@ -42,19 +42,6 @@ postulate ⟦builtins⟧'' : All (λ tl → Impl ⟦ tl ⟧ jre) builtins
 open import Data.List.Relation.Binary.Permutation.Propositional
 open import Data.List.Relation.Binary.Permutation.Propositional.Properties
 
-module _ {A B : Set} (a→b : A → B) where
-
-  m : Morphism {A = List A} {B = List B} Overlap.bags-isMonoid Overlap.bags-isMonoid
-  Morphism.j m     = List.map a→b
-  Morphism.jcong m = map⁺ a→b
-  Morphism.j-ε m   = ↭-refl
-  Morphism.j-∙ m   = {!!}
-  Morphism.j-∙⁻ m  = {!!}
-
-mi : Morphism {A = Intf {T = TopLevelDecl}} {B = Intf {T = Constant}} intf-isMonoid intf-isMonoid
-mi = {!!}
-
-open Morphism mi
 
 compile-function : ∀[ Function ⇒ⱼ Class ]
 compile-function (function c (↑ refl) σ body) =

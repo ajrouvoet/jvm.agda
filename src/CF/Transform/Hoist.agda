@@ -19,7 +19,7 @@ open import Relation.Ternary.Monad.Weakening
 open import Relation.Ternary.Structures.Syntax
 
 open import CF.Types
-open import CF.Contexts
+open import CF.Contexts.Lexical
 open import CF.Syntax as Src hiding (Stmt; Block; Statement; var) public
 open import CF.Syntax.Hoisted as Hoisted
 
@@ -75,12 +75,12 @@ mutual
     bl'                      ← hoist bl
     return (Hoisted.block bl')
 
--- Optimizing hoisting
--- This will throw away the declarations of locals that are not used in the function.
-hoist-function : ∀[ Src.Function ⇒ Hoisted.Function ]
-hoist-function (function sig fd σ (possibly args code))
-  with locals , possibly (intros _ refl) code' ← hoist code
-  = function sig fd σ (possibly args (-, possibly ∼-all code')) 
+-- -- Optimizing hoisting
+-- -- This will throw away the declarations of locals that are not used in the function.
+-- hoist-function : ∀[ Src.Function ⇒ Hoisted.Function ]
+-- hoist-function (function sig fd σ (possibly args code))
+--   with locals , possibly (intros _ refl) code' ← hoist code
+--   = function sig fd σ (possibly args (-, possibly ∼-all code')) 
 
-hoist-program : Src.Program → Hoisted.Program 
-hoist-program (program mn σ funs globals) = program mn σ (⊛-map hoist-function funs) globals
+-- hoist-program : Src.Program → Hoisted.Program 
+-- hoist-program (program mn σ funs globals) = program mn σ (⊛-map hoist-function funs) globals

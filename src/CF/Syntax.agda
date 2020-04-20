@@ -22,7 +22,7 @@ open import Relation.Ternary.Monad.Weakening
 open import Relation.Ternary.Data.Bigstar hiding ([_])
 
 open import CF.Types
-open import CF.Contexts
+open import CF.Contexts.Lexical
 open import CF.Builtins
 
 open import Relation.Ternary.Construct.Product using (fst; snd)
@@ -36,7 +36,6 @@ data BinOp : Ty → Ty → Ty → Set where
 data Exp : Ty → Pred Ctx 0ℓ where
   -- irreducible expressions
   unit     : ε[ Exp void ]
-  -- null     : ε[ Exp (ref a) ]
   num      : ℕ → ε[ Exp int ]
   bool     : Bool → ε[ Exp bool ]
 
@@ -44,12 +43,8 @@ data Exp : Ty → Pred Ctx 0ℓ where
   var'     : ∀[ Var a ⇒ Exp a ]
   bop      : BinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
 
-  -- storeful
-  -- ref      : ∀[ Exp a ⇒ Exp (ref a) ]
-  -- deref    : ∀[ Exp (ref a) ⇒ Exp a ]
-
   -- procedure calls
-  call     : ∀[ Fun (𝑓 ∶ as ⟶ b) ✴ Allstar Exp as ⇒ Exp b ]
+  -- call     : ∀[ Fun (𝑓 ∶ as ⟶ b) ✴ Allstar Exp as ⇒ Exp b ]
 
 pattern var  = var' vars
 
@@ -77,8 +72,9 @@ mutual
 
 -- make constructors visible
 open Statements Block public
-open import CF.Syntax.Programs (λ as b → Closed (as ⊢ Block b)) public
 
 infixr 5 _⍮⟨_⟩_
 pattern _⍮⟨_⟩_ s σ b = cons (s ∙⟨ σ ⟩ b)
 pattern _≔⟨_⟩_ e σ b = local (e ∙⟨ σ ⟩ b)
+
+-- open import CF.Syntax.Programs (λ as b → Closed (as ⊢ Block b)) public

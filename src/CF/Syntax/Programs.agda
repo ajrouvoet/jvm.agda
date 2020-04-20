@@ -16,7 +16,7 @@ open import Relation.Ternary.Data.Bigstar
 open import Relation.Ternary.Monad.Weakening
 
 open import CF.Builtins
-open import CF.Contexts
+open import CF.Contexts.WithToplevel
 
 module _ where
 

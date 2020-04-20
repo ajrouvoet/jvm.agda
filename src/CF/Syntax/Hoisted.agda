@@ -9,7 +9,7 @@ open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 
 open import CF.Types
-open import CF.Contexts
+open import CF.Contexts.Lexical
 open import CF.Syntax using (module Statements)
 open import CF.Syntax using (Exp) public
 
@@ -27,6 +27,7 @@ open import Data.Product
 -- make constructors visible
 open Exp public
 open Statements Block public
-open import CF.Syntax.Programs (λ as b → Closed (as ⊢ ◇ (Block b))) public
 open CoDeBruijn public
-open import CF.Contexts using (_⊢_) public
+open import CF.Contexts.Lexical using (_⊢_) public
+
+-- open import CF.Syntax.Programs (λ as b → Closed (as ⊢ ◇ (Block b))) public

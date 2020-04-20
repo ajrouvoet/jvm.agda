@@ -20,7 +20,7 @@ private
   module Src where
     open import CF.Syntax.DeBruijn public
     open import CF.Types public
-    open import CF.Contexts using (module DeBruijn) public; open DeBruijn public
+    open import CF.Contexts.Lexical using (module DeBruijn) public; open DeBruijn public
     open FunTy public
 
   module Tgt where
@@ -36,9 +36,9 @@ open import JVM.Compiler
 open import CF.Transform.Compile.ToJVM
 
 -- Compilation of CF expressions
-compileₑₛ : ∀ {as ψ K} → Exps as K → ε[ Compiler ⟦ K ⟧ ψ (⟦ as ⟧ ++ ψ) Emp ]
+compileₑₛ : ∀ {as ψ Γ} → Exps as Γ → ε[ Compiler ⟦ Γ ⟧ ψ (⟦ as ⟧ ++ ψ) Emp ]
 
-compileₑ  : ∀ {a ψ K}  → Exp a K   → ε[ Compiler ⟦ K ⟧ ψ (⟦ a ⟧ ∷ ψ) Emp ]
+compileₑ  : ∀ {a ψ Γ}  → Exp a Γ   → ε[ Compiler ⟦ Γ ⟧ ψ (⟦ a ⟧ ∷ ψ) Emp ]
 
 compileₑ (unit) = do
   code (push (bool true))
@@ -51,10 +51,6 @@ compileₑ (bool b) = do
 
 compileₑ (var' x) = do
   code (load ⟦ x ⟧)
-
-compileₑ (call f es) = do
-  compileₑₛ es
-  code (invokestatic ⟦ f ⟧)
 
 compileₑ (bop f e₁ e₂) = do
   compileₑ e₂

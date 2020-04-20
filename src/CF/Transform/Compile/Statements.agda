@@ -26,7 +26,7 @@ open import JVM.Defaults.Syntax.Instructions
 
 mutual
   {- Compiling statements -}
-  compileₛ : ∀ {ψ : StackTy} {r} → Stmt r K → ε[ Compiler ⟦ K ⟧ ψ ψ Emp  ]
+  compileₛ : ∀ {ψ : StackTy} {Γ r} → Stmt r Γ → ε[ Compiler ⟦ Γ ⟧ ψ ψ Emp  ]
 
   compileₛ (asgn x e) = do
     compileₑ e
@@ -83,7 +83,7 @@ mutual
     coe (∙-id⁻ʳ σ) (attach e⁺)
 
   {- Compiling blocks -}
-  compiler : ∀ (ψ : StackTy) {r} → Block r K → ε[ Compiler ⟦ K ⟧ ψ ψ Emp ]  
+  compiler : ∀ (ψ : StackTy) {Γ r} → Block r Γ → ε[ Compiler ⟦ Γ ⟧ ψ ψ Emp ]  
 
   compiler ψ (nil) = do
     return refl

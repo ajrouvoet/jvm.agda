@@ -18,16 +18,16 @@ open import JVM.Types
 
 open import CF.Syntax as Src
 open import CF.Types
-open import CF.Contexts
+open import CF.Contexts.Lexical
 open import CF.Compile
 open import CF.Builtins
 
-ex₂ : Closed (Src.Block void) ε
+ex₂ : Src.Block void ε
 ex₂ =
                                          Src.num 0
     ≔⟨ ∙-idˡ ⟩ Possibly.possibly ∼-all ( Src.while (bop lt (var ∙⟨ ∙-idʳ ⟩ num 10)
-    ∙⟨ overlaps ∙-idˡ , ? ⟩                    Src.block (
-                                             Src.asgn (refl ∙⟨ overlaps ∙-idˡ ⟩ bop add (var refl ∙⟨ ∙-idʳ ⟩ num 1))
+    ∙⟨ overlaps ∙-idˡ ⟩                    Src.block (
+                                             Src.asgn (refl ∙⟨ overlaps ∙-idˡ ⟩ bop add (var ∙⟨ ∙-idʳ ⟩ num 1))
     ⍮⟨ ∙-idʳ ⟩                              emp))
     ⍮⟨ ∙-idʳ ⟩ emp
   )

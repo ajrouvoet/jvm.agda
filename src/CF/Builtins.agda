@@ -15,7 +15,7 @@ open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad
 
-open import CF.Contexts
+open import CF.Contexts.WithToplevel
 open import CF.Types
 open import CF.Transform.Compile.ToJVM
 

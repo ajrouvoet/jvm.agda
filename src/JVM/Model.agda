@@ -46,8 +46,8 @@ abstract
   private
     m₁ =  Disjoint.bags-isMonoid
     m₂ = Overlap.bags-isMonoid
-    p₁ = Disjoint.bags-isPositive
-    p₂ = Overlap.bags-isPositive
+    p₁ = Disjoint.bags-isPositive-w/0
+    p₂ = Overlap.bags-isPositive-w/0
     c₁ = Disjoint.bags-isCommutative
     c₂ = Overlap.bags-isCommutative
     i  = Overlap.bags-isIntuitionistic

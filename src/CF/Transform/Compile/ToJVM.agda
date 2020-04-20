@@ -4,14 +4,17 @@
 module CF.Transform.Compile.ToJVM where
 
 open import Level
+open import Function
 open import Data.Product as P
 open import Data.List as L
 open import Data.List.Properties as LP
 open import Data.List.Membership.Propositional
 open import Data.List.Membership.Propositional.Properties
+open import Relation.Binary.PropositionalEquality
 open import Relation.Ternary.Morphisms
 
 open import CF.Types  as CF
+open import CF.Contexts.Lexical
 open import JVM.Types as JVM
 
 record To {l r} (L : Set l) (R : Set r) : Set (l ⊔ r) where
@@ -40,6 +43,10 @@ To.⟦ cfToJvm-funty ⟧ (n ∶ as ⟶ r) = n / "apply" :⟨ ⟦ as ⟧ ⟩ ty �
 instance cfToJvm-constant : To TopLevelDecl Constant
 To.⟦ cfToJvm-constant ⟧ (fun fty) = staticfun ⟦ fty ⟧
 
+-- not injective!
+-- cfToJvm-constant-injective : Injective _≡_ _≡_ (To.⟦_⟧ cfToJvm-constant)
+-- cfToJvm-constant-injective {fun (𝑓 ∶ as ⟶ b)} {fun (𝑔 ∶ cs ⟶ d)} eq = {!eq!}
+
 instance cfToJvm-var : ∀ {ℓ} {A B : Set ℓ} {{_ : To A B}} {a : A} {as} →
                        To (a ∈ as) (⟦ a ⟧ ∈ ⟦ as ⟧)
 To.⟦_⟧ cfToJvm-var = ∈-map⁺ ⟦_⟧
@@ -47,6 +54,9 @@ To.⟦_⟧ cfToJvm-var = ∈-map⁺ ⟦_⟧
 private
   module _ {t} {T : Set t} where
     open import JVM.Model T public
+
+instance cfToJvm-ctx : To Ctx FrameTy
+To.⟦ cfToJvm-ctx ⟧ Γ = [] , ⟦ Γ ⟧
 
 instance on-intf : ∀ {ℓ} {A B : Set ℓ} {{_ : To A B}} → To (Intf {T = A}) (Intf {T = B})
 To.⟦ on-intf ⟧ (u ⇅ d) = ⟦ u ⟧ ⇅ ⟦ d ⟧

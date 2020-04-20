@@ -119,44 +119,44 @@ module _ {𝑭} where
   procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
   procedure name bc = J.procedure name (L.length (proj₂ 𝑭)) 10 (pretty bc)
 
-module _ where
+-- module _ where
 
-  open import JVM.Builtins
-  open import JVM.Defaults.Syntax.Classes
+--   open import JVM.Builtins
+--   open import JVM.Defaults.Syntax.Classes
 
-  ofClass : Down⁻ Class jre → Jasmin
-  ofClass (cls , _ ∙⟨ _ ⟩ members) = jasmin
-    (record { class_spec = class cls ; super_spec = super Object })
-    (fieldsOf members)
-    ( defaultInit       -- currently no way to do typed init
-    ∷ methodsOf members
-    )
+--   ofClass : Down⁻ Class jre → Jasmin
+--   ofClass (cls , _ ∙⟨ _ ⟩ members) = jasmin
+--     (record { class_spec = class cls ; super_spec = super Object })
+--     (fieldsOf members)
+--     ( defaultInit       -- currently no way to do typed init
+--     ∷ methodsOf members
+--     )
 
-     where
-       open import Relation.Ternary.Data.Bigstar
-       open import Data.Maybe
+--      where
+--        open import Relation.Ternary.Data.Bigstar
+--        open import Data.Maybe
 
-       access = "public" ∷ "static" ∷ []
+--        access = "public" ∷ "static" ∷ []
 
-       mth : ∀ {Φ} → Member Φ → Maybe Method
-       mth (virtual   (cls / name :⟨ as ⟩ r) , _ ∙⟨ _ ⟩ ↓ (locs , body)) =
-         just (method name access (L.length locs N.+ L.length as) 50 as r (pretty body))
-       mth (staticfun (cls / name :⟨ as ⟩ r) , _ ∙⟨ _ ⟩ ↓ (locs , body)) =
-         just (method name access (L.length locs N.+ L.length as) 50 as r (pretty body))
-       mth _  = nothing
+--        mth : ∀ {Φ} → Member Φ → Maybe Method
+--        mth (virtual   (cls / name :⟨ as ⟩ r) , _ ∙⟨ _ ⟩ ↓ (locs , body)) =
+--          just (method name access (L.length locs N.+ L.length as) 50 as r (pretty body))
+--        mth (staticfun (cls / name :⟨ as ⟩ r) , _ ∙⟨ _ ⟩ ↓ (locs , body)) =
+--          just (method name access (L.length locs N.+ L.length as) 50 as r (pretty body))
+--        mth _  = nothing
 
-       fld : ∀ {Φ} → Member Φ → Maybe ClassField
-       fld (staticref (cls / name ∶ t) , _) = just (clsfield cls access t)
-       fld _ = nothing
+--        fld : ∀ {Φ} → Member Φ → Maybe ClassField
+--        fld (staticref (cls / name ∶ t) , _) = just (clsfield cls access t)
+--        fld _ = nothing
 
-       fieldsOf : ∀ {Φ} → Bigstar Member Φ → List ClassField
-       fieldsOf emp           = []
-       fieldsOf (m ✴⟨ _ ⟩ ms) with fld m
-       ... | just f  = f ∷ fieldsOf ms
-       ... | nothing = fieldsOf ms
+--        fieldsOf : ∀ {Φ} → Bigstar Member Φ → List ClassField
+--        fieldsOf emp           = []
+--        fieldsOf (m ✴⟨ _ ⟩ ms) with fld m
+--        ... | just f  = f ∷ fieldsOf ms
+--        ... | nothing = fieldsOf ms
 
-       methodsOf : ∀ {Φ} → Bigstar Member Φ → List Method
-       methodsOf emp           = []
-       methodsOf (m ✴⟨ _ ⟩ ms) with mth m
-       ... | just f  = f ∷ methodsOf ms
-       ... | nothing = methodsOf ms
+--        methodsOf : ∀ {Φ} → Bigstar Member Φ → List Method
+--        methodsOf emp           = []
+--        methodsOf (m ✴⟨ _ ⟩ ms) with mth m
+--        ... | just f  = f ∷ methodsOf ms
+--        ... | nothing = methodsOf ms

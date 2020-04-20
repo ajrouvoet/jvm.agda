@@ -30,20 +30,10 @@ data TopLevelDecl : Set where
 Globals : Set
 Globals = List TopLevelDecl
 
-Lex = List Ty
-
-Ctx : Set
-Ctx = Globals × Lex
-
-_⍮_ : Ctx → List Ty → Ctx
-(X , Γ) ⍮ Δ = (X , Γ L.++ Δ)
-
 variable
   a b c r s t   : Ty
   as bs cs      : List Ty
   𝑓 𝑔 ℎ : String
-  K K₁ K₂ K₃ K₄ : Ctx
-  Δ Δ₁ Δ₂ : List Ty
 
 -- _≟_ : Decidable (_≡_ {A = Ty})
 -- void ≟ void = yes refl

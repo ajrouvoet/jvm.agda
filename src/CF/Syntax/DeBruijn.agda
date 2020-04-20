@@ -14,7 +14,7 @@ open import Relation.Binary.Structures using (IsPreorder)
 open import Relation.Binary.PropositionalEquality using (isEquivalence)
 
 open import CF.Types
-open import CF.Contexts using (module DeBruijn; Closed) public
+open import CF.Contexts.Lexical using (Ctx; module DeBruijn; Closed) public
 open import CF.Syntax using (BinOp; module BinOp) public
 
 open DeBruijn public
@@ -31,8 +31,6 @@ mutual
     var'     : ∀[ Var a ⇒ Exp a ]
     bop      : BinOp a b c → ∀[ Exp a ⇒ Exp b ⇒ Exp c ]
 
-    call     : ∀[ Fun (𝑓 ∶ as ⟶ b) ⇒ Exps as ⇒ Exp b ]
-
   Exps = λ as Γ → All (λ a → Exp a Γ) as
 
 mutual
@@ -46,14 +44,8 @@ mutual
     while         : ∀[ Exp bool ⇒ Stmt r ⇒ Stmt r ]
     block         : ∀[ Block r  ⇒ Stmt r ]
 
-  _⊢_ : ∀ {ℓ} → List Ty → Pt Ctx ℓ
-  Δ ⊢ P = λ Γ → P (Γ ⍮ Δ)
-
-  ◇′ : Pt Ctx 0ℓ
-  ◇′ P = ⋃[ as ∶ _ ] as ⊢ P 
-
   data Block (r : Ty) : Pred Ctx 0ℓ where
     _⍮⍮_ : ∀[ Stmt r ⇒ Block r ⇒ Block r ]
     nil : ∀[ Block r ]
 
-open import CF.Syntax.Programs (λ as b → Closed (as ⊢ ◇′ (Block b))) public
+-- open import CF.Syntax.Programs (λ as b → Closed (as ⊢ ◇′ (Block b))) public
