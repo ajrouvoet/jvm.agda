@@ -37,7 +37,7 @@ module _ {T : Set} where
   open Overlap public
 
 open import Data.List.Relation.Unary.All
-postulate ⟦builtins⟧'' : All (λ tl → Impl ⟦ tl ⟧ jre) builtins
+-- ⟦builtins⟧'' : All (λ tl → Impl ⟦ tl ⟧ jre) builtins
 
 open import Data.List.Relation.Binary.Permutation.Propositional
 open import Data.List.Relation.Binary.Permutation.Propositional.Properties
