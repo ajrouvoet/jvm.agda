@@ -81,6 +81,12 @@ mutual
 
     -- label the end
     coe (∙-id⁻ʳ σ) (attach e⁺)
+    
+    {-
+    
+    proc emp →  el
+
+    -}
 
   {- Compiling blocks -}
   compiler : ∀ (ψ : StackTy) {Γ r} → Block r Γ → ε[ Compiler ⟦ Γ ⟧ ψ ψ Emp ]  

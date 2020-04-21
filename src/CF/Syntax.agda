@@ -19,7 +19,7 @@ open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad.Possibly
 open import Relation.Ternary.Monad.Weakening
-open import Relation.Ternary.Data.Bigstar hiding ([_])
+open import Relation.Ternary.Data.Bigstar
 
 open import CF.Types
 open import CF.Contexts.Lexical

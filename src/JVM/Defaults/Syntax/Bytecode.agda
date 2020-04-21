@@ -32,7 +32,7 @@ getInstr : ∀ {τ₁ τ₂} → ∀[ Code τ₁ τ₂ ⇒ Down (I τ₁ τ₂) 
 getInstr c@(labeled (l ∙⟨ σ ⟩ i@(↓ _))) =
   let (i ∙⟨ σ ⟩ l∙i) = ✴-swap (✴-assocₗ (l ∙⟨ σ ⟩ copy i))
   in i ∙⟨ σ ⟩ labeled l∙i
-getInstr (instr i@(↓ _))   = i ∙⟨ ∙-copy ⟩ (instr i)
+getInstr (instr i@(↓ _)) = i ∙⟨ ∙-copy i ⟩ (instr i)
 
 label : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─✴ Code τ₁ τ₂ ]
 label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)

@@ -6,7 +6,7 @@ open import Data.List hiding (concat)
 module JVM.Defaults.Syntax.Labeling {ℓ} (T : Set ℓ) where
 
 open import Relation.Unary hiding (_∈_; Empty)
-open import Relation.Ternary.Core renaming (Just to One)
+open import Relation.Ternary.Core
 open import Relation.Ternary.Data.Bigstar
 
 open import Data.Sum

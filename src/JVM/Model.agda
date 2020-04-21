@@ -50,12 +50,11 @@ abstract
     p₂ = Overlap.bags-isPositive-w/0
     c₁ = Disjoint.bags-isCommutative
     c₂ = Overlap.bags-isCommutative
-    i  = Overlap.bags-isIntuitionistic
     x  = xsplit
     ux = (uncrossover (unxcross λ ()))
 
   open import Relation.Ternary.Construct.Exchange
-    {{m₁}} {{m₂}} {{p₁}} {{p₂}} {{c₁}} {{c₂}} {{i}}
+    {{m₁}} {{m₂}} {{p₁}} {{p₂}} {{c₁}} {{c₂}}
     {{Disjoint.bags-isTotal}}
     {{Overlap.bags-isTotal}}
     {{++-isMonoid}}
@@ -69,8 +68,9 @@ abstract
       ; exchange-isSemigroup to intf-isSemigroup
       ; exchange-isCommutative to intf-isCommutative
       ; exchange-isMonoid to intf-isMonoid
-      ; exchange-intuitive-down to intf-isIntuitive
       ; exchange-isTotal to intf-isTotal)
+
+  open DownIntuitive {{Overlap.bags-isIntuitionistic}} public
 
 module Syntax where
   open Rel₃ intf-rel public
@@ -79,10 +79,12 @@ module Syntax where
   open IsPartialMonoid    intf-isMonoid      public
   open IsCommutative      intf-isCommutative public
   open CommutativeSemigroupOps {{intf-isSemigroup}} {{intf-isCommutative}} public
-  open IsIntuitionistic   intf-isIntuitive   public
+
+  -- module _ {P} where
+  --   open IsIntuitionistic (intf-isIntuitive {P}) w public
 
 open Syntax
 
 -- Creating binders is pure in the model by means of hiding
-binder : ∀ τ → ε[ Up (Just τ) ✴ Down (Just τ) ]
-binder τ = ↑ refl ∙⟨ ex ε-sub xs-xs≡ε Disjoint.∙-idˡ Overlap.∙-idˡ ⟩ ↓ refl
+binder : ∀ τ → ε[ Up (Own [ τ ]) ✴ Down (Own [ τ ]) ]
+binder τ = balance

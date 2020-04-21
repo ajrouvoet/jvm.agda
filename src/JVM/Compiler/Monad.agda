@@ -13,7 +13,7 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Monad
 open import Relation.Ternary.Data.ReflexiveTransitive as Star
-open import Relation.Ternary.Data.Bigstar
+open import Relation.Ternary.Data.Bigstar as Bigstar
 
 private
   variable
@@ -37,21 +37,17 @@ instance
     w ∙⟨ ∙-comm σ₄ ⟩ (qx ∙⟨ σ₃ ⟩ px)
 
 -- Output a single, unlabeled instruction
-tell : ∀[ Code τ₁ τ₂ ⇒ Compiler τ₁ τ₂ Emp ] 
-tell c = (c ▹⟨ ∙-idʳ ⟩ nil) ∙⟨ ∙-idʳ ⟩ refl
+tell : ∀[ ⟪ τ₁ ⇒ τ₂ ⟫ ⇒ Compiler τ₁ τ₂ Emp ] 
+tell cs = cs ∙⟨ ∙-idʳ ⟩ refl
 
 code : ∀[ ⟨ τ₁ ⇒ τ₂ ⟩ ⇒ Down⁻ (Compiler τ₁ τ₂ Emp) ] 
-code i = tell (instr (↓ i))
+code i = tell Star.[ instr (↓ i) ]
 
--- Magically, we can create labels in pairs of positive and negative occurences, in a pure manner.
-mklabel : ε[ Compiler τ₁ τ₁ (Up (Just τ) ✴ Down (Just τ)) ]
-mklabel {τ = τ} = return (binder τ)
-
-attach : ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
-attach l = tell (labeled (⦇ [_] l ⦈ ∙⟨ ∙-idʳ ⟩ ↓ nop))
+attach : ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
+attach l = tell Star.[ labeled (⦇ Bigstar.[_] l ⦈ ∙⟨ ∙-idʳ ⟩ ↓ nop) ]
 
 -- We can label the start of a compiler computation
-attachTo : ∀ {P} → ∀[ Up (Just τ₁) ⇒ Compiler τ₁ τ₂ P ─✴ Compiler τ₁ τ₂ P ]
+attachTo : ∀ {P} → ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₂ P ─✴ Compiler τ₁ τ₂ P ]
 attachTo l ⟨ σ ⟩ c = do
   c ∙⟨ σ ⟩ refl ← attach l &⟨ Compiler _ _ _ # ∙-comm σ ⟩ c
   coe (∙-id⁻ʳ σ) c
