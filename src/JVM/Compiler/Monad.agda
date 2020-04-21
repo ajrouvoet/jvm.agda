@@ -22,35 +22,18 @@ private
 open import JVM.Model T; open Syntax
 open import JVM.Defaults.Syntax.Bytecode T ⟨_⇒_⟩
 
-Compiler : T → T → Pt Intf 0ℓ
-Compiler ψ₁ ψ₂ P = ⟪ ψ₁ ⇒ ψ₂ ⟫ ✴ P
-
-instance
-  compiler-monad : Monad T Compiler
-  Monad.return compiler-monad = nil ∙⟨ ∙-idˡ ⟩_
-  Monad._=<<_ compiler-monad f (w ∙⟨ σ ⟩ px) with (w' ∙⟨ σ₂ ⟩ qx) ← f px =
-    let _ , σ₃ , σ₄ = ∙-assocₗ σ σ₂ in
-    (Star.append w ⟨ σ₃ ⟩ w' ) ∙⟨ σ₄ ⟩ qx
-
-  compiler-strong : Strong T Compiler
-  Strong.str compiler-strong qx ⟨ σ ⟩ (w ∙⟨ σ₂ ⟩ px) with _ , σ₃ , σ₄ ← ∙-assocₗ σ (∙-comm σ₂) =
-    w ∙⟨ ∙-comm σ₄ ⟩ (qx ∙⟨ σ₃ ⟩ px)
+open import Relation.Ternary.Monad.Writer intf-rel
+open WriterMonad (starMonoid {R = Code}) renaming
+  ( Writer to Compiler
+  ; execWriter to execCompiler)
 
 -- Output a single, unlabeled instruction
-tell : ∀[ ⟪ τ₁ ⇒ τ₂ ⟫ ⇒ Compiler τ₁ τ₂ Emp ] 
-tell cs = cs ∙⟨ ∙-idʳ ⟩ refl
-
 code : ∀[ ⟨ τ₁ ⇒ τ₂ ⟩ ⇒ Down⁻ (Compiler τ₁ τ₂ Emp) ] 
 code i = tell Star.[ instr (↓ i) ]
 
-attach : ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
-attach l = tell Star.[ labeled (⦇ Bigstar.[_] l ⦈ ∙⟨ ∙-idʳ ⟩ ↓ nop) ]
-
 -- We can label the start of a compiler computation
 attachTo : ∀ {P} → ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₂ P ─✴ Compiler τ₁ τ₂ P ]
-attachTo l ⟨ σ ⟩ c = do
-  c ∙⟨ σ ⟩ refl ← attach l &⟨ Compiler _ _ _ # ∙-comm σ ⟩ c
-  coe (∙-id⁻ʳ σ) c
+attachTo l ⟨ σ ⟩ c = pass (c &⟨ σ ⟩ label-start nop ⦇ Bigstar.[_] l ⦈)
 
-execCompiler : ∀ {ψ₁ ψ₂} → ∀[ Compiler ψ₁ ψ₂ Emp ⇒ ⟪ ψ₁ ⇒ ψ₂ ⟫ ]
-execCompiler (bc ∙⟨ σ ⟩ refl) = coe (∙-id⁻ʳ σ) bc
+attach : ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
+attach l = attachTo l ⟨ ∙-idʳ ⟩ code nop
