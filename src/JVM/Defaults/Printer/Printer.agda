@@ -18,7 +18,7 @@ open import Relation.Ternary.Structures.Syntax
 open import JVM.Model T
 open import Relation.Ternary.Data.Bigstar
 open import Relation.Ternary.Construct.Market intf-rel
-open import Relation.Ternary.Monad.Identity as Id hiding (id-monad)
+open import Relation.Ternary.Monad.Identity as Id hiding (id-monad; id-functor)
 open import Relation.Ternary.Monad.State intf-rel
 
 open import JVM.Defaults.Syntax.Labeling T public
@@ -99,18 +99,18 @@ module Envs where
 module _ where
   open import Relation.Ternary.Monad
 
-  lookUp : ∀ {τ} → ∀[ Up (Just τ) ⇒ Printer (Empty ℕ) ]
-  lookUp (↑ u) ⟨ offerᵣ σ ⟩ lift ((n , st) , env) with Envs.splitEnv σ env (lift n)
+  lookUp : ∀ {τ} → ∀[ Up (One τ) ⇒ Printer (Empty ℕ) ]
+  lookUp (↑ u) ⟨ supplyᵣ σ ⟩ lift ((n , st) , env) with Envs.splitEnv σ env (lift n)
   ... | ((lab ∷ [] , []) , env₂) , lift n' = lift (emp lab) ∙⟨ ∙-idˡ ⟩ lift ((n' , st) , env₂)
 
-  lookDown : ∀ {τ} → ∀[ Down (Just τ) ⇒ Printer (Empty ℕ) ]
-  lookDown (↓ u) ⟨ offerᵣ σ ⟩ lift ((n , st) , env) with Envs.splitEnv σ env (lift n)
+  lookDown : ∀ {τ} → ∀[ Down (One τ) ⇒ Printer (Empty ℕ) ]
+  lookDown (↓ u) ⟨ supplyᵣ σ ⟩ lift ((n , st) , env) with Envs.splitEnv σ env (lift n)
   ... | (([] , lab ∷ []) , env₂) , lift n' = lift (emp lab) ∙⟨ ∙-idˡ ⟩ lift ((n' , st) , env₂)
 
   print : Stat → ε[ Printer Emp ]
   print s ⟨ σ ⟩ lift ((n , st) , env) = lift refl ∙⟨ σ ⟩ lift ((n , s ∷ st) , env)
 
-  print-label : ∀ {τ}  → ∀[ Up (Just τ) ⇒ Printer Emp ]
+  print-label : ∀ {τ}  → ∀[ Up (One τ) ⇒ Printer Emp ]
   print-label l = do
     emp n  ← lookUp l
     print (label (Nat.show n))
@@ -124,11 +124,11 @@ module _ where
     where open Disjoint using (bags; bags-isMonoid)
 
 execPrinter : ∀ {P Φ} → Printer P Φ → List Stat
-execPrinter pr with pr ⟨ offerᵣ ∙-idʳ ⟩ proj₁ (initState (lift 0))
+execPrinter pr with pr ⟨ supplyᵣ ∙-idʳ ⟩ proj₁ (initState (lift 0))
   where
     open Envs
 
-    initState : ∀ {Φ} → Envs.Fresh (● PState (offer Φ))
+    initState : ∀ {Φ} → Envs.Fresh (● PState (supply Φ))
     initState {Φ↑ ⇅ Φ↓} = do
       ns↑ ← freshNames Φ↑
       ns↓ ← freshNames Φ↓

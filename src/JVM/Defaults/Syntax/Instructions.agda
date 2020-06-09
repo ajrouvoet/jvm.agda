@@ -42,53 +42,53 @@ module _ (𝑭 : FrameTy) where
 
   -- True to bytecode, the collection of registers is fixed.
   -- The stack typing varies.
-  data ⟨_⇒_⟩ : StackTy → StackTy → Pred Labels 0ℓ where
+  data ⟨_↝_⟩ : StackTy → StackTy → Pred Labels 0ℓ where
 
-    noop : ε[ ⟨ ψ ⇒ ψ ⟩ ]
+    noop : ε[ ⟨ ψ ↝ ψ ⟩ ]
 
     -- stack manipulation
-    pop  :           ε[ ⟨ a ∷ ψ      ⇒  ψ     ⟩ ]
-    push : Const a → ε[ ⟨ ψ          ⇒  a ∷ ψ ⟩ ]
-    dup  : ε[ ⟨ a ∷ ψ      ⇒  a ∷ a ∷ ψ ⟩ ]
-    swap : ε[ ⟨ a ∷ b ∷ ψ  ⇒  b ∷ a ∷ ψ ⟩ ]
+    pop  :           ε[ ⟨ a ∷ ψ      ↝  ψ     ⟩ ]
+    push : Const a → ε[ ⟨ ψ          ↝  a ∷ ψ ⟩ ]
+    dup  : ε[ ⟨ a ∷ ψ      ↝  a ∷ a ∷ ψ ⟩ ]
+    swap : ε[ ⟨ a ∷ b ∷ ψ  ↝  b ∷ a ∷ ψ ⟩ ]
 
     -- binary operations on primitive types
-    bop   : NativeBinOp a b c → ε[ ⟨ a ∷ b ∷ ψ  ⇒  c ∷ ψ ⟩ ]
-
-    -- member access
-    getstatic : 𝑪[ staticref 𝑎 ] → ε[ ⟨ ψ ⇒ fld 𝑎 ty ∷ ψ ⟩ ]
-    getfield  : 𝑪[ fieldref 𝑎  ] → ε[ ⟨ ref (fld 𝑎 cls) ∷ ψ ⇒ fld 𝑎 ty ∷ ψ ⟩ ]
-    putfield  : 𝑪[ fieldref 𝑎  ] → ε[ ⟨ fld 𝑎 ty ∷ ref (fld 𝑎 cls) ∷ ψ ⇒ ψ ⟩ ]
-    new       : 𝑪[ class 𝑐     ] → ε[ ⟨ ψ ⇒ ref 𝑐 ∷ ψ ⟩ ]
+    bop   : NativeBinOp a b c → ε[ ⟨ a ∷ b ∷ ψ  ↝  c ∷ ψ ⟩ ]
 
     -- register manipulation
-    load  : 𝑹[ a ] → ε[ ⟨ ψ ⇒ a ∷ ψ ⟩ ]
-    store : 𝑹[ a ] → ε[ ⟨ a ∷ ψ ⇒ ψ ⟩ ]
+    load  : 𝑹[ a ] → ε[ ⟨ ψ ↝ a ∷ ψ ⟩ ]
+    store : 𝑹[ a ] → ε[ ⟨ a ∷ ψ ↝ ψ ⟩ ]
 
     -- jumps
-    goto  : ∀[ One ψ₁ ⇒ ⟨ ψ₁ ⇒ ψ₂ ⟩ ]
-    if    : ∀ {as} → Comparator as → ∀[ One ψ ⇒ ⟨ as ++ ψ ⇒ ψ ⟩ ]
+    goto  : ∀[ One ψ₁ ⇒ ⟨ ψ₁ ↝ ψ₂ ⟩ ]
+    if    : ∀ {as} → Comparator as → ∀[ One ψ ⇒ ⟨ as ++ ψ ↝ ψ ⟩ ]
 
     -- exceptions/abrupt termination/etc
-    ret   : ε[ ⟨ a ∷ ψ₁ ⇒ ψ₂ ⟩ ]
+    ret   : ε[ ⟨ a ∷ ψ₁ ↝ ψ₂ ⟩ ]
+
+    -- member access
+    -- getstatic : 𝑪[ staticref 𝑎 ] → ε[ ⟨ ψ ↝ fld 𝑎 ty ∷ ψ ⟩ ]
+    -- getfield  : 𝑪[ fieldref 𝑎  ] → ε[ ⟨ ref (fld 𝑎 cls) ∷ ψ ↝ fld 𝑎 ty ∷ ψ ⟩ ]
+    -- putfield  : 𝑪[ fieldref 𝑎  ] → ε[ ⟨ fld 𝑎 ty ∷ ref (fld 𝑎 cls) ∷ ψ ↝ ψ ⟩ ]
+    -- new       : 𝑪[ class 𝑐     ] → ε[ ⟨ ψ ↝ ref 𝑐 ∷ ψ ⟩ ]
 
     -- calls
-    invokestatic  : ∀ {as r} → 𝑪[ staticfun (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ++ ψ)         ⇒ r :?: ψ ⟩ ]
-    invokespecial : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (ref 𝑐 ∷ as ++ ψ) ⇒ r :?: ψ ⟩ ]
-    invokevirtual : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (ref 𝑐 ∷ as ++ ψ) ⇒ r :?: ψ ⟩ ]
+    -- invokestatic  : ∀ {as r} → 𝑪[ staticfun (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (as ++ ψ)         ↝ r :?: ψ ⟩ ]
+    -- invokespecial : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (ref 𝑐 ∷ as ++ ψ) ↝ r :?: ψ ⟩ ]
+    -- invokevirtual : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (ref 𝑐 ∷ as ++ ψ) ↝ r :?: ψ ⟩ ]
 
-  ⟨_∣_⇒_⟩ = ⟨_⇒_⟩
+  ⟨_∣_↝_⟩ = ⟨_↝_⟩
 
-  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨_⇒_⟩ as BC
+  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨_↝_⟩ as BC
   open BC using (Code) public
 
-  ⟪_∣_⇐_⟫   = ⟪_⇐_⟫
-  ⟪_∣_⇒_⟫   = ⟪_⇒_⟫
-  ⟪_∣_⇒_⟫+  = ⟪_⇒_⟫+
+  ⟪_∣_↜_⟫   = ⟪_↜_⟫
+  ⟪_∣_↝_⟫   = ⟪_↝_⟫
+  ⟪_∣_↝_⟫+  = ⟪_↝_⟫+
 
 module _ {𝑭} where
-  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ 𝑭 ∣_⇒_⟩
-    hiding (⟪_⇐_⟫; ⟪_⇒_⟫; ⟪_⇒_⟫+; Code) public
+  open import JVM.Defaults.Syntax.Bytecode StackTy ⟨ 𝑭 ∣_↝_⟩
+    hiding (⟪_↜_⟫; ⟪_↝_⟫; ⟪_↝_⟫+; Code) public
 
 -- Compute the stack type after running an instruction.
 -- This is only *not* the same as the stack-type on the rhs for jumps.

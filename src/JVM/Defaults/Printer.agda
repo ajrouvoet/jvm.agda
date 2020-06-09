@@ -78,7 +78,7 @@ if-instr icmple = if icmple
 
 module _ {𝑭} where
 
-  prettyᵢ : ∀ {ψ₁ ψ₂} → ∀[ Down ⟨ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟩ ⇒ Printer Emp ]
+  prettyᵢ : ∀ {ψ₁ ψ₂} → ∀[ Down ⟨ 𝑭 ∣ ψ₁ ↝ ψ₂ ⟩ ⇒ Printer Emp ]
   prettyᵢ (↓ noop)      = print (instr nop)
   prettyᵢ (↓ pop)       = print (instr pop)
   prettyᵢ (↓ dup)       = print (instr dup)
@@ -100,23 +100,23 @@ module _ {𝑭} where
     emp n ← lookDown (↓ x)
     print (instr (if-instr c (Nat.show n)))
 
-  prettyᵢ (↓ (new c))   = print (instr nop)
-  prettyᵢ (↓ (getstatic s)) = print (instr nop)
-  prettyᵢ (↓ (getfield  s)) = print (instr nop)
-  prettyᵢ (↓ (putfield  s)) = print (instr nop)
-  prettyᵢ (↓ (invokestatic  {𝑐 = 𝑐} {𝑚} {as} {r = r} f))  =
-    print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ r))) 
-  prettyᵢ (↓ (invokevirtual {𝑐 = 𝑐} {𝑚} {as = as} {r} f)) =
-    print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ r))) 
-  prettyᵢ (↓ (invokespecial {𝑐 = 𝑐} {𝑚} {as = as} {r} f)) =
-    print (instr (invokespecial (𝑐 / 𝑚 :⟨ as ⟩ r))) 
+  -- prettyᵢ (↓ (new c))   = print (instr nop)
+  -- prettyᵢ (↓ (getstatic s)) = print (instr nop)
+  -- prettyᵢ (↓ (getfield  s)) = print (instr nop)
+  -- prettyᵢ (↓ (putfield  s)) = print (instr nop)
+  -- prettyᵢ (↓ (invokestatic  {𝑐 = 𝑐} {𝑚} {as} {r = r} f))  =
+  --   print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ r))) 
+  -- prettyᵢ (↓ (invokevirtual {𝑐 = 𝑐} {𝑚} {as = as} {r} f)) =
+  --   print (instr (invokestatic (𝑐 / 𝑚 :⟨ as ⟩ r))) 
+  -- prettyᵢ (↓ (invokespecial {𝑐 = 𝑐} {𝑚} {as = as} {r} f)) =
+  --   print (instr (invokespecial (𝑐 / 𝑚 :⟨ as ⟩ r))) 
 
-  import JVM.Defaults.Syntax.Bytecode.Printer ⟨ 𝑭 ∣_⇒_⟩ prettyᵢ as Printer
+  import JVM.Defaults.Syntax.Bytecode.Printer ⟨ 𝑭 ∣_↝_⟩ prettyᵢ as Printer
 
-  pretty : ∀ {ψ₁ ψ₂ Φ} → ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → List Stat
+  pretty : ∀ {ψ₁ ψ₂ Φ} → ⟪ 𝑭 ∣ ψ₁ ↝ ψ₂ ⟫ Φ → List Stat
   pretty bc = execPrinter (Printer.pretty bc)
 
-  procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ 𝑭 ∣ ψ₁ ⇒ ψ₂ ⟫ Φ → Jasmin
+  procedure : ∀ {ψ₁ ψ₂ Φ} → String → ⟪ 𝑭 ∣ ψ₁ ↝ ψ₂ ⟫ Φ → Jasmin
   procedure name bc = J.procedure name (L.length (proj₂ 𝑭)) 10 (pretty bc)
 
 -- module _ where

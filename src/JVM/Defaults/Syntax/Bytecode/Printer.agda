@@ -20,14 +20,14 @@ open import Relation.Ternary.Data.ReflexiveTransitive
 open import Relation.Ternary.Monad
 
 {-# TERMINATING #-}
-pretty : ∀ {ψ₁ ψ₂} → ∀[ ⟪ ψ₁ ⇒ ψ₂ ⟫ ⇒ Printer Emp ]
+pretty : ∀ {ψ₁ ψ₂} → ∀[ ⟪ ψ₁ ↝ ψ₂ ⟫ ⇒ Printer Emp ]
 pretty nil      = do
   return refl
 pretty (instr i   ▹⟨ σ ⟩ is) = do
-  is          ← ✴-id⁻ʳ ⟨$⟩ (print i &⟨ ⟪ _ ⇒ _ ⟫ # ∙-comm σ ⟩ is)
+  is          ← ✴-id⁻ʳ ⟨$⟩ (print i &⟨ ⟪ _ ↝ _ ⟫ # ∙-comm σ ⟩ is)
   pretty is
 pretty (labeled l∙i ▹⟨ σ₂ ⟩ is) = do
   let l ∙⟨ σ ⟩ i∙is = ✴-assocᵣ (l∙i ∙⟨ σ₂ ⟩ is)
-  i ∙⟨ σ ⟩ is       ← ✴-id⁻ʳ ⟨$⟩ (print-labels l &⟨ _ ✴ ⟪ _ ⇒ _ ⟫ # ∙-comm σ ⟩ i∙is)
+  i ∙⟨ σ ⟩ is       ← ✴-id⁻ʳ ⟨$⟩ (print-labels l &⟨ _ ✴ ⟪ _ ↝ _ ⟫ # ∙-comm σ ⟩ i∙is)
   is                ← ✴-id⁻ʳ ⟨$⟩ (print i        &⟨                 ∙-comm σ ⟩ is)
   pretty is

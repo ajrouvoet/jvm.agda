@@ -41,20 +41,17 @@ label l ⟨ σ ⟩ labeled (l₂∙i) with ✴-assocₗ (l ∙⟨ σ ⟩ l₂∙
 ... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (✴-curry (arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
 ... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
 
-⟪_⇒_⟫ : T → T → Pred Intf ℓ
-⟪ τ₁ ⇒ τ₂ ⟫ = Star Code τ₁ τ₂
+⟪_↝_⟫ : T → T → Pred Intf ℓ
+⟪ τ₁ ↝ τ₂ ⟫ = Star Code τ₁ τ₂
 
-⟪_⇒_⟫+ : T → T → Pred Intf ℓ
-⟪ τ₁ ⇒ τ₂ ⟫+ = Plus Code τ₁ τ₂
+⟪_↝_⟫+ : T → T → Pred Intf ℓ
+⟪ τ₁ ↝ τ₂ ⟫+ = Plus Code τ₁ τ₂
 
-⟪_⇐_⟫ : T → T → Pred Intf ℓ
-⟪ τ₂ ⇐ τ₁ ⟫ = Star (flip Code) τ₁ τ₂
+⟪_↜_⟫ : T → T → Pred Intf ℓ
+⟪ τ₂ ↜ τ₁ ⟫ = Star (flip Code) τ₁ τ₂
   where open import Function using (flip)
 
 module _ (nop : ∀ {τ} → I τ τ []) where
 
-  label-start : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ ⟪ τ₁ ⇒ τ₂ ⟫ ─✴ ⟪ τ₁ ⇒ τ₂ ⟫ ]
-  label-start l ⟨ σ ⟩ nil            = (labeled (l ∙⟨ σ ⟩ ↓ nop)) ▹⟨ ∙-idʳ ⟩ nil 
-  label-start l ⟨ σ ⟩ (i ▹⟨ σ₂ ⟩ is) =
-    let _ , σ₃ , σ₄ = ∙-assocₗ σ σ₂ in
-    (label l ⟨ σ₃ ⟩ i) ▹⟨ σ₄ ⟩ is
+  label-start : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ ⟪ τ₁ ↝ τ₂ ⟫ ─✴ ⟪ τ₁ ↝ τ₂ ⟫ ]
+  label-start l = mappend Star.[ labeled (l ∙⟨ ∙-idʳ ⟩ ↓ nop) ]

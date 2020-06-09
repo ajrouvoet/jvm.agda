@@ -33,6 +33,8 @@ module Overlap where
   open IsPartialMonoid bags-isMonoid public
   open IsCommutative bags-isCommutative  public
   open IsTotal bags-isTotal public
+  
+open Disjoint using () renaming (empty-unique to empty-bag-unique) public
 
 open Rel₃ Disjoint.bags using ()
   renaming (_∙_≣_ to _⊕_≣_; _✴_ to _⊕_; _─✴_ to _─⊕_; _∙⟨_⟩_ to _⊕⟨_⟩_) public
@@ -54,7 +56,7 @@ abstract
     ux = (uncrossover (unxcross λ ()))
 
   open import Relation.Ternary.Construct.Exchange
-    {{m₁}} {{m₂}} {{p₁}} {{p₂}} {{Disjoint.empty-unique}} {{c₁}} {{c₂}}
+    {{m₁}} {{m₂}} {{p₁}} {{p₂}} {{empty-bag-unique}} {{c₁}} {{c₂}}
     {{Disjoint.bags-isTotal}}
     {{Overlap.bags-isTotal}}
     {{++-isMonoid}}
@@ -70,7 +72,7 @@ abstract
       ; exchange-isMonoid to intf-isMonoid
       ; exchange-isTotal to intf-isTotal)
 
-  open DownIntuitive {{Overlap.bags-isIntuitionistic}} public
+  open DownIntuitive {{Overlap.bags-isContractive}} public
 
 module Syntax where
   open Rel₃ intf-rel public
