@@ -10,17 +10,18 @@ open import Function using (_∘_)
 open import Data.Unit
 open import Relation.Unary hiding (_∈_; Empty)
 open import Relation.Binary.PropositionalEquality
-open import Relation.Ternary.Data.ReflexiveTransitive
+open import Relation.Ternary.Data.ReflexiveTransitive as Star
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Data.Bigstar
+open import Relation.Ternary.Data.IndexedMonoid
 
 open import Data.Sum
 open import Data.Product
  
 open import JVM.Model T
-open Disjoint using (bags; bags-isMonoid; bags-isSemigroup; bags-isCommutative)
+open Disjoint using (bags; bags-isMonoid; bags-isSemigroup; bags-isCommutative; empty-unique)
 
 open import JVM.Defaults.Syntax.Labeling T public
 

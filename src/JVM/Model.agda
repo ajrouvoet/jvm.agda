@@ -54,7 +54,7 @@ abstract
     ux = (uncrossover (unxcross λ ()))
 
   open import Relation.Ternary.Construct.Exchange
-    {{m₁}} {{m₂}} {{p₁}} {{p₂}} {{c₁}} {{c₂}}
+    {{m₁}} {{m₂}} {{p₁}} {{p₂}} {{Disjoint.empty-unique}} {{c₁}} {{c₂}}
     {{Disjoint.bags-isTotal}}
     {{Overlap.bags-isTotal}}
     {{++-isMonoid}}
@@ -84,7 +84,3 @@ module Syntax where
   --   open IsIntuitionistic (intf-isIntuitive {P}) w public
 
 open Syntax
-
--- Creating binders is pure in the model by means of hiding
-binder : ∀ τ → ε[ Up (Own [ τ ]) ✴ Down (Own [ τ ]) ]
-binder τ = balance

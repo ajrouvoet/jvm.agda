@@ -68,18 +68,18 @@ compileₑ (bop f e₁ e₂) = do
     -- e⁺: nop
     --
     -- Other comparisons go similar
-    compile-comp : ∀ {as} → Comparator as → ε[ Compiler 𝑭 (as ++ ψ) (boolean ∷ ψ) Emp ]
+    compile-comp : ∀ {Γ as} → Comparator as → ε[ Compiler Γ (as ++ ψ) (boolean ∷ ψ) Emp ]
     compile-comp cmp = do
-      l⁺ ∙⟨ σ ⟩ ↓ l⁻    ← mklabel
+      l⁺ ∙⟨ σ ⟩ ↓ l⁻    ← mkLabel 
       l⁺ ∙⟨ σ ⟩ refl    ← code (if cmp l⁻)                               &⟨ Up _  # σ ⟩ l⁺
       l⁺ ∙⟨ σ ⟩ refl    ← code (push (bool true))                        &⟨ Up _  # σ ⟩ l⁺
-      ↓ e⁻ ∙⟨ σ ⟩ l⁺∙e⁺ ← ✴-rotateᵣ ⟨$⟩ (mklabel                         &⟨ Up _  # σ ⟩ l⁺)
+      ↓ e⁻ ∙⟨ σ ⟩ l⁺∙e⁺ ← ✴-rotateᵣ ⟨$⟩ (mkLabel                         &⟨ Up _  # σ ⟩ l⁺)
       l⁺ ∙⟨ σ ⟩ e⁺      ← ✴-id⁻ʳ ⟨$⟩ (code (goto e⁻)                     &⟨ _ ✴ _ # ∙-comm σ ⟩ l⁺∙e⁺)
-      e⁺ ∙⟨ σ ⟩ refl    ← attachTo l⁺ ⟨ ∙-idʳ ⟩ code (push (bool false)) &⟨ Up _  # ∙-comm σ ⟩ e⁺
-      coe (∙-id⁻ʳ σ) (attach e⁺)
+      e⁺                ← ✴-id⁻ʳ ⟨$⟩ (attachTo l⁺ ⟨ ∙-idʳ ⟩ code (push (bool false)) &⟨ Up _  # ∙-comm σ ⟩ e⁺)
+      attach e⁺
 
     -- Compile comparisons and other binary operations
-    compile-bop : ∀ {a b c} → BinOp a b c → ε[ Compiler 𝑭 (⟦ a ⟧ ∷ ⟦ b ⟧ ∷ ψ) (⟦ c ⟧ ∷ ψ) Emp ]
+    compile-bop : ∀ {Γ a b c} → BinOp a b c → ε[ Compiler Γ (⟦ a ⟧ ∷ ⟦ b ⟧ ∷ ψ) (⟦ c ⟧ ∷ ψ) Emp ]
     compile-bop add = code (bop add)
     compile-bop sub = code (bop sub)
     compile-bop mul = code (bop mul)

@@ -26,7 +26,7 @@ open import JVM.Defaults.Syntax.Values
 open import JVM.Defaults.Syntax.Instructions
 open import JVM.Builtins
 
-open import Relation.Ternary.Data.ReflexiveTransitive
+open import Relation.Ternary.Data.ReflexiveTransitive hiding ([_])
 
 -- Signatures of builtin functions of CF
 print : TopLevelDecl

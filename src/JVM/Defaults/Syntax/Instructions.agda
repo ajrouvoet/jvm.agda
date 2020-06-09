@@ -12,7 +12,7 @@ open import JVM.Types
 open import JVM.Defaults.Syntax.Values
 
 open import Relation.Unary hiding (_∈_)
-open import Relation.Ternary.Core renaming (Just to One)
+open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Construct.Empty StackTy

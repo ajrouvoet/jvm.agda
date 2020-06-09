@@ -1,5 +1,5 @@
 {-# OPTIONS --safe #-}
-open import Data.List hiding ([_])
+open import Data.List as List hiding ([_])
 
 module JVM.Compiler.Monad (T : Set) (⟨_⇒_⟩ : T → T → List T → Set) (nop : ∀ {τ} → ⟨ τ ⇒ τ ⟩ []) where
 
@@ -26,6 +26,7 @@ open import Relation.Ternary.Monad.Writer intf-rel
 open WriterMonad (starMonoid {R = Code}) renaming
   ( Writer to Compiler
   ; execWriter to execCompiler)
+  public
 
 -- Output a single, unlabeled instruction
 code : ∀[ ⟨ τ₁ ⇒ τ₂ ⟩ ⇒ Down⁻ (Compiler τ₁ τ₂ Emp) ] 
@@ -33,7 +34,11 @@ code i = tell Star.[ instr (↓ i) ]
 
 -- We can label the start of a compiler computation
 attachTo : ∀ {P} → ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₂ P ─✴ Compiler τ₁ τ₂ P ]
-attachTo l ⟨ σ ⟩ c = pass (c &⟨ σ ⟩ label-start nop ⦇ Bigstar.[_] l ⦈)
+attachTo l ⟨ σ ⟩ c = pass (c &⟨ ∙-comm σ ⟩ label-start nop ⦇ Bigstar.[_] l ⦈)
 
 attach : ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
 attach l = attachTo l ⟨ ∙-idʳ ⟩ code nop
+
+-- Creating binders is pure in the model by means of hiding
+mkLabel : ∀ {ψ} → ε[ Compiler τ τ (Up (Own List.[ ψ ]) ✴ Down (Own List.[ ψ ])) ]
+mkLabel = return balance

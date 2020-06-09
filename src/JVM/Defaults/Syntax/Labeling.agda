@@ -13,7 +13,7 @@ open import Data.Sum
 open import Data.Product
  
 open import JVM.Model T
-open Disjoint using (bags; bags-isMonoid; bags-isSemigroup; bags-isCommutative)
+open Disjoint
 
 Labels = List T
 
