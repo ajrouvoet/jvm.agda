@@ -29,15 +29,16 @@ open import JVM.Defaults.Syntax.Values
 open import JVM.Defaults.Syntax.Instructions
 open import JVM.Defaults.Syntax.Classes
 open import JVM.Defaults.Transform.Noooops
+open import JVM.Compiler
 
 module _ {T : Set} where
   open import JVM.Model T public
 
-compile : ∀ {r} → Src.Block r [] → ∃ λ Γ → ε[ ⟪ [] , Γ ∣ [] ⇒ [] ⟫ ]
+compile : ∀ {r} → Src.Block r [] → ∃ λ Γ → ε[ ⟪ [] , Γ ∣ [] ↝ [] ⟫ ]
 compile bl₁                       with hoist bl₁
 ... | _ , Possibly.possibly (intros r refl) bl₂  -- The grading of the possibility modality
                                                  -- proves that only the lexical context has been extended
-                                  with unco bl₂
-... | bl₃                         with compiler [] bl₃
-... | bl₄ ∙⟨ σ ⟩ refl             with noooop bl₄
-... | bl₅ = -, coe (∙-id⁻ʳ σ) bl₅
+          with unco bl₂
+... | bl₃ with execCompiler (compiler [] bl₃)
+... | bl₄ with noooop bl₄
+... | bl₅ = -, bl₅

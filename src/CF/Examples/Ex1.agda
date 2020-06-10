@@ -19,7 +19,7 @@ open import CF.Types
 open import CF.Syntax as Src
 open import CF.Contexts.Lexical
 
-open import CF.Builtins
+-- open import CF.Builtins
 
 main-fun : Closed (Src.Block void)
 main-fun = ( 

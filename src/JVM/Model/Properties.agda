@@ -23,12 +23,18 @@ module _ {p t} {T : Set t} {P : Pred _ p} where
   -- If you know the split and what is bubbling up from the left and right parts,
   -- then you know what bubbles up from the composite.
   source : ∀ {Φ₁ : Intf} → Φ₁ ∙ Φ₂ ≣ Φ → All P (up Φ₁) → All P (up Φ₂) → All P (up Φ)
-  source (ex (sub x₁ x₂) (sub x₃ x₄) x₅ x₆) ks ls = {!!}
+  source (ex {u₁} {u₂} (sub x₁ x₂) (sub x₃ x₄) x₅ x₆) pu₁ pu₂ = joinAll (λ ()) x₅ pu₁' pu₂' 
+    where
+      pu₂' = proj₁ (splitAll (λ where dup p → p , p) x₂ pu₂)
+      pu₁' = proj₁ (splitAll (λ where dup p → p , p) x₄ pu₁)
 
   -- If you know the split and what is bubbling up from the left and flowing down the composite,
   -- then you know what flows down the right part.
   sinkᵣ : ∀ {Φ₁ : Intf} → Φ₁ ∙ Φ₂ ≣ Φ → All P (up Φ₁) → All P (down Φ) → All P (down Φ₂)
-  sinkᵣ (ex (sub x₁ x₂) (sub x₃ x₄) x₅ x₆) ks ls = {!!}
+  sinkᵣ (ex (sub x₁ x₂) (sub x₃ x₄) x₅ x₆) pu₁ pu₂ = joinAll (λ ()) x₃ pd₁' pe₁
+    where
+      pd₁' = proj₁ (splitAll (λ where dup p → p , p) x₆ pu₂)
+      pe₁  = proj₂ (splitAll (λ where dup p → p , p) x₄ pu₁)
 
   -- The same, but different.
   sinkₗ : ∀ {Φ₁ Φ₂ Φ : Intf} → Φ₁ ∙ Φ₂ ≣ Φ → All P (up Φ₂) → All P (down Φ) → All P (down Φ₁)

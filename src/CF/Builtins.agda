@@ -36,16 +36,16 @@ builtins : List TopLevelDecl
 builtins = print
          ∷ []
 
--- Compilation of builtins to typed bytecode
-⟦builtins⟧ : All (λ where (fun (name ∶ as ⟶ b)) → ⟪ jre , ⟦ as ⟧ ∣ [] ⇒ ⟦ b ⟧ ∷ [] ⟫ ε) builtins
-⟦builtins⟧ = execCompiler ⟦print⟧
-          ∷ []
+-- -- Compilation of builtins to typed bytecode
+-- ⟦builtins⟧ : All (λ where (fun (name ∶ as ⟶ b)) → ⟪ jre , ⟦ as ⟧ ∣ [] ↝ ⟦ b ⟧ ∷ [] ⟫ ε) builtins
+-- ⟦builtins⟧ = execCompiler ⟦print⟧
+--           ∷ []
 
-  where
+--   where
 
-    ⟦print⟧ : Compiler (jre , _) [] [ _ ] Emp _
-    ⟦print⟧ = do
-      code (load (here refl))
-      code (getstatic (here refl))
-      code (invokevirtual (there (here refl)))
-      code (push (bool true))
+--     ⟦print⟧ : Compiler (jre , _) [] [ _ ] Emp _
+--     ⟦print⟧ = do
+--       code (load (here refl))
+--       code (getstatic (here refl))
+--       code (invokevirtual (there (here refl)))
+--       code (push (bool true))

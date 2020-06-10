@@ -29,7 +29,7 @@ open import Relation.Ternary.Data.Bigstar
 pattern _⍮⟨_⟩_ s σ b = cons (s ∙⟨ σ ⟩ b)
 
 hoist-binder : ∀ {P : Pred Ctx 0ℓ} {Γ} → ∀[ (Γ ⊢ P) ⇒ ◇ (Vars Γ ✴ P) ]
-hoist-binder px = pack (⊢-zip ∙-copy (binders ∙⟨ ∙-idˡ ⟩ px))
+hoist-binder px = pack (⊢-zip (∙-copy _) (binders ∙⟨ ∙-idˡ ⟩ px))
 
 -- A typed hoisting transformation for statement blocks
 {-# TERMINATING #-}

@@ -11,7 +11,7 @@ open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
-open import Relation.Ternary.Monad
+open import Relation.Ternary.Monad hiding (unit)
 open import Relation.Ternary.Monad.Weakening
 open import Relation.Ternary.Data.Bigstar hiding ([_])
 

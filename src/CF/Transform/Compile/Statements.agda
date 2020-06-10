@@ -52,9 +52,9 @@ mutual
     -- e⁺: nop
 
     -- condition
-    c⁺ ∙⟨ σ ⟩ c⁻        ← mklabel
+    c⁺ ∙⟨ σ ⟩ c⁻        ← mkLabel
     c⁻ ∙⟨ σ ⟩ refl      ← attachTo c⁺ ⟨ ∙-idʳ ⟩ compileₑ e         &⟨ Down _ # ∙-comm σ ⟩ c⁻
-    (↓ e⁻) ∙⟨ σ ⟩ c⁻∙e⁺ ← mapM ✴-rotateᵣ (mklabel                  &⟨ Down _ # σ        ⟩ c⁻)
+    (↓ e⁻) ∙⟨ σ ⟩ c⁻∙e⁺ ← mapM ✴-rotateᵣ (mkLabel                  &⟨ Down _ # σ        ⟩ c⁻)
     c⁻∙e⁺  ∙⟨ σ ⟩ refl  ← code (if eq e⁻)                          &⟨ _ ✴ _  # ∙-comm σ ⟩ c⁻∙e⁺
 
     -- body
@@ -68,12 +68,12 @@ mutual
 
     -- condition
     refl                ← compileₑ c
-    t⁺ ∙⟨ σ ⟩ ↓ t⁻      ← mklabel
+    t⁺ ∙⟨ σ ⟩ ↓ t⁻      ← mkLabel
     t⁺ ∙⟨ σ ⟩ refl      ← code (if ne t⁻)                              &⟨ Up _  # σ        ⟩ t⁺
 
     -- else
     t⁺   ∙⟨ σ ⟩ refl    ← compileₛ else                                &⟨ Up _  # σ        ⟩ t⁺
-    ↓ e⁻ ∙⟨ σ ⟩ t⁺∙e⁺   ← ✴-rotateᵣ ⟨$⟩ (mklabel                       &⟨ Up _  # σ        ⟩ t⁺)
+    ↓ e⁻ ∙⟨ σ ⟩ t⁺∙e⁺   ← ✴-rotateᵣ ⟨$⟩ (mkLabel                       &⟨ Up _  # σ        ⟩ t⁺)
 
     -- then
     t⁺ ∙⟨ σ ⟩ e⁺        ← ✴-id⁻ʳ ⟨$⟩ (code (goto e⁻)                   &⟨ _ ✴ _ # ∙-comm σ ⟩ t⁺∙e⁺)

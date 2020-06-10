@@ -15,6 +15,7 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 open import Relation.Ternary.Monad
+open import Relation.Ternary.Construct.Bag.Properties
 
 private
   module Src where
