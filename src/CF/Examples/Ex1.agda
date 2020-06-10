@@ -4,6 +4,7 @@ open import Function
 open import Data.Bool
 open import Data.Product
 open import Data.List
+open import Data.List.Relation.Unary.All
 open import Data.Nat
 open import Data.String
 
@@ -19,7 +20,7 @@ open import CF.Types
 open import CF.Syntax as Src
 open import CF.Contexts.Lexical
 
--- open import CF.Builtins
+open import JVM.Defaults.Syntax.Extrinsic
 
 main-fun : Closed (Src.Block void)
 main-fun = ( 
@@ -57,6 +58,10 @@ open import Codata.Musical.Notation
 open import JVM.Defaults.Printer
 
 open import CF.Compile
+
+-- main = IO.run (putStrLn test)
+--   where
+--     test = Bytecode.show $ proj₁ $ proj₂ $ extract {m = 0} (proj₂ $ compile main-fun) []
 
 main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
   where

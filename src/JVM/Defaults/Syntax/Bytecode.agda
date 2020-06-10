@@ -54,4 +54,7 @@ label l ⟨ σ ⟩ labeled (l₂∙i) with ✴-assocₗ (l ∙⟨ σ ⟩ l₂∙
 module _ (nop : ∀ {τ} → I τ τ []) where
 
   label-start : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ ⟪ τ₁ ↝ τ₂ ⟫ ─✴ ⟪ τ₁ ↝ τ₂ ⟫ ]
-  label-start l = mappend Star.[ labeled (l ∙⟨ ∙-idʳ ⟩ ↓ nop) ]
+  label-start l ⟨ σ ⟩ nil            = labeled (l ∙⟨ σ ⟩ ↓ nop) ▹⟨ ∙-idʳ ⟩ nil 
+  label-start l ⟨ σ ⟩ (i ▹⟨ σ₂ ⟩ is) =
+    let _ , σ₃ , σ₄ = ∙-assocₗ σ σ₂ in
+    (label l ⟨ σ₃ ⟩ i) ▹⟨ σ₄ ⟩ is
