@@ -4,6 +4,7 @@ module JVM.Defaults.Syntax.Extrinsic where
 open import Agda.Builtin.Equality.Rewrite
 
 open import Data.List as List
+open import Data.List.Properties
 open import Data.List.Relation.Unary.All as All
 open import Data.List.Membership.Propositional
 open import Data.List.Membership.Propositional.Properties
@@ -26,11 +27,7 @@ open import JVM.Defaults.Syntax.Labeling StackTy
 open import JVM.Model.Properties
 open import JVM.Defaults.Syntax.Instructions hiding (⟨_↝_⟩; Instr)
 
-
-postulate lemma : ∀ {xs ys : List StackTy} {y} → (xs ∷ʳ y) ++ ys ≡ xs ++ (y ∷ ys)
-
-
-{-# REWRITE lemma #-}
+{-# REWRITE ++-assoc #-}
 
 Typing = List StackTy
 
@@ -60,6 +57,81 @@ module _ Γ where
   Bytecode : Typing → StackTy → StackTy → Set
   Bytecode J = Bytecode' J J
 
+module _ where
+
+  Addressing : Labels → Typing → Set
+  Addressing lbs J = All (λ ψ → ψ ∈ J) lbs
+  
+  instr-tf : ∀ {Γ ℓs} → Addressing ℓs J → ⟨ Γ ∣ ψ₁ ↝ ψ₂ ⟩ ℓs → Instr (proj₂ Γ) J ψ₁ ψ₂
+  instr-tf ρ noop              = nop
+  instr-tf ρ pop               = pop
+  instr-tf ρ (push x)          = push x
+  instr-tf ρ dup               = dup
+  instr-tf ρ swap              = swap
+  instr-tf ρ (bop x)           = bop x
+  instr-tf ρ (load x)          = load x
+  instr-tf ρ (store x)         = store x
+  instr-tf ρ ret               = ret
+  instr-tf (ℓ ∷ _) (goto refl) = goto ℓ
+  instr-tf (ℓ ∷ _) (if x refl) = if x ℓ
+
+  Extractor : ∀ Γ → StackTy → StackTy → Intf → Set
+  Extractor Γ ψ₁ ψ₂ Φ = {J₁ : Typing} → Addressing (down Φ) J₁ 
+                       → ∃ λ J₂ → Bytecode' Γ (J₁ ++ J₂) J₂ ψ₁ ψ₂ × Addressing (up Φ) (J₁ ++ J₂)
+
+  label-addresses : ∀ {x} → Labeling ψ₁ x → All (λ z → z ∈ J₁ ++ ψ₁ ∷ []) x
+  label-addresses emp = []
+  label-addresses (cons (refl ∙⟨ sep ⟩ qx)) = joinAll (λ ()) sep (∈-++⁺ʳ _ (here refl) ∷ []) (label-addresses qx)
+
+  -- We can extract bytecode that does absolute addressing from the fancy
+  -- intrinsically-typed representation.
+  -- We do this in a single recursive pass over the bytecode, collecting a global map of instruction typings,
+  -- and also collecting indices into that map for every defined label on the forward pass, and 
+  -- eliminating labels on the backwards pass.
+  --
+  -- The interface compositions guide the way. The key lemma is `sinkᵣ`
+  -- which says that in order to know what l imports in l ✴ r,
+  -- it is sufficient to know what l ✴ r imports, *and* what r exports.
+  --
+  -- In this setting 'l' is the head of some suffix of bytecode.
+  -- The imports of 'l ✴ r' have been collected from the labels defined in the prefix.
+  -- We get the exports of the tail 'r' of the suffix from the recursive call.
+  extract : ∀ {Γ} → ∀[ ⟪ Γ ∣ ψ₁ ↝ ψ₂ ⟫ ⇒ Extractor (proj₂ Γ) ψ₁ ψ₂ ]
+  extract {ψ₁ = ψ₁} nil ρ    = [] , nil , []
+
+  extract {ψ₁ = ψ₁} (cons (labeled (↑ ls ∙⟨ σ₁ ⟩ ↓ i) ∙⟨ σ₂ ⟩ is)) ρ = let
+      -- addressing from ↑ ls
+      ρ₀ = label-addresses ls
+      
+      -- Addresses for the labels
+      ρ₁ = source σ₁ ρ₀ []
+      
+      -- Compute addresses for the tail,
+      -- by combining the addresses from the state with the addresses for the labels.
+      -- We don't need everything, only what is imported in the head instruction.
+      ρ₂ = sinkᵣ  σ₂ ρ₁ (All.map (∈-++⁺ˡ {ys = List.[ ψ₁ ]}) ρ)
+
+      -- Recursively extract first to get addressing for forward jumps.
+      -- These addresses are exported by the tail.
+      k , code , ρ′ = extract is ρ₂
+
+      -- Compute the addresses imported by i
+      ρ₃ = sinkᵣ (∙-comm σ₂) ρ′ (All.map ∈-++⁺ˡ ρ)
+      ρ₄ = sinkᵣ σ₁ (All.map ∈-++⁺ˡ ρ₀) ρ₃
+      
+      -- Compute the exported addresses
+      ρ₅ = source σ₂ (All.map ∈-++⁺ˡ ρ₁) ρ′
+
+    in ψ₁ ∷ k , cons (instr-tf ρ₄ i) code , ρ₅
+
+  -- Same as above, but simpler
+  extract {ψ₁ = ψ₁} (cons (instr   (↓ i) ∙⟨ σ ⟩ b)) ρ =  let
+      ρ₂ = sinkᵣ σ [] (All.map (∈-++⁺ˡ {ys = List.[ ψ₁ ]}) ρ)
+      k , code , ρ′ = extract b ρ₂
+      ρ₃ = sinkᵣ (∙-comm σ) ρ′ (All.map ∈-++⁺ˡ ρ) 
+      ρ₄ = source σ [] ρ′
+    in ψ₁ ∷ k , cons (instr-tf ρ₃ i) code , ρ₄
+
 -- module Bytecode where
 
 --   open import Data.String as S hiding (show)
@@ -83,81 +155,3 @@ module _ Γ where
 --   show : Bytecode ℓ n → String
 --   show [] = ""
 --   show (i ∷ b) = showInstr i S.++ "\n" S.++ show b
-
-module _ where
-
-  Addressing : Labels → Typing → Set
-  Addressing lbs J = All (λ ψ → ψ ∈ J) lbs
-  
-  instr-tf : ∀ {Γ ℓs} → Addressing ℓs J → ⟨ Γ ∣ ψ₁ ↝ ψ₂ ⟩ ℓs → Instr (proj₂ Γ) J ψ₁ ψ₂
-  instr-tf ρ noop              = nop
-  instr-tf ρ pop               = pop
-  instr-tf ρ (push x)          = push x
-  instr-tf ρ dup               = dup
-  instr-tf ρ swap              = swap
-  instr-tf ρ (bop x)           = bop x
-  instr-tf ρ (load x)          = load x
-  instr-tf ρ (store x)         = store x
-  instr-tf ρ ret               = ret
-  instr-tf (ℓ ∷ _) (goto refl) = goto ℓ
-  instr-tf (ℓ ∷ _) (if x refl) = if x ℓ
-
-  Extractor : ∀ Γ → StackTy → StackTy → Intf → Set
-  Extractor Γ ψ₁ ψ₂ Φ = {J₁ : Typing} → Addressing (down Φ) J₁ 
-                      → ∃ λ J₂ → Bytecode' Γ (J₁ ++ J₂) J₂ ψ₁ ψ₂ × Addressing (up Φ) (J₁ ++ J₂)
-
-  label-addresses : ∀ {x} → Labeling ψ₁ x → All (λ z → z ∈ J₁ ++ ψ₁ ∷ []) x
-  label-addresses emp = []
-  label-addresses (cons (refl ∙⟨ sep ⟩ qx)) = joinAll (λ ()) sep (∈-++⁺ʳ _ (here refl) ∷ []) (label-addresses qx)
-
-  -- We can extract bytecode that does absolute addressing from the fancy
-  -- intrinsically-typed representation.
-  -- We do this in a single recursive pass over the bytecode, collecting a global map of instruction typings,
-  -- and also collecting indices into that map for every defined label on the forward pass, and 
-  -- eliminating labels on the backwards pass.
-  --
-  -- The interface compositions guide the way. The key lemma is `sinkᵣ`
-  -- which says that in order to know what l imports in l ✴ r,
-  -- it is sufficient to know what l ✴ r imports, *and* what r exports.
-  --
-  -- In this setting 'l' is the head of some suffix of bytecode.
-  -- The imports of 'l ✴ r' have been collected from the labels defined in the prefix.
-  -- We get the exports of the tail 'r' of the suffix from the recursive call.
-  extract : ∀ {Γ} → ∀[ ⟪ Γ ∣ ψ₁ ↝ ψ₂ ⟫ ⇒ Extractor (proj₂ Γ) ψ₁ ψ₂ ]
-  extract {ψ₁ = ψ₁} nil ρ    = [] , nil , []
-  extract {ψ₁ = ψ₁} (cons (instr   (↓ i) ∙⟨ σ ⟩ b)) ρ = 
-    ψ₁ ∷ k , cons (instr-tf ρ₃ i) code , ρ₄
-    where
-      ρ₂ = sinkᵣ σ [] (All.map (∈-++⁺ˡ {ys = List.[ ψ₁ ]}) ρ)
-      
-      res = extract b ρ₂
-      k    = proj₁ res
-      code = proj₁ (proj₂ res)
-      ρ′   = proj₂ (proj₂ res)
-
-      ρ₃ = sinkᵣ (∙-comm σ) ρ′ (All.map ∈-++⁺ˡ ρ) 
-      ρ₄ = source σ [] ρ′
-
-  extract {ψ₁ = ψ₁} (cons (labeled (↑ ls ∙⟨ σ₁ ⟩ ↓ i) ∙⟨ σ₂ ⟩ is)) ρ =
-    ψ₁ ∷ k , cons (instr-tf ρ₄ i) code , ρ₅
-    where
-      -- addressing from ↑ ls
-      ρ₀ = label-addresses ls
-      
-      -- addressing from labeled _
-      ρ₁ = source σ₁ ρ₀ []
-      
-      -- compute addressing for the tail
-      ρ₂ = sinkᵣ  σ₂ ρ₁ (All.map (∈-++⁺ˡ {ys = List.[ ψ₁ ]}) ρ)
-
-      res  = extract is ρ₂
-      k    = proj₁ res
-      code = proj₁ (proj₂ res)
-      ρ′   = proj₂ (proj₂ res)
-
-      -- addressing for i
-      ρ₃ = sinkᵣ (∙-comm σ₂) ρ′ (All.map ∈-++⁺ˡ ρ)
-      ρ₄ = sinkᵣ σ₁ (All.map ∈-++⁺ˡ ρ₀) ρ₃
-      
-      -- return addressing
-      ρ₅ = source σ₂ (All.map ∈-++⁺ˡ ρ₁) ρ′
