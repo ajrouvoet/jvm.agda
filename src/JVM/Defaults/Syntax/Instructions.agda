@@ -78,6 +78,7 @@ module _ (𝑭 : FrameTy) where
     -- invokevirtual : ∀ {as r} → 𝑪[ virtual   (𝑐 / 𝑚 :⟨ as ⟩ r) ] → ε[ ⟨ (ref 𝑐 ∷ as ++ ψ) ↝ r :?: ψ ⟩ ]
 
   ⟨_∣_↝_⟩ = ⟨_↝_⟩
+  Instr = ⟨_↝_⟩
 
   open import JVM.Defaults.Syntax.Bytecode StackTy ⟨_↝_⟩ as BC
   open BC using (Code) public
