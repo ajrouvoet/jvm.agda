@@ -26,10 +26,10 @@ main-fun : Closed (Src.Block void)
 main-fun = ( 
   Src.while (
     Src.bool true ∙⟨ ∙-idˡ ⟩ Src.block 
-    -- int j = 42
+    -- int j = true
     (Src.bool true ≔⟨ ∙-idˡ ⟩ Possibly.possibly ∼-all (
       Src.ifthenelse
-        -- if j != 0
+        -- if j
         (var 
           ∙⟨ overlaps ∙-idˡ ⟩
           -- then
@@ -55,21 +55,16 @@ main-fun = (
 
 open import IO as IO
 open import Codata.Musical.Notation
-open import JVM.Defaults.Printer
 
 open import CF.Compile
 
--- main = IO.run (putStrLn test)
---   where
---     test = Bytecode.show $ proj₁ $ proj₂ $ extract {m = 0} (proj₂ $ compile main-fun) []
-
-main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
+main = IO.run (putStrLn test)
   where
-  import JVM.Defaults.Printer.Jasmin as J
-  proc = procedure "ex1" (proj₂ $ compile main-fun)
+    open import JVM.Defaults.Syntax.Extrinsic
+    test = Show.showBytecode $ proj₂ $ exec-extractor $ extract (proj₂ $ compile main-fun)
 
--- program : Program
--- program = ↓ refl
---         ∙⟨ {!!} ⟩ ((("main" , [] ⟶ void) , ↑ refl ∙⟨ {!!} ⟩ ↓ (Possibly.possibly ∼-all main-fun))
---         ✴⟨ {!!} ⟩ ((("print" , [ int ] ⟶ void) , {!!})
---         ✴⟨ {!!} ⟩ emp))
+-- main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
+--   where
+--   open import JVM.Defaults.Printer
+--   import JVM.Defaults.Printer.Jasmin as J
+--   proc = procedure "ex1" (proj₂ $ compile main-fun)

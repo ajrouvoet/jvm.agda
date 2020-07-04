@@ -23,7 +23,7 @@ open import Data.Product
 open import JVM.Model T
 open Disjoint using (bags; bags-isMonoid; bags-isSemigroup; bags-isCommutative; empty-unique)
 
-open import JVM.Defaults.Syntax.Labeling T public
+open import JVM.Defaults.Syntax.Labeling T
 
 data Code : T → T → Pred Intf ℓ where
   labeled : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ✴ Down (I τ₁ τ₂) ⇒ Code τ₁ τ₂ ]

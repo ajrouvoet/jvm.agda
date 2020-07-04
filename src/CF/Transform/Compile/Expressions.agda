@@ -28,7 +28,7 @@ private
     open import JVM.Types public
     open import JVM.Model StackTy public
     open import JVM.Defaults.Syntax.Values public
-    open import JVM.Defaults.Syntax.Instructions public hiding (Labels)
+    open import JVM.Defaults.Syntax.Instructions public
 
 open Src
 open Tgt

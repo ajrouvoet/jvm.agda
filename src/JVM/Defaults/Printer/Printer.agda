@@ -119,10 +119,15 @@ module _ where
   print-labels : ∀ {τ} → ∀[ Up (Labeling τ) ⇒ Printer Emp ]
   print-labels (↑ emp)                  = return refl
   print-labels (↑ (cons (x ∙⟨ σ ⟩ xs))) = do
-    xs ← ✴-id⁻ʳ ⟨$⟩ (print-label (↑ x) &⟨ Up (Labeling _) # ∙-comm $ liftUp σ ⟩ ↑ xs)
+    xs ← ✴-id⁻ʳ ⟨$⟩ (print-label (↑ x) &⟨ ∙-comm $ liftUp σ ⟩ ↑ xs)
     print-labels xs
     where open Disjoint using (bags; bags-isMonoid)
 
+
+
+
+
+-- give it a kick
 execPrinter : ∀ {P Φ} → Printer P Φ → List Stat
 execPrinter pr with pr ⟨ supplyᵣ ∙-idʳ ⟩ proj₁ (initState (lift 0))
   where

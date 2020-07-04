@@ -33,10 +33,13 @@ ex₂ =
   )
 
 open import IO as IO
-open import Codata.Musical.Notation
-open import JVM.Defaults.Printer
-
-main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
+main = IO.run (putStrLn test)
   where
-  import JVM.Defaults.Printer.Jasmin as J
-  proc = procedure "ex2" (proj₂ $ compile ex₂)
+    open import JVM.Defaults.Syntax.Extrinsic
+    test = Show.showBytecode $ proj₂ $ exec-extractor $ extract (proj₂ $ compile ex₂)
+
+-- main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
+--   where
+--   open import JVM.Defaults.Printer
+--   import JVM.Defaults.Printer.Jasmin as J
+--   proc = procedure "ex1" (proj₂ $ compile main-fun)

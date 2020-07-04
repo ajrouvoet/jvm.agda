@@ -79,6 +79,9 @@ module _ where
   Extractor Γ ψ₁ ψ₂ Φ = {J₁ : Typing} → Addressing (down Φ) J₁ 
                        → ∃ λ J₂ → Bytecode' Γ (J₁ ++ J₂) J₂ ψ₁ ψ₂ × Addressing (up Φ) (J₁ ++ J₂)
 
+  exec-extractor : ∀ {Γ} → Extractor Γ ψ₁ ψ₂ ε → ∃ λ J → Bytecode Γ J ψ₁ ψ₂
+  exec-extractor c = let _ , code , _ = c {[]} [] in -, code
+
   label-addresses : ∀ {x} → Labeling ψ₁ x → All (λ z → z ∈ J₁ ++ ψ₁ ∷ []) x
   label-addresses emp = []
   label-addresses (cons (refl ∙⟨ sep ⟩ qx)) = joinAll (λ ()) sep (∈-++⁺ʳ _ (here refl) ∷ []) (label-addresses qx)
@@ -132,26 +135,84 @@ module _ where
       ρ₄ = source σ [] ρ′
     in ψ₁ ∷ k , cons (instr-tf ρ₃ i) code , ρ₄
 
--- module Bytecode where
+module Show where
 
---   open import Data.String as S hiding (show)
+  open import Data.String as S hiding (show)
+  open import Data.Fin as Fin
+  open import Data.Nat.Show as NS
+  open import Data.Bool.Show as BS
   
---   showFin : Fin n → String
---   showFin f = NS.show (Fin.toℕ f)
+  showFin : ∀ {n} → Fin n → String
+  showFin f = NS.show (Fin.toℕ f)
   
---   showInstr : Instr ℓ → String
---   showInstr (goto x) = "goto " S.++ showFin x
---   showInstr (if x)   = "if " S.++ showFin x 
---   showInstr noop     = "noop"
---   showInstr push     = "push"
---   showInstr pop      = "pop"
---   showInstr dup      = "dup"
---   showInstr swap     = "swap"
---   showInstr bop      = "bop"
---   showInstr load     = "load"
---   showInstr store    = "store"
---   showInstr ret      = "ret"
+  showComp : Comparator as → String
+  showComp eq = "eq"
+  showComp ne = "ne"
+  showComp lt = "lt"
+  showComp ge = "ge"
+  showComp gt = "gt"
+  showComp le = "le"
+  showComp icmpge = "icmpge"
+  showComp icmpgt = "icmpgt"
+  showComp icmpeq = "icmpeq"
+  showComp icmpne = "icmpne"
+  showComp icmplt = "icmplt"
+  showComp icmple = "icmple"
 
---   show : Bytecode ℓ n → String
---   show [] = ""
---   show (i ∷ b) = showInstr i S.++ "\n" S.++ show b
+  showOp : NativeBinOp a b c → String
+  showOp add = "add"
+  showOp sub = "sub"
+  showOp mul = "mul"
+  showOp div = "div"
+  showOp xor = "xor"
+
+  showConst : Const a → String
+  showConst Const.null = "null"
+  showConst (num x)    = NS.show x
+  showConst (bool x)   = BS.show x
+
+  showReg : ∀ {Γ} → a ∈ Γ → String
+  showReg e = showFin (index e)
+  
+  showLabel : ψ ∈ J → String
+  showLabel = λ ℓ → showFin (index ℓ)
+  
+  showInstr : ∀ {Γ} → Instr Γ J ψ₁ ψ₂ → String
+  showInstr (goto ℓ) = "goto " S.++ showLabel ℓ
+  showInstr (if c ℓ) = "if " S.++ (showComp c S.++ " " S.++ showLabel ℓ)
+  showInstr nop      = "noop"
+  showInstr (push c) = "push " S.++ (showConst c)
+  showInstr pop      = "pop"
+  showInstr dup      = "dup"
+  showInstr swap     = "swap"
+  showInstr (bop o)  = "bop " S.++ (showOp o)
+  showInstr (load r) = "load " S.++ (showReg r)
+  showInstr (store r)= "store " S.++ (showReg r)
+  showInstr ret      = "ret"
+  
+  showTy : Ty → String
+  showTy boolean = "bool"
+  showTy byte    = "byte"
+  showTy short   = "short"
+  showTy int     = "int"
+  showTy long    = "long"
+  showTy char    = "char"
+  showTy (ref x) = "ref"
+  showTy (array t) = "array"
+  
+  showStackTy : StackTy → String
+  showStackTy []      = "[]"
+  showStackTy (x ∷ ψ) = showTy x S.++ " : " S.++ showStackTy ψ
+
+  showBytecode : ∀ {Γ J} → Bytecode Γ J ψ₁ ψ₂ → String
+  showBytecode b = showBytecode' b 0
+    where
+      open import Data.Nat
+
+      showBytecode' : ∀ {Γ J J'} → Bytecode' Γ J J' ψ₁ ψ₂ → ℕ → String
+      showBytecode' nil n = ""
+      showBytecode' (cons {ψ₁ = ψ₁} {ψ₂} i b) n = 
+        NS.show n S.++ ": " 
+          S.++ showInstr i
+          S.++ "\t⟨ " S.++ showStackTy ψ₁ S.++ " ↝ " S.++ showStackTy ψ₂ S.++ " ⟩"
+          S.++ "\n" S.++ showBytecode' b (suc n)
