@@ -37,16 +37,6 @@ To.⟦_⟧ cfToJvm-ty = ‵_
     ‵ int   = int
     ‵ bool  = boolean
 
-instance cfToJvm-funty : To FunTy Fun
-To.⟦ cfToJvm-funty ⟧ (n ∶ as ⟶ r) = n / "apply" :⟨ ⟦ as ⟧ ⟩ ty ⟦ r ⟧
-
-instance cfToJvm-constant : To TopLevelDecl Constant
-To.⟦ cfToJvm-constant ⟧ (fun fty) = staticfun ⟦ fty ⟧
-
--- not injective!
--- cfToJvm-constant-injective : Injective _≡_ _≡_ (To.⟦_⟧ cfToJvm-constant)
--- cfToJvm-constant-injective {fun (𝑓 ∶ as ⟶ b)} {fun (𝑔 ∶ cs ⟶ d)} eq = {!eq!}
-
 instance cfToJvm-var : ∀ {ℓ} {A B : Set ℓ} {{_ : To A B}} {a : A} {as} →
                        To (a ∈ as) (⟦ a ⟧ ∈ ⟦ as ⟧)
 To.⟦_⟧ cfToJvm-var = ∈-map⁺ ⟦_⟧
@@ -54,9 +44,6 @@ To.⟦_⟧ cfToJvm-var = ∈-map⁺ ⟦_⟧
 private
   module _ {t} {T : Set t} where
     open import JVM.Model T public
-
-instance cfToJvm-ctx : To Ctx FrameTy
-To.⟦ cfToJvm-ctx ⟧ Γ = [] , ⟦ Γ ⟧
 
 instance on-intf : ∀ {ℓ} {A B : Set ℓ} {{_ : To A B}} → To (Intf {T = A}) (Intf {T = B})
 To.⟦ on-intf ⟧ (u ⇅ d) = ⟦ u ⟧ ⇅ ⟦ d ⟧

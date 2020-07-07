@@ -41,7 +41,6 @@ mutual
 mutual
   uncoₛ : ∀[ Hoisted.Stmt r ⇑ ⇒ Tgt.Stmt r ]
   uncoₛ (run x ⇈ wk) = run (uncoₑ (x ⇈ wk))
-  uncoₛ (ret x ⇈ wk) = ret (uncoₑ (x ⇈ wk))
   uncoₛ (asgn v✴e ⇈ wk) with unstar (v✴e ⇈ wk)
   ... | vars ⇈ wk' , e⇑ = asgn (member wk') (uncoₑ e⇑)
   uncoₛ (ifthenelse c✴s₁✴s₂ ⇈ wk) = let

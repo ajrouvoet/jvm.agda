@@ -12,5 +12,6 @@ open import Relation.Ternary.Structures.Syntax
 open import JVM.Types
 
 data Const : Ty → Set where
+  null : ∀ {c} → Const (ref c)
   num  : ℕ     → Const int
   bool : Bool  → Const boolean

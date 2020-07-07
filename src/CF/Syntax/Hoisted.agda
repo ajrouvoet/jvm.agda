@@ -29,5 +29,3 @@ open Exp public
 open Statements Block public
 open CoDeBruijn public
 open import CF.Contexts.Lexical using (_⊢_) public
-
--- open import CF.Syntax.Programs (λ as b → Closed (as ⊢ ◇ (Block b))) public

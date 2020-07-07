@@ -2,7 +2,7 @@
 module JVM.Compiler where
 
 open import JVM.Types
-open import JVM.Defaults.Syntax.Instructions
+open import JVM.Syntax.Instructions
 
 module _ 𝑭 where
   open import JVM.Compiler.Monad StackTy ⟨ 𝑭 ∣_↝_⟩ noop using (Compiler) public

@@ -23,13 +23,12 @@ private
     open import CF.Syntax.DeBruijn public
     open import CF.Types public
     open import CF.Contexts.Lexical using (module DeBruijn) public; open DeBruijn public
-    open FunTy public
 
   module Tgt where
     open import JVM.Types public
     open import JVM.Model StackTy public
-    open import JVM.Defaults.Syntax.Values public
-    open import JVM.Defaults.Syntax.Instructions public
+    open import JVM.Syntax.Values public
+    open import JVM.Syntax.Instructions public
 
 open Src
 open Tgt

@@ -1,5 +1,5 @@
 {-# OPTIONS --no-qualified-instances #-}
-module JVM.Defaults.Printer.Printer {t} (T : Set t) where
+module JVM.Printer.Printer {t} (T : Set t) where
 
 open import Function using (_$_; _∘_)
 open import Data.Unit
@@ -21,8 +21,8 @@ open import Relation.Ternary.Construct.Market intf-rel
 open import Relation.Ternary.Monad.Identity as Id hiding (id-monad; id-functor)
 open import Relation.Ternary.Monad.State intf-rel
 
-open import JVM.Defaults.Syntax.Labeling T public
-open import JVM.Defaults.Printer.Jasmin
+open import JVM.Syntax.Labeling T public
+open import JVM.Printer.Jasmin
 
 Names : List T → Set _
 Names = All (λ _ → ℕ)
@@ -141,4 +141,3 @@ execPrinter pr with pr ⟨ supplyᵣ ∙-idʳ ⟩ proj₁ (initState (lift 0))
       return (lift ((n , []) , (ns↑ , ns↓)))
 
 ... | (lift px ∙⟨ σ ⟩ lift ((_ , st) , _)) = reverse st
-    

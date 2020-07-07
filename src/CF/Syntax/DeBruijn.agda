@@ -38,14 +38,11 @@ mutual
     asgn          : ∀[ Var a ⇒ Exp a ⇒ Stmt r ]
 
     run           : ∀[ Exp a ⇒ Stmt r ]
-    ret           : ∀[ Exp r ⇒ Stmt r ]
 
     ifthenelse    : ∀[ Exp bool ⇒ Stmt r ⇒ Stmt r ⇒ Stmt r ]
     while         : ∀[ Exp bool ⇒ Stmt r ⇒ Stmt r ]
     block         : ∀[ Block r  ⇒ Stmt r ]
 
   data Block (r : Ty) : Pred Ctx 0ℓ where
-    _⍮⍮_ : ∀[ Stmt r ⇒ Block r ⇒ Block r ]
-    nil : ∀[ Block r ]
-
--- open import CF.Syntax.Programs (λ as b → Closed (as ⊢ ◇′ (Block b))) public
+    _⍮⍮_  : ∀[ Stmt r ⇒ Block r ⇒ Block r ]
+    nil   : ∀[ Block r ]

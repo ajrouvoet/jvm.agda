@@ -22,8 +22,8 @@ open import JVM.Types
 open import JVM.Compiler
 open import JVM.Contexts
 open import JVM.Model StackTy
-open import JVM.Defaults.Syntax.Values
-open import JVM.Defaults.Syntax.Instructions
+open import JVM.Syntax.Values
+open import JVM.Syntax.Instructions
 
 mutual
   {- Compiling statements -}

@@ -58,9 +58,6 @@ mutual
   translate (Src.run e) = do
     return (Hoisted.run e)
 
-  translate (Src.ret e) = do
-    return (Hoisted.ret e)
-
   translate (Src.while (e ∙⟨ σ ⟩ body)) = do
     e ∙⟨ σ ⟩ body'           ← translate body                 &⟨ Src.Exp _ # σ ⟩ e
     return (Hoisted.while (e ∙⟨ σ ⟩ body'))

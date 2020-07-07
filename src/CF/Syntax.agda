@@ -23,7 +23,6 @@ open import Relation.Ternary.Data.Bigstar hiding ([_])
 
 open import CF.Types
 open import CF.Contexts.Lexical
-open import CF.Builtins
 
 open import Relation.Ternary.Construct.Product using (fst; snd)
 
@@ -43,21 +42,13 @@ data Exp : Ty → Pred Ctx 0ℓ where
   var'     : ∀[ Var a ⇒ Exp a ]
   bop      : BinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
 
-  -- procedure calls
-  -- call     : ∀[ Fun (𝑓 ∶ as ⟶ b) ✴ Allstar Exp as ⇒ Exp b ]
-
 pattern var  = var' vars
 
 module Statements (Block : Ty → Pred Ctx 0ℓ) where
 
   data Statement (r : Ty) : Pred Ctx 0ℓ where
     asgn          : ∀[ Var a ✴ Exp a ⇒ Statement r ]
-
-    -- set           : ∀[ Exp (ref a) ✴ Exp a ⇒ Statement r ]
-
     run           : ∀[ Exp a ⇒ Statement r ]
-    ret           : ∀[ Exp r ⇒ Statement r ]
-
     ifthenelse    : ∀[ Exp bool ✴ Statement r ✴ Statement r ⇒ Statement r ]
     while         : ∀[ Exp bool ✴ Statement r ⇒ Statement r ]
     block         : ∀[ Block r ⇒ Statement r ]
@@ -76,5 +67,3 @@ open Statements Block public
 infixr 5 _⍮⟨_⟩_
 pattern _⍮⟨_⟩_ s σ b = cons (s ∙⟨ σ ⟩ b)
 pattern _≔⟨_⟩_ e σ b = local (e ∙⟨ σ ⟩ b)
-
--- open import CF.Syntax.Programs (λ as b → Closed (as ⊢ Block b)) public

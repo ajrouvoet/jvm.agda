@@ -1,4 +1,4 @@
-module JVM.Defaults.Printer.Jasmin where
+module JVM.Printer.Jasmin where
 
 open import Function
 open import Data.Nat

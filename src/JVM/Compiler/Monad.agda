@@ -20,7 +20,7 @@ private
     τ₁ τ₂ τ : T
 
 open import JVM.Model T; open Syntax
-open import JVM.Defaults.Syntax.Bytecode T ⟨_⇒_⟩
+open import JVM.Syntax.Bytecode T ⟨_⇒_⟩
 
 open import Relation.Ternary.Monad.Writer intf-rel
 open WriterMonad (starMonoid {R = Code}) renaming
