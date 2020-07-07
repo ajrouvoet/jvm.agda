@@ -1,7 +1,7 @@
 {-# OPTIONS --safe --no-qualified-instances #-}
 open import Data.List hiding (concat)
 
-module JVM.Defaults.Syntax.Labeling {ℓ} (T : Set ℓ) where
+module JVM.Syntax.Labeling {ℓ} (T : Set ℓ) where
 
 open import Relation.Unary hiding (_∈_; Empty)
 open import Relation.Ternary.Core
