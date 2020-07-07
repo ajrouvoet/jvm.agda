@@ -71,10 +71,10 @@ compileₑ (bop f e₁ e₂) = do
     -- Other comparisons go similar
     compile-comp : ∀ {Γ as} → Comparator as → ε[ Compiler Γ (as ++ ψ) (boolean ∷ ψ) Emp ]
     compile-comp cmp = do
-      l⁺ ∙⟨ σ ⟩ ↓ l⁻    ← mkLabel 
+      l⁺ ∙⟨ σ ⟩ ↓ l⁻    ← freshLabel 
       l⁺ ∙⟨ σ ⟩ refl    ← code (if cmp l⁻)                               &⟨ Up _  # σ ⟩ l⁺
       l⁺ ∙⟨ σ ⟩ refl    ← code (push (bool true))                        &⟨ Up _  # σ ⟩ l⁺
-      ↓ e⁻ ∙⟨ σ ⟩ l⁺∙e⁺ ← ✴-rotateᵣ ⟨$⟩ (mkLabel                         &⟨ Up _  # σ ⟩ l⁺)
+      ↓ e⁻ ∙⟨ σ ⟩ l⁺∙e⁺ ← ✴-rotateᵣ ⟨$⟩ (freshLabel                       &⟨ Up _  # σ ⟩ l⁺)
       l⁺ ∙⟨ σ ⟩ e⁺      ← ✴-id⁻ʳ ⟨$⟩ (code (goto e⁻)                     &⟨ _ ✴ _ # ∙-comm σ ⟩ l⁺∙e⁺)
       e⁺                ← ✴-id⁻ʳ ⟨$⟩ (attachTo l⁺ ⟨ ∙-idʳ ⟩ code (push (bool false)) &⟨ Up _  # ∙-comm σ ⟩ e⁺)
       attach e⁺

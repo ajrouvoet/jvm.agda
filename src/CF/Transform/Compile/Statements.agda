@@ -1,6 +1,7 @@
 {-# OPTIONS --no-qualified-instances #-}
 module CF.Transform.Compile.Statements where
 
+open import Function using (_∘_)
 open import Data.Unit using (⊤; tt)
 open import Data.Product
 open import Data.List hiding (null; [_])
@@ -43,44 +44,35 @@ mutual
   compileₛ (block x) = do
     compiler _ x
 
-  -- do while? abstraction -- for loops
   compileₛ (while e body) = do
-    -- c⁺: [[ e ]]
-    -- iffalse e⁻
-    -- [[ body ]]
-    -- goto c⁻
-    -- e⁺: nop
-
     -- condition
-    c⁺ ∙⟨ σ ⟩ c⁻        ← mkLabel
-    c⁻ ∙⟨ σ ⟩ refl      ← attachTo c⁺ ⟨ ∙-idʳ ⟩ compileₑ e         &⟨ Down _ # ∙-comm σ ⟩ c⁻
-    (↓ e⁻) ∙⟨ σ ⟩ c⁻∙e⁺ ← mapM ✴-rotateᵣ (mkLabel                  &⟨ Down _ # σ        ⟩ c⁻)
-    c⁻∙e⁺  ∙⟨ σ ⟩ refl  ← code (if eq e⁻)                          &⟨ _ ✴ _  # ∙-comm σ ⟩ c⁻∙e⁺
+    lcond⁺ ∙⟨ σ ⟩ lcond⁻    ← freshLabel
+    refl ∙⟨ σ ⟩ lcond⁻      ← attachTo lcond⁺ ⟨ ∙-idʳ ⟩ compileₑ e ⟨ Down _ # σ ⟩& lcond⁻
+    (↓ lend⁻) ∙⟨ σ ⟩ labels ← (✴-rotateₗ ∘ ✴-assocᵣ) ⟨$⟩ (freshLabel ⟨ Down _ # σ ⟩& lcond⁻)
+    (↓ lcond⁻) ∙⟨ σ ⟩ lend⁺ ← ✴-id⁻ˡ ⟨$⟩ (code (if eq lend⁻) ⟨ _ ✴ _  # σ ⟩& labels)
 
     -- body
-    ↓ c⁻ ∙⟨ σ ⟩ e⁺      ← ✴-id⁻ʳ ⟨$⟩ (compileₛ body                &⟨ _ ✴ _  # σ        ⟩ c⁻∙e⁺)
-    e⁺   ∙⟨ σ ⟩ refl    ← code (goto c⁻)                           &⟨ Up _   # ∙-comm σ ⟩ e⁺
+    compileₛ body
+    lend⁺                   ← ✴-id⁻ˡ ⟨$⟩ (code (goto lcond⁻) ⟨ Up _   # σ ⟩& lend⁺)
+    attach lend⁺
 
-    -- label the end
-    coe (∙-id⁻ʳ σ) (attach e⁺)
-
-  compileₛ (ifthenelse c then else) = do
-
+  compileₛ (ifthenelse c e₁ e₂) = do
     -- condition
-    refl                ← compileₑ c
-    t⁺ ∙⟨ σ ⟩ ↓ t⁻      ← mkLabel
-    t⁺ ∙⟨ σ ⟩ refl      ← code (if ne t⁻)                              &⟨ Up _  # σ        ⟩ t⁺
+    compileₑ c
+    lthen+ ∙⟨ σ ⟩ ↓ lthen-  ← freshLabel
+    lthen+                  ← ✴-id⁻ˡ ⟨$⟩ (code (if ne lthen-) ⟨ Up _  # ∙-comm σ     ⟩& lthen+)
 
     -- else
-    t⁺   ∙⟨ σ ⟩ refl    ← compileₛ else                                &⟨ Up _  # σ        ⟩ t⁺
-    ↓ e⁻ ∙⟨ σ ⟩ t⁺∙e⁺   ← ✴-rotateᵣ ⟨$⟩ (mkLabel                       &⟨ Up _  # σ        ⟩ t⁺)
+    compileₛ e₂
+    ↓ lend- ∙⟨ σ ⟩ labels   ← (✴-rotateₗ ∘ ✴-assocᵣ) ⟨$⟩ (freshLabel ⟨ Up _  # ∙-idˡ        ⟩& lthen+)
 
     -- then
-    t⁺ ∙⟨ σ ⟩ e⁺        ← ✴-id⁻ʳ ⟨$⟩ (code (goto e⁻)                   &⟨ _ ✴ _ # ∙-comm σ ⟩ t⁺∙e⁺)
-    e⁺ ∙⟨ σ ⟩ refl      ← attachTo t⁺ ⟨ ∙-idʳ ⟩ compileₛ then          &⟨ Up _  # ∙-comm σ ⟩ e⁺
+    lthen+ ∙⟨ σ ⟩ lend+     ← ✴-id⁻ˡ ⟨$⟩ (code (goto lend-) ⟨ _ ✴ _ # σ ⟩& labels)
+    lend+                   ← ✴-id⁻ˡ ⟨$⟩ (attach lthen+ ⟨ Up _  # σ ⟩& lend+)
+    compileₛ e₁
 
     -- label the end
-    coe (∙-id⁻ʳ σ) (attach e⁺)
+    attach lend+
     
   {- Compiling blocks -}
   compiler : ∀ (ψ : StackTy) {Γ r} → Block r Γ → ε[ Compiler ⟦ Γ ⟧ ψ ψ Emp ]  

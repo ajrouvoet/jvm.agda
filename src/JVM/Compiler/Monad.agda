@@ -37,8 +37,8 @@ attachTo : ∀ {P} → ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₂ P ─✴ Com
 attachTo l ⟨ σ ⟩ c = pass (c &⟨ σ ⟩ label-start nop ⦇ Bigstar.[_] l ⦈)
 
 attach : ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
-attach l = attachTo l ⟨ ∙-idʳ ⟩ code nop
+attach l = attachTo l ⟨ ∙-idʳ ⟩ return refl
 
 -- Creating binders is pure in the model by means of hiding
-mkLabel : ∀ {ψ} → ε[ Compiler τ τ (Up (Own List.[ ψ ]) ✴ Down (Own List.[ ψ ])) ]
-mkLabel = return balance
+freshLabel : ∀ {ψ} → ε[ Compiler τ τ (Up (Own List.[ ψ ]) ✴ Down (Own List.[ ψ ])) ]
+freshLabel = return balance

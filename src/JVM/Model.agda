@@ -34,7 +34,10 @@ module Overlap where
   open IsCommutative bags-isCommutative  public
   open IsTotal bags-isTotal public
   
-open Disjoint using () renaming (empty-unique to empty-bag-unique) public
+open Disjoint using (bag-emptiness) renaming 
+  ( empty-unique to empty-bag-unique
+  ; singleton-unique to singleton-bag-unique)
+  public
 
 open Rel₃ Disjoint.bags using ()
   renaming (_∙_≣_ to _⊕_≣_; _✴_ to _⊕_; _─✴_ to _─⊕_; _∙⟨_⟩_ to _⊕⟨_⟩_) public
