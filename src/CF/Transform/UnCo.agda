@@ -32,14 +32,6 @@ mutual
   uncoₑ (bool x ⇈ wk)   = bool x
   uncoₑ (Exp.var' vars ⇈ wk)  = Tgt.var' (member wk)
   uncoₑ (bop f e₁✴e₂ ⇈ wk) with e₁ , e₂ ← unstar (e₁✴e₂ ⇈ wk) = bop f (uncoₑ e₁) (uncoₑ e₂)
-  -- uncoₑ (call f✴es ⇈ wk) with unstar (f✴es ⇈ wk)
-  -- ... | fn ⇈ wk' , es = call (lemma (proj₁ wk')) (uncos es)
-  --   where
-  --     open Overlap
-  --     open import Data.List.Relation.Binary.Permutation.Propositional.Properties
-
-  --     lemma : ∀ {x : TopLevelDecl} {xs ys} → [ x ] ∙ xs ≣ ys → x ∈ ys
-  --     lemma (hustle ρx _ ρys σ) rewrite ↭-singleton-inv ρx = let m = member σ in Any-resp-↭ ρys m
 
   uncos : ∀[ (Allstar Hoisted.Exp as) ⇑ ⇒ Exps as ]
   uncos (nil       ⇈ wk) = []
@@ -65,20 +57,3 @@ mutual
 
 unco : ∀[ Hoisted.Block r ⇒ Tgt.Block r ]
 unco bl = unco' (return bl)
-
-open import Relation.Ternary.Construct.List.Overlapping Ty public using (from-⊆)
-open import Data.List.Relation.Binary.Sublist.Propositional
-open import Data.List.Relation.Binary.Sublist.Propositional.Properties
-
--- unco-⊢ : ∀ {as r} → ∀[ as Hoisted.⊢ (Hoisted.Block r) ⇒ as Tgt.⊢ (Tgt.Block r) ]
--- unco-⊢ (possibly (intros q) code) = unco' (code ⇈ (Overlap.∙-idʳ , (proj₂ (from-⊆ (++⁺ q ⊆-refl)))))
-
--- unco-◇ : ∀ {r} → ∀[ ◇ (Hoisted.Block r) ⇒ ◇′ (Tgt.Block r) ]
--- unco-◇ = {!!}
-
--- postulate unco-function : ∀[ Hoisted.Function ⇒ Tgt.Function ]
--- unco-function (function sig fd σ (possibly (intros args) ◇body)) =
---   function sig fd σ (unco-◇ {!◇body!}) -- (locals , {!!})
-
--- unco-program : Hoisted.Program → Tgt.Program
--- unco-program ((mn ∙⟨ σ ⟩ fs) ⇈ wk) = (mn ∙⟨ σ ⟩ ⊛-map unco-function fs) ⇈ wk

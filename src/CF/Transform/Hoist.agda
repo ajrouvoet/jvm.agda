@@ -74,13 +74,3 @@ mutual
   translate (Src.block bl) = do
     bl'                      ← hoist bl
     return (Hoisted.block bl')
-
--- -- Optimizing hoisting
--- -- This will throw away the declarations of locals that are not used in the function.
--- hoist-function : ∀[ Src.Function ⇒ Hoisted.Function ]
--- hoist-function (function sig fd σ (possibly args code))
---   with locals , possibly (intros _ refl) code' ← hoist code
---   = function sig fd σ (possibly args (-, possibly ∼-all code')) 
-
--- hoist-program : Src.Program → Hoisted.Program 
--- hoist-program (program mn σ funs globals) = program mn σ (⊛-map hoist-function funs) globals
