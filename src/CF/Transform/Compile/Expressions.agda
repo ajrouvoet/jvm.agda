@@ -1,6 +1,7 @@
 {-# OPTIONS --no-qualified-instances #-}
 module CF.Transform.Compile.Expressions where
 
+open import Function using (_∘_)
 open import Level
 open import Data.Unit
 open import Data.Bool
@@ -71,13 +72,14 @@ compileₑ (bop f e₁ e₂) = do
     -- Other comparisons go similar
     compile-comp : ∀ {Γ as} → Comparator as → ε[ Compiler Γ (as ++ ψ) (boolean ∷ ψ) Emp ]
     compile-comp cmp = do
-      l⁺ ∙⟨ σ ⟩ ↓ l⁻    ← freshLabel 
-      l⁺ ∙⟨ σ ⟩ refl    ← code (if cmp l⁻)                               &⟨ Up _  # σ ⟩ l⁺
-      l⁺ ∙⟨ σ ⟩ refl    ← code (push (bool true))                        &⟨ Up _  # σ ⟩ l⁺
-      ↓ e⁻ ∙⟨ σ ⟩ l⁺∙e⁺ ← ✴-rotateᵣ ⟨$⟩ (freshLabel                       &⟨ Up _  # σ ⟩ l⁺)
-      l⁺ ∙⟨ σ ⟩ e⁺      ← ✴-id⁻ʳ ⟨$⟩ (code (goto e⁻)                     &⟨ _ ✴ _ # ∙-comm σ ⟩ l⁺∙e⁺)
-      e⁺                ← ✴-id⁻ʳ ⟨$⟩ (attachTo l⁺ ⟨ ∙-idʳ ⟩ code (push (bool false)) &⟨ Up _  # ∙-comm σ ⟩ e⁺)
-      attach e⁺
+      ↓ lfalse⁻ ∙⟨ σ ⟩ lfalse⁺ ← ✴-swap ⟨$⟩ freshLabel 
+      lfalse⁺                  ← ✴-id⁻ˡ ⟨$⟩ (code (if cmp lfalse⁻) ⟨ Up _  # σ ⟩& lfalse⁺)
+      lfalse⁺                  ← ✴-id⁻ˡ ⟨$⟩ (code (push (bool true)) ⟨ Up _  # ∙-idˡ ⟩& lfalse⁺)
+      ↓ lend⁻ ∙⟨ σ ⟩ labels    ← (✴-rotateₗ ∘ ✴-assocᵣ) ⟨$⟩ (freshLabel ⟨ Up _  # ∙-idˡ ⟩& lfalse⁺)
+      lfalse⁺ ∙⟨ σ ⟩ lend⁺     ← ✴-id⁻ˡ ⟨$⟩ (code (goto lend⁻) ⟨ _ ✴ _ # σ ⟩& labels)
+      lend⁺                    ← ✴-id⁻ˡ ⟨$⟩ (attach lfalse⁺ ⟨ Up _ # σ ⟩& lend⁺)
+      code (push (bool false))
+      attach lend⁺
 
     -- Compile comparisons and other binary operations
     compile-bop : ∀ {Γ a b c} → BinOp a b c → ε[ Compiler Γ (⟦ a ⟧ ∷ ⟦ b ⟧ ∷ ψ) (⟦ c ⟧ ∷ ψ) Emp ]
