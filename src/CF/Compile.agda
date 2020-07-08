@@ -25,16 +25,15 @@ open import CF.Transform.Compile.ToJVM
 open import JVM.Builtins
 open import JVM.Types
 open import JVM.Contexts
-open import JVM.Defaults.Syntax.Values
-open import JVM.Defaults.Syntax.Instructions
-open import JVM.Defaults.Syntax.Classes
-open import JVM.Defaults.Transform.Noooops
+open import JVM.Syntax.Values
+open import JVM.Syntax.Instructions
+open import JVM.Transform.Noooops
 open import JVM.Compiler
 
 module _ {T : Set} where
   open import JVM.Model T public
 
-compile : ∀ {r} → Src.Block r [] → ∃ λ Γ → ε[ ⟪ [] , Γ ∣ [] ↝ [] ⟫ ]
+compile : ∀ {r} → Src.Block r [] → ∃ λ Γ → ε[ ⟪ Γ ∣ [] ↝ [] ⟫ ]
 compile bl₁                       with hoist bl₁
 ... | _ , Possibly.possibly (intros r refl) bl₂  -- The grading of the possibility modality
                                                  -- proves that only the lexical context has been extended

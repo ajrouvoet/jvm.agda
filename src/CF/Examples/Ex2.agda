@@ -15,12 +15,12 @@ open import Relation.Ternary.Monad.Possibly
 
 open import JVM.Contexts
 open import JVM.Types
+open import JVM.Transform.Assemble
 
 open import CF.Syntax as Src
 open import CF.Types
 open import CF.Contexts.Lexical
 open import CF.Compile
-open import CF.Builtins
 
 ex₂ : Src.Block void ε
 ex₂ =
@@ -35,7 +35,6 @@ ex₂ =
 open import IO as IO
 main = IO.run (putStrLn test)
   where
-    open import JVM.Defaults.Syntax.Extrinsic
     test = Show.showBytecode $ proj₂ $ exec-extractor $ extract (proj₂ $ compile ex₂)
 
 -- main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))

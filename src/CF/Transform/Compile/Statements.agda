@@ -37,10 +37,6 @@ mutual
     compileₑ e 
     code pop
 
-  compileₛ (ret e) = do
-    compileₑ e 
-    code ret
-
   compileₛ (block x) = do
     compiler _ x
 

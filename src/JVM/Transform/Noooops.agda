@@ -1,6 +1,6 @@
 {-# OPTIONS --no-qualified-instances #-}
 {- Noop removal transformation on bytecode -}
-module JVM.Defaults.Transform.Noooops where
+module JVM.Transform.Noooops where
 
 open import Data.Product
 open import Data.Sum
@@ -15,7 +15,7 @@ open import Relation.Ternary.Structures.Syntax hiding (_∣_)
 
 open import JVM.Types
 open import JVM.Model StackTy
-open import JVM.Defaults.Syntax.Instructions
+open import JVM.Syntax.Instructions
 
 open import Relation.Ternary.Data.ReflexiveTransitive {{intf-rel}}
 

@@ -13,7 +13,7 @@ open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Monad
 open import Relation.Ternary.Data.ReflexiveTransitive as Star
-open import Relation.Ternary.Data.Bigstar as Bigstar
+open import Relation.Ternary.Data.Bigplus as Bigplus
 
 private
   variable
@@ -34,7 +34,7 @@ code i = tell Star.[ instr (↓ i) ]
 
 -- We can label the start of a compiler computation
 attachTo : ∀ {P} → ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₂ P ─✴ Compiler τ₁ τ₂ P ]
-attachTo l ⟨ σ ⟩ c = pass (c &⟨ σ ⟩ label-start nop ⦇ Bigstar.[_] l ⦈)
+attachTo l ⟨ σ ⟩ c = pass (c &⟨ σ ⟩ label-start nop ⦇ Bigplus.[_] l ⦈)
 
 attach : ∀[ Up (One τ₁) ⇒ Compiler τ₁ τ₁ Emp ]
 attach l = attachTo l ⟨ ∙-idʳ ⟩ return refl

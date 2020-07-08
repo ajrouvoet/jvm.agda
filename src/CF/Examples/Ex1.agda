@@ -20,7 +20,7 @@ open import CF.Types
 open import CF.Syntax as Src
 open import CF.Contexts.Lexical
 
-open import JVM.Defaults.Syntax.Extrinsic
+open import JVM.Transform.Assemble
 
 main-fun : Closed (Src.Block void)
 main-fun = ( 
@@ -39,7 +39,7 @@ main-fun = (
             Possibly.possibly ∼-all (
               -- j := j
               Src.asgn (vars ∙⟨ overlaps ∙-idˡ ⟩ var) ⍮⟨ ∙-idʳ ⟩
-              Src.ret unit ⍮⟨ ∙-idʳ ⟩
+              Src.run unit ⍮⟨ ∙-idʳ ⟩
               emp))
           -- else
           ∙⟨ overlaps ∙-idˡ ⟩
@@ -47,7 +47,7 @@ main-fun = (
             -- int i = j
             var ≔⟨ consˡ ∙-idˡ ⟩
             Possibly.possibly ∼-none (
-              Src.ret unit ⍮⟨ ∙-idʳ ⟩
+              Src.run unit ⍮⟨ ∙-idʳ ⟩
               emp))
           )
         Src.⍮⟨ ∙-idʳ ⟩ emp
@@ -60,7 +60,6 @@ open import CF.Compile
 
 main = IO.run (putStrLn test)
   where
-    open import JVM.Defaults.Syntax.Extrinsic
     test = Show.showBytecode $ proj₂ $ exec-extractor $ extract (proj₂ $ compile main-fun)
 
 -- main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))

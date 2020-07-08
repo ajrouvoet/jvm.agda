@@ -14,7 +14,7 @@ open import Relation.Ternary.Data.ReflexiveTransitive as Star
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
-open import Relation.Ternary.Data.Bigstar
+open import Relation.Ternary.Data.Bigplus
 open import Relation.Ternary.Data.IndexedMonoid
 
 open import Data.Sum

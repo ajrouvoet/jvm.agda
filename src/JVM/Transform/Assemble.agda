@@ -1,5 +1,5 @@
 {-# OPTIONS --rewriting #-}
-module JVM.Defaults.Syntax.Extrinsic where
+module JVM.Transform.Assemble where
 
 open import Agda.Builtin.Equality.Rewrite
 
@@ -21,11 +21,11 @@ open import Relation.Ternary.Data.IndexedMonoid
 open import Relation.Ternary.Construct.Bag.Properties
 
 open import JVM.Types
-open import JVM.Defaults.Syntax.Values
+open import JVM.Syntax.Values
 open import JVM.Model StackTy
-open import JVM.Defaults.Syntax.Labeling StackTy
 open import JVM.Model.Properties
-open import JVM.Defaults.Syntax.Instructions hiding (⟨_↝_⟩; Instr)
+open import JVM.Syntax.Labeling StackTy
+open import JVM.Syntax.Instructions hiding (⟨_↝_⟩; Instr)
 
 {-# REWRITE ++-assoc #-}
 
@@ -62,7 +62,7 @@ module _ where
   Addressing : Labels → Typing → Set
   Addressing lbs J = All (λ ψ → ψ ∈ J) lbs
   
-  instr-tf : ∀ {Γ ℓs} → Addressing ℓs J → ⟨ Γ ∣ ψ₁ ↝ ψ₂ ⟩ ℓs → Instr (proj₂ Γ) J ψ₁ ψ₂
+  instr-tf : ∀ {Γ ℓs} → Addressing ℓs J → ⟨ Γ ∣ ψ₁ ↝ ψ₂ ⟩ ℓs → Instr Γ J ψ₁ ψ₂
   instr-tf ρ noop              = nop
   instr-tf ρ pop               = pop
   instr-tf ρ (push x)          = push x
@@ -71,7 +71,6 @@ module _ where
   instr-tf ρ (bop x)           = bop x
   instr-tf ρ (load x)          = load x
   instr-tf ρ (store x)         = store x
-  instr-tf ρ ret               = ret
   instr-tf (ℓ ∷ _) (goto refl) = goto ℓ
   instr-tf (ℓ ∷ _) (if x refl) = if x ℓ
 
@@ -83,8 +82,11 @@ module _ where
   exec-extractor c = let _ , code , _ = c {[]} [] in -, code
 
   label-addresses : ∀ {x} → Labeling ψ₁ x → All (λ z → z ∈ J₁ ++ ψ₁ ∷ []) x
-  label-addresses emp = []
-  label-addresses (cons (refl ∙⟨ sep ⟩ qx)) = joinAll (λ ()) sep (∈-++⁺ʳ _ (here refl) ∷ []) (label-addresses qx)
+  label-addresses (refl ∙⟨ σ ⟩ qx) = joinAll (λ ()) σ (∈-++⁺ʳ _ (here refl) ∷ []) (addr' qx)
+    where
+      addr' : ∀ {x} → Bigstar (Own List.[ ψ₁ ]) x → All (λ z → z ∈ J₁ ++ ψ₁ ∷ []) x
+      addr' emp = []
+      addr' (cons (refl ∙⟨ σ ⟩ qx)) = joinAll (λ ()) σ (∈-++⁺ʳ _ (here refl) ∷ []) (addr' qx)
 
   -- We can extract bytecode that does absolute addressing from the fancy
   -- intrinsically-typed representation.
@@ -99,7 +101,7 @@ module _ where
   -- In this setting 'l' is the head of some suffix of bytecode.
   -- The imports of 'l ✴ r' have been collected from the labels defined in the prefix.
   -- We get the exports of the tail 'r' of the suffix from the recursive call.
-  extract : ∀ {Γ} → ∀[ ⟪ Γ ∣ ψ₁ ↝ ψ₂ ⟫ ⇒ Extractor (proj₂ Γ) ψ₁ ψ₂ ]
+  extract : ∀ {Γ} → ∀[ ⟪ Γ ∣ ψ₁ ↝ ψ₂ ⟫ ⇒ Extractor Γ ψ₁ ψ₂ ]
   extract {ψ₁ = ψ₁} nil ρ    = [] , nil , []
 
   extract {ψ₁ = ψ₁} (cons (labeled (↑ ls ∙⟨ σ₁ ⟩ ↓ i) ∙⟨ σ₂ ⟩ is)) ρ = let
