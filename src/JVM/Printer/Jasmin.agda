@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module JVM.Printer.Jasmin where
 
 open import Function

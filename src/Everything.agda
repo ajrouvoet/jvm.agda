@@ -1,4 +1,8 @@
 module Everything where
+-- The development can almost entirely be type-checked using --safe,
+-- We mark modules that use the TERMINATING pragma with (**)
+-- And one module that uses --rewriting with (*).
+-- These are the only modules that Agda does not accept ass --safe.
 
 --  # First we summarize the library we use by Rouvoet et al '20, CPP.
 --
@@ -80,17 +84,17 @@ import CF.Syntax           -- co-contextual
 import CF.Syntax.Hoisted   -- co-contextual without local variable introductions
 import CF.Syntax.DeBruijn  -- contextual
 
-import CF.Transform.Hoist               -- hoisting local variable declarations
-import CF.Transform.UnCo                -- contextualizing
+import CF.Transform.Hoist               -- hoisting local variable declarations (**)
+import CF.Transform.UnCo                -- contextualizing (**)
 import CF.Transform.Compile.Expressions -- compiling expressions
 import CF.Transform.Compile.Statements  -- compiling statements
 import CF.Transform.Compile.ToJVM       -- typeclass for type translation
 import JVM.Transform.Noooops            -- bytecode optimization that removes nops
-import JVM.Transform.Assemble           -- bytecode translation to absolute jumps
-import JVM.Printer                      -- printer for co-contextual bytecode to Jasmin (not verified)
+import JVM.Transform.Assemble           -- bytecode translation to absolute jumps (*)
+import JVM.Printer                      -- printer for co-contextual bytecode to Jasmin (not verified) (**)
 
 -- Example compilations.
 -- These can be run by first compiling them using `make examples`.
 -- The output will be in _build/bin/
-import CF.Examples.Ex1
-import CF.Examples.Ex2
+import CF.Examples.Ex1 -- (*,**)
+import CF.Examples.Ex2 -- (*,**)

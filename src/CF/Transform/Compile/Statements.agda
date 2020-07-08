@@ -1,4 +1,4 @@
-{-# OPTIONS --no-qualified-instances #-}
+{-# OPTIONS --safe --no-qualified-instances #-}
 module CF.Transform.Compile.Statements where
 
 open import Function using (_∘_)

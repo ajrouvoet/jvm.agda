@@ -1,4 +1,4 @@
-{-# OPTIONS --no-qualified-instances #-}
+{-# OPTIONS --safe --no-qualified-instances #-}
 {- Noop removal transformation on bytecode -}
 module JVM.Transform.Noooops where
 

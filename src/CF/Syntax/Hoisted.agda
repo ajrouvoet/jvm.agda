@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module CF.Syntax.Hoisted where
 
 open import Level
