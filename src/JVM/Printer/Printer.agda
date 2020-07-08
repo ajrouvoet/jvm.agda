@@ -6,7 +6,7 @@ open import Data.Unit
 open import Data.Nat
 open import Data.Nat.Show as Nat
 open import Data.Product
-open import Data.List
+open import Data.List as List
 open import Data.List.Relation.Unary.All
 open import Relation.Unary hiding (Empty)
 open import Relation.Unary.PredicateTransformer using (Pt)
@@ -16,6 +16,7 @@ open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
 
 open import JVM.Model T
+open Disjoint using (bags; bags-isMonoid)
 open import Relation.Ternary.Data.Bigstar
 open import Relation.Ternary.Construct.Market intf-rel
 open import Relation.Ternary.Monad.Identity as Id hiding (id-monad; id-functor)
@@ -116,12 +117,17 @@ module _ where
     print (label (Nat.show n))
 
   {-# TERMINATING #-}
-  print-labels : ∀ {τ} → ∀[ Up (Labeling τ) ⇒ Printer Emp ]
-  print-labels (↑ emp)                  = return refl
-  print-labels (↑ (cons (x ∙⟨ σ ⟩ xs))) = do
+  print-labels' : ∀ {τ} → ∀[ Up (Bigstar (One τ)) ⇒ Printer Emp ]
+  print-labels' (↑ emp)                  = return refl
+  print-labels' (↑ (cons (x ∙⟨ σ ⟩ xs))) = do
     xs ← ✴-id⁻ʳ ⟨$⟩ (print-label (↑ x) &⟨ ∙-comm $ liftUp σ ⟩ ↑ xs)
-    print-labels xs
+    print-labels' xs
     where open Disjoint using (bags; bags-isMonoid)
+
+  print-labels : ∀ {τ} → ∀[ Up (Labeling τ) ⇒ Printer Emp ]
+  print-labels (↑ (x ∙⟨ σ ⟩ xs)) = do
+    xs ← ✴-id⁻ʳ ⟨$⟩ (print-label (↑ x) &⟨ ∙-comm $ liftUp σ ⟩ ↑ xs)
+    print-labels' xs
 
 
 
