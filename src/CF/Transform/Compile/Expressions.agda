@@ -94,6 +94,24 @@ compileₑ (bop f e₁ e₂) = do
     compile-bop gt  = compile-comp icmpgt
     compile-bop le  = compile-comp icmplt
 
+compileₑ (ifthenelse c e₁ e₂) = do
+  -- condition
+  compileₑ c
+  lthen+ ∙⟨ σ ⟩ ↓ lthen-  ← freshLabel
+  lthen+                  ← ✴-id⁻ˡ ⟨$⟩ (code (if ne lthen-) ⟨ Up _  # ∙-comm σ     ⟩& lthen+)
+
+  -- else
+  compileₑ e₂
+  ↓ lend- ∙⟨ σ ⟩ labels   ← (✴-rotateₗ ∘ ✴-assocᵣ) ⟨$⟩ (freshLabel ⟨ Up _  # ∙-idˡ        ⟩& lthen+)
+
+  -- then
+  lthen+ ∙⟨ σ ⟩ lend+     ← ✴-id⁻ˡ ⟨$⟩ (code (goto lend-) ⟨ _ ✴ _ # σ ⟩& labels)
+  lend+                   ← ✴-id⁻ˡ ⟨$⟩ (attach lthen+ ⟨ Up _  # σ ⟩& lend+)
+  compileₑ e₁
+
+  -- label the end
+  attach lend+
+
 compileₑₛ [] = return refl
 compileₑₛ (e ∷ es) = do
   compileₑₛ es

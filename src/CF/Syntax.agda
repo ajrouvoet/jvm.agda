@@ -33,14 +33,12 @@ data BinOp : Ty → Ty → Ty → Set where
   eq ne lt ge gt le   : BinOp int int bool
 
 data Exp : Ty → Pred Ctx 0ℓ where
-  -- irreducible expressions
-  unit     : ε[ Exp void ]
-  num      : ℕ → ε[ Exp int ]
-  bool     : Bool → ε[ Exp bool ]
-
-  -- storeless expressions
-  var'     : ∀[ Var a ⇒ Exp a ]
-  bop      : BinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
+  unit       : ε[ Exp void ]
+  num        : ℕ → ε[ Exp int ]
+  bool       : Bool → ε[ Exp bool ]
+  ifthenelse : ∀[ Exp bool ✴ Exp a ✴ Exp a ⇒ Exp a ]
+  var'       : ∀[ Var a ⇒ Exp a ]
+  bop        : BinOp a b c → ∀[ Exp a ✴ Exp b ⇒ Exp c ]
 
 pattern var  = var' vars
 

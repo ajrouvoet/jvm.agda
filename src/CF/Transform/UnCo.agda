@@ -32,6 +32,10 @@ mutual
   uncoₑ (bool x ⇈ wk)   = bool x
   uncoₑ (Exp.var' vars ⇈ wk)  = Tgt.var' (member wk)
   uncoₑ (bop f e₁✴e₂ ⇈ wk) with e₁ , e₂ ← unstar (e₁✴e₂ ⇈ wk) = bop f (uncoₑ e₁) (uncoₑ e₂)
+  uncoₑ (ifthenelse c✴e₁✴e₂ ⇈ wk) = let
+    c  , e₁✴e₂ = unstar (c✴e₁✴e₂ ⇈ wk)
+    e₁ , e₂    = unstar e₁✴e₂
+    in ifthenelse (uncoₑ c) (uncoₑ e₁) (uncoₑ e₂)
 
   uncos : ∀[ (Allstar Hoisted.Exp as) ⇑ ⇒ Exps as ]
   uncos (nil       ⇈ wk) = []

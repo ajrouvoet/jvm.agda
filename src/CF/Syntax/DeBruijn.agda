@@ -22,14 +22,12 @@ open BinOp    public
 
 mutual
   data Exp : Ty → Pred Ctx 0ℓ where
-    -- irreducible expressions
-    unit     : ∀[ Exp void ]
-    num      : ℕ    → ∀[ Exp int ]
-    bool     : Bool → ∀[ Exp bool ]
-
-    -- storeless expressions
-    var'     : ∀[ Var a ⇒ Exp a ]
-    bop      : BinOp a b c → ∀[ Exp a ⇒ Exp b ⇒ Exp c ]
+    unit       : ∀[ Exp void ]
+    num        : ℕ    → ∀[ Exp int ]
+    bool       : Bool → ∀[ Exp bool ]
+    ifthenelse : ∀[ Exp bool ⇒ Exp a ⇒ Exp a ⇒ Exp a ]
+    var'       : ∀[ Var a ⇒ Exp a ]
+    bop        : BinOp a b c → ∀[ Exp a ⇒ Exp b ⇒ Exp c ]
 
   Exps = λ as Γ → All (λ a → Exp a Γ) as
 
