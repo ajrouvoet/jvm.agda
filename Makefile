@@ -1,5 +1,5 @@
 BUILDDIR = _build
-TARGET   = jvm.agda
+TARGET   = typed-compilation
 BUILD    = $(BUILDDIR)/$(TARGET)
 OUT      = $(BUILDDIR)/bin
 EXES     = ./src/CF/Examples/
@@ -8,11 +8,13 @@ SRC     := $(wildcard src/*)
 all:
 	agda -v 2 src/Everything.agda
 
-build/sessions.agda.tar.gz:
+build/typed-compilation.tar.gz: all doc
 	rm -rf $(BUILD) && mkdir -p $(BUILD)
-	cp -r README.agda src/ lib/ $(BUILD)
+	cp -r README.md src/ lib/ doc/ $(BUILD)
 	find $(BUILD) -iname *.agdai -exec rm {} \;
 	cd $(BUILDDIR) && tar cvzf $(TARGET).tar.gz --numeric-owner $(TARGET)
+
+build: build/typed-compilation.tar.gz
 
 $(OUT)/%: $(EXES)/%.agda $(SRC)
 	stack exec --package ieee754 --package text agda -- --compile-dir $(OUT) --compile $<
