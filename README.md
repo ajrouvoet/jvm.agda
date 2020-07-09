@@ -21,7 +21,8 @@ structured control-flow.
 
 ## Browsing the code
 
-We included a html version of the code that hyperlinks definitions in `doc/`.
+In the distributed source we included a html version of the code that hyperlinks definitions in `doc/`.
+The index is [Everything.html](./doc/Everything.html).
 
 ## Type-checking the code
 
