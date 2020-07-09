@@ -19,6 +19,10 @@ Agda, based on separation logic.  And implement intrinsically-typed operations
 on bytecode, culminating in an intrinsically-typed compiler for a language with
 structured control-flow.
 
+## Browsing the code
+
+We included a html version of the code that hyperlinks definitions in `doc/`.
+
 ## Type-checking the code
 
 This repository relies heavily on Agda's instance search to get overloaded syntax
@@ -30,6 +34,9 @@ To install, follow the instructions from the official documentation
 [here](https://agda.readthedocs.io/en/v2.6.1/getting-started/installation.html#installation-of-the-development-version).
 The lastest commit that we tested was 552987aa0119.
 
+Don't forget to `(setq agda-mode-path ..)` to the output `agda-mode --locate` if you are using
+emacs and have a fixed agda-mode path set.
+
 A good place to start exploring the codebase is [Everything.agda](./src.Everything.agda),
 which links to all the moving parts and relates them to the paper.
 
@@ -40,4 +47,3 @@ These programs can be compiled with `make examples`. The binaries that output
 print the resulting bytecode will be output in `./_build/bin`.
 The compilation makes use of the haskell tool [stack](https://docs.haskellstack.org/en/stable/README/),
 which needs to be installed prior.
-
