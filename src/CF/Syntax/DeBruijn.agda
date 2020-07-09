@@ -5,7 +5,7 @@ open import Level
 
 open import Data.Bool
 open import Data.Product
-open import Data.Nat
+open import Data.Integer
 open import Data.List hiding (null)
 open import Data.List.Relation.Unary.All
 open import Relation.Unary.PredicateTransformer using (Pt)
@@ -23,7 +23,7 @@ open BinOp    public
 mutual
   data Exp : Ty → Pred Ctx 0ℓ where
     unit       : ∀[ Exp void ]
-    num        : ℕ    → ∀[ Exp int ]
+    num        : ℤ    → ∀[ Exp int ]
     bool       : Bool → ∀[ Exp bool ]
     ifthenelse : ∀[ Exp bool ⇒ Exp a ⇒ Exp a ⇒ Exp a ]
     var'       : ∀[ Var a ⇒ Exp a ]

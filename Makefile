@@ -8,9 +8,9 @@ SRC     := $(wildcard src/*)
 all:
 	agda -v 2 src/Everything.agda
 
-build/typed-compilation.tar.gz: all doc
+build/typed-compilation.tar.gz: doc
 	rm -rf $(BUILD) && mkdir -p $(BUILD)
-	cp -r README.md src/ lib/ doc/ $(BUILD)
+	cp -r README.md src/ lib/ doc/ .agda-lib Makefile $(BUILD)
 	find $(BUILD) -iname *.agdai -exec rm {} \;
 	cd $(BUILDDIR) && tar cvzf $(TARGET).tar.gz --numeric-owner $(TARGET)
 

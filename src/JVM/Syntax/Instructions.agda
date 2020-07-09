@@ -47,7 +47,7 @@ module _ (𝑭 : FrameTy) where
     swap : ε[ ⟨ a ∷ b ∷ ψ  ↝  b ∷ a ∷ ψ ⟩ ]
 
     -- binary operations on primitive types
-    bop   : NativeBinOp a b c → ε[ ⟨ a ∷ b ∷ ψ  ↝  c ∷ ψ ⟩ ]
+    bop   : NativeBinOp a b c → ε[ ⟨ b ∷ a ∷ ψ  ↝  c ∷ ψ ⟩ ]
 
     -- register manipulation
     load  : 𝑹[ a ] → ε[ ⟨ ψ ↝ a ∷ ψ ⟩ ]

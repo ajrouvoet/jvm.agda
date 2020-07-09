@@ -3,7 +3,7 @@ module CF.Syntax where
 
 open import Level
 
-open import Data.Nat
+open import Data.Integer
 open import Data.Bool
 open import Data.String
 open import Data.Product
@@ -34,7 +34,7 @@ data BinOp : Ty → Ty → Ty → Set where
 
 data Exp : Ty → Pred Ctx 0ℓ where
   unit       : ε[ Exp void ]
-  num        : ℕ → ε[ Exp int ]
+  num        : ℤ → ε[ Exp int ]
   bool       : Bool → ε[ Exp bool ]
   ifthenelse : ∀[ Exp bool ✴ Exp a ✴ Exp a ⇒ Exp a ]
   var'       : ∀[ Var a ⇒ Exp a ]

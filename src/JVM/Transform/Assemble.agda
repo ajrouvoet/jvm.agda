@@ -3,6 +3,7 @@ module JVM.Transform.Assemble where
 
 open import Agda.Builtin.Equality.Rewrite
 
+open import Data.Nat using (ℕ)
 open import Data.List as List
 open import Data.List.Properties
 open import Data.List.Relation.Unary.All as All
@@ -45,7 +46,7 @@ module _ Γ where
     pop   : Instr J (a ∷ ψ₁) ψ₁
     dup   : Instr J (a ∷ ψ₁) (a ∷ a ∷ ψ₁)
     swap  : Instr J (a ∷ b ∷ ψ₁) (b ∷ a ∷ ψ₁)
-    bop   : NativeBinOp a b c → Instr J (a ∷ b ∷ ψ₁) (c ∷ ψ₁)
+    bop   : NativeBinOp a b c → Instr J (b ∷ a ∷ ψ₁) (c ∷ ψ₁)
     load  : a ∈ Γ → Instr J ψ₁ (a ∷ ψ₁)
     store : a ∈ Γ → Instr J (a ∷ ψ₁) ψ₁
     ret   : Instr J (a ∷ ψ₁) ψ₂
@@ -140,9 +141,14 @@ module _ where
 module Show where
 
   open import Data.String as S hiding (show)
+  open import Data.Integer as I
   open import Data.Fin as Fin
   open import Data.Nat.Show as NS
   open import Data.Bool.Show as BS
+  
+  showInt : ℤ → String
+  showInt (+ n) = NS.show n
+  showInt (-[1+ n ]) = "-" S.++ NS.show (ℕ.suc n)
   
   showFin : ∀ {n} → Fin n → String
   showFin f = NS.show (Fin.toℕ f)
@@ -170,7 +176,7 @@ module Show where
 
   showConst : Const a → String
   showConst Const.null = "null"
-  showConst (num x)    = NS.show x
+  showConst (num x)    = showInt x
   showConst (bool x)   = BS.show x
 
   showReg : ∀ {Γ} → a ∈ Γ → String
@@ -217,4 +223,4 @@ module Show where
         NS.show n S.++ ": " 
           S.++ showInstr i
           S.++ "\t⟨ " S.++ showStackTy ψ₁ S.++ " ↝ " S.++ showStackTy ψ₂ S.++ " ⟩"
-          S.++ "\n" S.++ showBytecode' b (suc n)
+          S.++ "\n" S.++ showBytecode' b (ℕ.suc n)
