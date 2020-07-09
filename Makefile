@@ -5,6 +5,9 @@ OUT      = $(BUILDDIR)/bin
 EXES     = ./src/CF/Examples/
 SRC     := $(wildcard src/*)
 
+all:
+	agda -v 2 src/Everything.agda
+
 build/sessions.agda.tar.gz:
 	rm -rf $(BUILD) && mkdir -p $(BUILD)
 	cp -r README.agda src/ lib/ $(BUILD)
