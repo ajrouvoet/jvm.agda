@@ -1,4 +1,0 @@
-#!/bin/bash
-# Pass a single .js file to this script to build the class file
-
-java -jar ./jasmin.jar "$1"
