@@ -37,7 +37,7 @@ The lastest commit that we tested was 552987aa0119.
 Don't forget to `(setq agda-mode-path ..)` to the output `agda-mode --locate` if you are using
 emacs and have a fixed agda-mode path set.
 
-A good place to start exploring the codebase is [Everything.agda](./src.Everything.agda),
+A good place to start exploring the codebase is [Everything.agda](./src/Everything.agda),
 which links to all the moving parts and relates them to the paper.
 
 ## Compiling the examples
