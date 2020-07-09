@@ -40,6 +40,8 @@ emacs and have a fixed agda-mode path set.
 
 A good place to start exploring the codebase is [Everything.agda](./src/Everything.agda),
 which links to all the moving parts and relates them to the paper.
+The usual way to type-check Agda code is to load it in emacs, and load the file with `C-c C-l`.
+On the commandline, the code can be checked with `make`.
 
 ## Compiling the examples
 
