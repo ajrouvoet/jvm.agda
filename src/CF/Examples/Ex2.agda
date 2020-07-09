@@ -32,9 +32,9 @@ open import CF.Compile
 ex₂ : Src.Block void ε
 ex₂ =
     Src.num (+ 0) ≔⟨ ∙-idˡ ⟩ Possibly.possibly ∼-all (
-    Src.while (bop lt (var ∙⟨ ∙-idʳ ⟩ num (+ 10)) ∙⟨ overlaps ∙-idˡ ⟩
+    Src.while (bop gt (var ∙⟨ ∙-idʳ ⟩ num (+ 10)) ∙⟨ overlaps ∙-idˡ ⟩
       Src.block (
-        Src.asgn (refl ∙⟨ overlaps ∙-idˡ ⟩ bop sub (var ∙⟨ ∙-idʳ ⟩ num (+ 1))) ⍮⟨ ∙-idʳ ⟩ 
+        Src.asgn (refl ∙⟨ overlaps ∙-idˡ ⟩ bop add (var ∙⟨ ∙-idʳ ⟩ num (+ 1))) ⍮⟨ ∙-idʳ ⟩ 
         emp)
     )⍮⟨ ∙-idʳ ⟩ emp
   )
@@ -58,10 +58,13 @@ ex₂ =
 -- 14: nop
 
 open import IO as IO
--- main = IO.run (putStrLn test)
---   where
---     test = Show.showBytecode $ proj₂ $ exec-extractor $ extract (proj₂ $ compile ex₂)
-
-main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
+main = IO.run (putStrLn test)
   where
-  proc = procedure "ex1" (proj₂ $ compile ex₂)
+    test = Show.showBytecode $ proj₂ $ exec-extractor $ extract (proj₂ $ compile ex₂)
+
+-- Uncomment this instead of the above main to output Jasmin code.
+-- You can assemble this using Jasmin so that you can run the output with java.
+-- Disclaimer: the jasmin compiler pass is not verified.
+-- main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
+--   where
+--   proc = procedure "ex1" (proj₂ $ compile ex₂)
