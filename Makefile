@@ -6,7 +6,7 @@ EXES     = ./src/CF/Examples/
 SRC     := $(wildcard src/*)
 
 all:
-	agda -v 2 src/Everything.agda
+	agda src/Everything.agda
 
 build/typed-compilation.tar.gz: doc
 	rm -rf $(BUILD) && mkdir -p $(BUILD)
@@ -17,7 +17,7 @@ build/typed-compilation.tar.gz: doc
 build: build/typed-compilation.tar.gz
 
 $(OUT)/%: $(EXES)/%.agda $(SRC)
-	stack exec --package ieee754 --package text agda -- --compile-dir $(OUT) --compile $<
+	agda --compile-dir $(OUT) --compile $<
 
 examples: $(OUT)/Ex1 $(OUT)/Ex2 
 
