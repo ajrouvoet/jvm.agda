@@ -21,9 +21,11 @@ open import CF.Syntax as Src
 open import CF.Contexts.Lexical
 
 open import JVM.Transform.Assemble
+open import JVM.Printer
+import JVM.Printer.Jasmin as J
 
-main-fun : Closed (Src.Block void)
-main-fun = ( 
+ex₁ : Closed (Src.Block void)
+ex₁ = ( 
   Src.while (
     Src.bool true ∙⟨ ∙-idˡ ⟩ Src.block 
     -- int j = true
@@ -60,10 +62,11 @@ open import CF.Compile
 
 main = IO.run (putStrLn test)
   where
-    test = Show.showBytecode $ proj₂ $ exec-extractor $ extract (proj₂ $ compile main-fun)
+    test = Show.showBytecode $ proj₂ $ exec-extractor $ extract (proj₂ $ compile ex₁)
 
+-- Uncomment this instead of the above main to output Jasmin code.
+-- You can assemble this using Jasmin so that you can run the output with java.
+-- Disclaimer: the jasmin compiler pass is not verified.
 -- main = IO.run (putStrLn (J.unlines $ J.Jasmin.out proc))
 --   where
---   open import JVM.Defaults.Printer
---   import JVM.Defaults.Printer.Jasmin as J
---   proc = procedure "ex1" (proj₂ $ compile main-fun)
+--   proc = procedure "ex1" (proj₂ $ compile ex₁)

@@ -3,6 +3,7 @@ module JVM.Printer.Jasmin where
 
 open import Function
 open import Data.Nat
+open import Data.Integer
 open import Data.Nat.Show as NatShow
 open import Data.String as S using (String)
 open import Data.List as List
@@ -126,7 +127,7 @@ data Instr : Set where
   nop pop dup swap ret : Instr
 
   aconst_null                      : Instr
-  bipush sipush                    : ℕ → Instr
+  bipush sipush                    : ℤ → Instr
   iconstm1 iconst0 iconst1 iconst2 : Instr
 
   aaload  aload  iload             : ℕ → Instr
@@ -151,6 +152,10 @@ module Instruction where
   lbl : String → String
   lbl x = "label_" S.++ x
 
+  showInt : ℤ → String
+  showInt (+ n) = NatShow.show n
+  showInt (-[1+ n ]) = "-" S.++ NatShow.show (ℕ.suc n)
+
   out : Instr → Line
   out nop         = line "nop" 
   out pop         = line "pop" 
@@ -159,8 +164,8 @@ module Instruction where
   out ret         = line "return" 
   out aconst_null = line "aconst_null" 
 
-  out (bipush n)  = unwords $ "sipush" ∷ NatShow.show n ∷ []
-  out (sipush n)  = unwords $ "bipush" ∷ NatShow.show n ∷ []
+  out (bipush n)  = unwords $ "sipush" ∷ showInt n ∷ []
+  out (sipush n)  = unwords $ "bipush" ∷ showInt n ∷ []
   out (aload n)   = unwords $ "aload"  ∷ NatShow.show n ∷ []
   out (astore n)  = unwords $ "astore" ∷ NatShow.show n ∷ []
   out (iload n)   = unwords $ "iload"  ∷ NatShow.show n ∷ []

@@ -54,8 +54,8 @@ compileₑ (var' x) = do
   code (load ⟦ x ⟧)
 
 compileₑ (bop f e₁ e₂) = do
-  compileₑ e₂
   compileₑ e₁
+  compileₑ e₂
   compile-bop f
 
   where
@@ -73,15 +73,15 @@ compileₑ (bop f e₁ e₂) = do
     compile-comp cmp = do
       ↓ lfalse⁻ ∙⟨ σ ⟩ lfalse⁺ ← ✴-swap ⟨$⟩ freshLabel 
       lfalse⁺                  ← ✴-id⁻ˡ ⟨$⟩ (code (if cmp lfalse⁻) ⟨ Up _  # σ ⟩& lfalse⁺)
-      lfalse⁺                  ← ✴-id⁻ˡ ⟨$⟩ (code (push (bool true)) ⟨ Up _  # ∙-idˡ ⟩& lfalse⁺)
+      lfalse⁺                  ← ✴-id⁻ˡ ⟨$⟩ (code (push (bool false)) ⟨ Up _  # ∙-idˡ ⟩& lfalse⁺)
       ↓ lend⁻ ∙⟨ σ ⟩ labels    ← (✴-rotateₗ ∘ ✴-assocᵣ) ⟨$⟩ (freshLabel ⟨ Up _  # ∙-idˡ ⟩& lfalse⁺)
       lfalse⁺ ∙⟨ σ ⟩ lend⁺     ← ✴-id⁻ˡ ⟨$⟩ (code (goto lend⁻) ⟨ _ ✴ _ # σ ⟩& labels)
       lend⁺                    ← ✴-id⁻ˡ ⟨$⟩ (attach lfalse⁺ ⟨ Up _ # σ ⟩& lend⁺)
-      code (push (bool false))
+      code (push (bool true))
       attach lend⁺
 
     -- Compile comparisons and other binary operations
-    compile-bop : ∀ {Γ a b c} → BinOp a b c → ε[ Compiler Γ (⟦ a ⟧ ∷ ⟦ b ⟧ ∷ ψ) (⟦ c ⟧ ∷ ψ) Emp ]
+    compile-bop : ∀ {Γ a b c} → BinOp a b c → ε[ Compiler Γ (⟦ b ⟧ ∷ ⟦ a ⟧ ∷ ψ) (⟦ c ⟧ ∷ ψ) Emp ]
     compile-bop add = code (bop add)
     compile-bop sub = code (bop sub)
     compile-bop mul = code (bop mul)
