@@ -1,9 +1,8 @@
 {-# OPTIONS --safe #-}
 module JVM.Syntax.Values where
 
-open import Level
 open import Data.Bool
-open import Data.Integer
+open import Data.Integer.Base
 open import Relation.Unary
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
