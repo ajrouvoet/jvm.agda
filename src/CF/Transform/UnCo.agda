@@ -1,4 +1,4 @@
-{-# OPTIONS --no-qualified-instances --rewriting #-}
+{-# OPTIONS --no-qualified-instances #-}
 module CF.Transform.UnCo where
 
 open import Data.Product

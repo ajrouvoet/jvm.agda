@@ -21,7 +21,6 @@ open import Data.Sum
 open import Data.Product
  
 open import JVM.Model T
-open Disjoint using (bags; bags-isMonoid; bags-isSemigroup; bags-isCommutative; empty-unique)
 
 open import JVM.Syntax.Labeling T
 
@@ -35,11 +34,14 @@ getInstr c@(labeled (l ∙⟨ σ ⟩ i@(↓ _))) =
   in i ∙⟨ σ ⟩ labeled l∙i
 getInstr (instr i@(↓ _)) = i ∙⟨ ∙-copy i ⟩ (instr i)
 
-label : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─✴ Code τ₁ τ₂ ]
-label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
-label l ⟨ σ ⟩ labeled (l₂∙i) with ✴-assocₗ (l ∙⟨ σ ⟩ l₂∙i)
-... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (✴-curry (arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
-... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
+module _ where
+  open Disjoint using (bags; bags-isMonoid; bags-isSemigroup; bags-isCommutative; empty-unique)
+
+  label : ∀ {τ₁ τ₂} → ∀[ Up (Labeling τ₁) ⇒ Code τ₁ τ₂ ─✴ Code τ₁ τ₂ ]
+  label l ⟨ σ ⟩ instr i   = labeled (l ∙⟨ σ ⟩ i)
+  label l ⟨ σ ⟩ labeled (l₂∙i) with ✴-assocₗ (l ∙⟨ σ ⟩ l₂∙i)
+  ... | l₁∙l₂ ∙⟨ σ′ ⟩ i with upMap (↑ (✴-curry (arrow concat))) ⟨ ∙-idˡ ⟩ zipUp l₁∙l₂
+  ... | ls = labeled (ls ∙⟨ σ′ ⟩ i)
 
 ⟪_↝_⟫ : T → T → Pred Intf ℓ
 ⟪ τ₁ ↝ τ₂ ⟫ = Star Code τ₁ τ₂

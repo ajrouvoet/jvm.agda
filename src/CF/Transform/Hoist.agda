@@ -1,5 +1,3 @@
-{-# OPTIONS --rewriting #-}
-
 {- MJ where variable declarations have been hoisted to the top of a block -}
 module CF.Transform.Hoist where
 

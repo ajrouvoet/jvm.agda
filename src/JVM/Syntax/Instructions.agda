@@ -1,4 +1,4 @@
-{-# OPTIONS --safe #-}
+{-# OPTIONS --safe --no-qualified-instances #-}
 module JVM.Syntax.Instructions where
 
 open import Level
@@ -10,13 +10,12 @@ open import Data.List.Membership.Propositional using () renaming (_∈_ to Reg)
 
 open import JVM.Types
 open import JVM.Syntax.Values
+open import JVM.Model StackTy
 
 open import Relation.Unary hiding (_∈_)
 open import Relation.Ternary.Core
 open import Relation.Ternary.Structures
 open import Relation.Ternary.Structures.Syntax
-open import Relation.Ternary.Construct.Empty StackTy
-open import Relation.Ternary.Construct.Bag empty-rel tt
 open import Relation.Ternary.Monad.Weakening
 
 data NativeBinOp : Ty → Ty → Ty → Set where

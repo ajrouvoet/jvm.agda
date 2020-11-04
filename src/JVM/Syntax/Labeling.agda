@@ -11,7 +11,7 @@ open import Data.Sum
 open import Data.Product
  
 open import JVM.Model T
-open Disjoint
 
 Labeling : T → Pred (List T) _
 Labeling = λ τ → Bigplus (One τ) 
+  where open Disjoint
