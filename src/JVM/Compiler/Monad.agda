@@ -5,7 +5,7 @@ module JVM.Compiler.Monad (T : Set) (⟨_⇒_⟩ : T → T → List T → Set) (
 
 open import Level
 open import Function using (_∘_)
-open import Data.Product
+open import Data.Product hiding (_<*>_)
 open import Relation.Unary
 open import Relation.Unary.PredicateTransformer using (Pt)
 open import Relation.Binary.PropositionalEquality using (refl)
